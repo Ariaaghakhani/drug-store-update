@@ -30,38 +30,36 @@
   </div>
 </template>
 
-<script>
-export default defineNuxtComponent({
-  name: 'IndexPage',
-
-  head() {
-    return {
-      title: 'داروخانه آنلاین | سلامتی در درب منزل',
-      meta: [
-        {
-          name: 'description',
-          content:
-            'دارو و محصولات بهداشتی خود را با تحویل ایمن در منزل دریافت کنید. داروسازان مجرب ۲۴/۷ در خدمت شما',
-        },
-        {
-          property: 'og:title',
-          content: 'داروخانه آنلاین | سلامتی در درب منزل',
-        },
-        {
-          property: 'og:description',
-          content:
-            'دارو و محصولات بهداشتی خود را با تحویل ایمن در منزل دریافت کنید',
-        },
-      ],
-    }
-  },
-  async mounted() {
-    const response = await this.$api.auth.checkUser({
-      data: {
-        phone: '09128946210',
-      },
-    })
-    console.log(response)
-  },
+<script setup>
+import { useAsyncData } from '#app'
+// const app = useNuxtApp()
+useAsyncData('index-page-events', async () => {
+  await new Promise((resolve) => setTimeout(resolve, 3000))
+  console.log(window.$nuxt)
+  // try {
+  //   const response = await app.$api.auth.events()
+  //   console.log(response)
+  // } catch (error) {
+  //   console.log(error)
+  // }
+})
+useHead({
+  title: 'داروخانه آنلاین | سلامتی در درب منزل',
+  meta: [
+    {
+      name: 'description',
+      content:
+        'دارو و محصولات بهداشتی خود را با تحویل ایمن در منزل دریافت کنید. داروسازان مجرب ۲۴/۷ در خدمت شما',
+    },
+    {
+      property: 'og:title',
+      content: 'داروخانه آنلاین | سلامتی در درب منزل',
+    },
+    {
+      property: 'og:description',
+      content:
+        'دارو و محصولات بهداشتی خود را با تحویل ایمن در منزل دریافت کنید',
+    },
+  ],
 })
 </script>

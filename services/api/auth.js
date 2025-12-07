@@ -11,4 +11,7 @@ export default (apiCaller) => ({
   logout(config) {
     return apiCaller.post('/auth/logout', config)
   },
+  events(config) {
+    return apiCaller.get('/events', config)
+  },
 })

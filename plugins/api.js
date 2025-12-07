@@ -4,99 +4,101 @@ import { cachedToken } from '@/plugins/auth.client'
 const apiPromisesCache = new Map()
 
 function addTrailingAndLeadingSlashToUrl(url) {
-  if (/^(?!https?:).*/.test(url) && !url.startsWith('/')) url = '/' + url
-  if (!url.endsWith('/')) url = url + '/'
-  return url
-}
-
-const setDefaultConfigs = (config) => {
-  config.instance = config.instance || 'default'
-  config.params = config.params || null
-
-  if (config.params) {
-    for (const property in config.params) {
-      if (config.params[property] === null) delete config.params[property]
-    }
+  if (/^(?!https?:).*/.test(url) && !url.startsWith('/')) {
+    url = '/' + url
   }
-  return config
+  if (!url.endsWith('/')) {
+    url = url + '/'
+  }
+  return url
 }
 
 export const apiCaller = (apiCallerInstances) => ({
   get(url, config = {}) {
-    config = setDefaultConfigs(config)
-    config.method = 'GET'
-    const apiCallerInstance = apiCallerInstances[config.instance]
+    const instance = config.instance || 'default'
+    const apiCallerInstance = apiCallerInstances[instance]
 
-    if (config.instance === 'default') {
+    if (instance === 'default') {
       url = addTrailingAndLeadingSlashToUrl(url)
     }
 
-    const key = url + (config.params ? JSON.stringify(config.params) : '')
+    const cacheKey = url + (config.params ? JSON.stringify(config.params) : '')
 
-    if (apiPromisesCache.has(key)) {
-      return apiPromisesCache.get(key)
+    if (apiPromisesCache.has(cacheKey)) {
+      return apiPromisesCache.get(cacheKey)
     }
 
-    const promise = apiCallerInstance(url, config)
-    apiPromisesCache.set(key, promise)
+    const promise = apiCallerInstance(url, {
+      method: 'GET',
+      params: config.params || undefined,
+    })
 
+    apiPromisesCache.set(cacheKey, promise)
     promise.finally(() => {
-      apiPromisesCache.delete(key)
+      apiPromisesCache.delete(cacheKey)
     })
 
     return promise
   },
+
   post(url, config = {}) {
-    config = setDefaultConfigs(config)
-    config.method = 'POST'
-    const apiCallerInstance = apiCallerInstances[config.instance]
+    const instance = config.instance || 'default'
+    const apiCallerInstance = apiCallerInstances[instance]
 
-    if (config.instance === 'default') {
+    if (instance === 'default') {
       url = addTrailingAndLeadingSlashToUrl(url)
     }
 
-    const requestBody = config.data
-    delete config.data
-    return apiCallerInstance(url, { body: requestBody, ...config })
+    return apiCallerInstance(url, {
+      method: 'POST',
+      body: config.data || undefined,
+      params: config.params || undefined,
+    })
   },
+
   put(url, config = {}) {
-    config = setDefaultConfigs(config)
-    config.method = 'PUT'
-    const apiCallerInstance = apiCallerInstances[config.instance]
+    const instance = config.instance || 'default'
+    const apiCallerInstance = apiCallerInstances[instance]
 
-    if (config.instance === 'default') {
+    if (instance === 'default') {
       url = addTrailingAndLeadingSlashToUrl(url)
     }
 
-    const requestBody = config.data
-    delete config.data
-    return apiCallerInstance(url, { body: requestBody, ...config })
+    return apiCallerInstance(url, {
+      method: 'PUT',
+      body: config.data || undefined,
+      params: config.params || undefined,
+    })
   },
+
   patch(url, config = {}) {
-    config = setDefaultConfigs(config)
-    config.method = 'PATCH'
-    const apiCallerInstance = apiCallerInstances[config.instance]
+    const instance = config.instance || 'default'
+    const apiCallerInstance = apiCallerInstances[instance]
 
-    if (config.instance === 'default') {
+    if (instance === 'default') {
       url = addTrailingAndLeadingSlashToUrl(url)
     }
 
-    const requestBody = config.data
-    delete config.data
-    return apiCallerInstance(url, { body: requestBody, ...config })
+    return apiCallerInstance(url, {
+      method: 'PATCH',
+      body: config.data || undefined,
+      params: config.params || undefined,
+    })
   },
-  delete(url, config = {}) {
-    config = setDefaultConfigs(config)
-    config.method = 'DELETE'
-    const apiCallerInstance = apiCallerInstances[config.instance]
 
-    if (config.instance === 'default') {
+  delete(url, config = {}) {
+    const instance = config.instance || 'default'
+    const apiCallerInstance = apiCallerInstances[instance]
+
+    if (instance === 'default') {
       url = addTrailingAndLeadingSlashToUrl(url)
     }
 
-    const requestBody = config.data
-    delete config.data
-    return apiCallerInstance(url, { body: requestBody, ...config })
+    return apiCallerInstance(url, {
+      method: 'DELETE',
+      body: config.data || undefined,
+      params: config.params || undefined,
+    })
   },
 })
 
@@ -122,18 +124,13 @@ export default defineNuxtPlugin((nuxtApp) => {
     baseURL: runtimeConfig.public.BACKEND_URL,
     headers: {
       'ngrok-skip-browser-warning': '69420',
-      'User-Agent': 'MyApp',
     },
-    onRequest(request) {
-      const token = cachedToken.value
-      if (token) {
-        request.options.headers.set('Authorization', token)
+    onRequest({ request, options }) {
+      // Only add token on client side
+      if (import.meta.client && cachedToken?.value) {
+        options.headers = options.headers || {}
+        options.headers['Authorization'] = cachedToken.value
       }
-      console.log(
-        'Request headers:',
-        Object.fromEntries(request.options.headers.entries())
-      )
-      console.log('Request URL:', request.request)
     },
     onResponse,
     onResponseError,
@@ -142,7 +139,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   const cmsInstance = $fetch.create({
     baseURL: runtimeConfig.public.CMS_URL,
     onRequest({ options }) {
-      if (!import.meta.client) {
+      if (import.meta.server) {
         options.headers = {
           ...options.headers,
           'Strapi-Response-Format': 'v4',
