@@ -68,7 +68,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      BACKEND_URL: 'https://fcd9bc5ab766.ngrok-free.app',
+      BACKEND_URL: 'https://lanelle-unbronzed-carpologically.ngrok-free.dev/',
       CMS_URL: 'https://ancient-balance-34dc5d8db0.strapiapp.com',
     },
   },

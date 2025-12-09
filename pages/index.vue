@@ -32,16 +32,27 @@
 
 <script setup>
 import { useAsyncData } from '#app'
-// const app = useNuxtApp()
 useAsyncData('index-page-events', async () => {
-  await new Promise((resolve) => setTimeout(resolve, 3000))
-  console.log(window.$nuxt)
-  // try {
-  //   const response = await app.$api.auth.events()
-  //   console.log(response)
-  // } catch (error) {
-  //   console.log(error)
+  const app = useNuxtApp()
+  // const data = {
+  //   username: '09128946210',
+  //   password: 'user',
+  //   phone: '09128946210',
+  //   loginType: 'PASSWORD',
+  //   otpCode: '123456',
   // }
+  try {
+    if (!import.meta.client) return
+    console.log(app.$auth.loggedIn)
+    if (app.$auth.loggedIn) return
+    // const response = await app.$api.auth.login({ data })
+    console.log(response)
+
+    // const response = await app.$api.auth.checkUser(config)
+    // console.log(response.data)
+  } catch (error) {
+    console.log(error)
+  }
 })
 useHead({
   title: 'داروخانه آنلاین | سلامتی در درب منزل',

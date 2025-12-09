@@ -3,24 +3,10 @@ import { cachedToken } from '@/plugins/auth.client'
 
 const apiPromisesCache = new Map()
 
-function addTrailingAndLeadingSlashToUrl(url) {
-  if (/^(?!https?:).*/.test(url) && !url.startsWith('/')) {
-    url = '/' + url
-  }
-  if (!url.endsWith('/')) {
-    url = url + '/'
-  }
-  return url
-}
-
 export const apiCaller = (apiCallerInstances) => ({
   get(url, config = {}) {
     const instance = config.instance || 'default'
     const apiCallerInstance = apiCallerInstances[instance]
-
-    if (instance === 'default') {
-      url = addTrailingAndLeadingSlashToUrl(url)
-    }
 
     const cacheKey = url + (config.params ? JSON.stringify(config.params) : '')
 
@@ -45,10 +31,6 @@ export const apiCaller = (apiCallerInstances) => ({
     const instance = config.instance || 'default'
     const apiCallerInstance = apiCallerInstances[instance]
 
-    if (instance === 'default') {
-      url = addTrailingAndLeadingSlashToUrl(url)
-    }
-
     return apiCallerInstance(url, {
       method: 'POST',
       body: config.data || undefined,
@@ -59,10 +41,6 @@ export const apiCaller = (apiCallerInstances) => ({
   put(url, config = {}) {
     const instance = config.instance || 'default'
     const apiCallerInstance = apiCallerInstances[instance]
-
-    if (instance === 'default') {
-      url = addTrailingAndLeadingSlashToUrl(url)
-    }
 
     return apiCallerInstance(url, {
       method: 'PUT',
@@ -75,10 +53,6 @@ export const apiCaller = (apiCallerInstances) => ({
     const instance = config.instance || 'default'
     const apiCallerInstance = apiCallerInstances[instance]
 
-    if (instance === 'default') {
-      url = addTrailingAndLeadingSlashToUrl(url)
-    }
-
     return apiCallerInstance(url, {
       method: 'PATCH',
       body: config.data || undefined,
@@ -89,10 +63,6 @@ export const apiCaller = (apiCallerInstances) => ({
   delete(url, config = {}) {
     const instance = config.instance || 'default'
     const apiCallerInstance = apiCallerInstances[instance]
-
-    if (instance === 'default') {
-      url = addTrailingAndLeadingSlashToUrl(url)
-    }
 
     return apiCallerInstance(url, {
       method: 'DELETE',
