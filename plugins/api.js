@@ -1,0 +1,159 @@
+import createApi from '@/services/api/index.js'
+import { cachedToken } from '@/plugins/auth.client'
+
+const apiPromisesCache = new Map()
+
+function addTrailingAndLeadingSlashToUrl(url) {
+  if (/^(?!https?:).*/.test(url) && !url.startsWith('/')) {
+    url = '/' + url
+  }
+  if (!url.endsWith('/')) {
+    url = url + '/'
+  }
+  return url
+}
+
+export const apiCaller = (apiCallerInstances) => ({
+  get(url, config = {}) {
+    const instance = config.instance || 'default'
+    const apiCallerInstance = apiCallerInstances[instance]
+
+    if (instance === 'default') {
+      url = addTrailingAndLeadingSlashToUrl(url)
+    }
+
+    const cacheKey = url + (config.params ? JSON.stringify(config.params) : '')
+
+    if (apiPromisesCache.has(cacheKey)) {
+      return apiPromisesCache.get(cacheKey)
+    }
+
+    const promise = apiCallerInstance(url, {
+      method: 'GET',
+      params: config.params || undefined,
+    })
+
+    apiPromisesCache.set(cacheKey, promise)
+    promise.finally(() => {
+      apiPromisesCache.delete(cacheKey)
+    })
+
+    return promise
+  },
+
+  post(url, config = {}) {
+    const instance = config.instance || 'default'
+    const apiCallerInstance = apiCallerInstances[instance]
+
+    if (instance === 'default') {
+      url = addTrailingAndLeadingSlashToUrl(url)
+    }
+
+    return apiCallerInstance(url, {
+      method: 'POST',
+      body: config.data || undefined,
+      params: config.params || undefined,
+    })
+  },
+
+  put(url, config = {}) {
+    const instance = config.instance || 'default'
+    const apiCallerInstance = apiCallerInstances[instance]
+
+    if (instance === 'default') {
+      url = addTrailingAndLeadingSlashToUrl(url)
+    }
+
+    return apiCallerInstance(url, {
+      method: 'PUT',
+      body: config.data || undefined,
+      params: config.params || undefined,
+    })
+  },
+
+  patch(url, config = {}) {
+    const instance = config.instance || 'default'
+    const apiCallerInstance = apiCallerInstances[instance]
+
+    if (instance === 'default') {
+      url = addTrailingAndLeadingSlashToUrl(url)
+    }
+
+    return apiCallerInstance(url, {
+      method: 'PATCH',
+      body: config.data || undefined,
+      params: config.params || undefined,
+    })
+  },
+
+  delete(url, config = {}) {
+    const instance = config.instance || 'default'
+    const apiCallerInstance = apiCallerInstances[instance]
+
+    if (instance === 'default') {
+      url = addTrailingAndLeadingSlashToUrl(url)
+    }
+
+    return apiCallerInstance(url, {
+      method: 'DELETE',
+      body: config.data || undefined,
+      params: config.params || undefined,
+    })
+  },
+})
+
+export default defineNuxtPlugin((nuxtApp) => {
+  const runtimeConfig = useRuntimeConfig()
+
+  const onResponse = ({ response }) => {
+    if (response?.ok) {
+      response._data = {
+        data: response._data,
+      }
+    }
+  }
+
+  const onResponseError = ({ response }) => {
+    if (response?._data) {
+      response.data = response._data
+      delete response._data
+    }
+  }
+
+  const defaultInstance = $fetch.create({
+    baseURL: runtimeConfig.public.BACKEND_URL,
+    headers: {
+      'ngrok-skip-browser-warning': '69420',
+    },
+    onRequest({ request, options }) {
+      // Only add token on client side
+      if (import.meta.client && cachedToken?.value) {
+        options.headers = options.headers || {}
+        options.headers['Authorization'] = cachedToken.value
+      }
+    },
+    onResponse,
+    onResponseError,
+  })
+
+  const cmsInstance = $fetch.create({
+    baseURL: runtimeConfig.public.CMS_URL,
+    onRequest({ options }) {
+      if (import.meta.server) {
+        options.headers = {
+          ...options.headers,
+          'Strapi-Response-Format': 'v4',
+        }
+      }
+    },
+    onResponse,
+    onResponseError,
+  })
+
+  const apiInstances = {
+    default: defaultInstance,
+    cms: cmsInstance,
+  }
+
+  nuxtApp.provide('api', createApi(apiCaller(apiInstances), apiInstances))
+})

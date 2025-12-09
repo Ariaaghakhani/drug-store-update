@@ -66,4 +66,10 @@ export default defineNuxtConfig({
     host: '0.0.0.0',
     port: 3000,
   },
+  runtimeConfig: {
+    public: {
+      BACKEND_URL: 'https://fcd9bc5ab766.ngrok-free.app',
+      CMS_URL: 'https://ancient-balance-34dc5d8db0.strapiapp.com',
+    },
+  },
 })

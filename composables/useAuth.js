@@ -1,6 +1,6 @@
 export const useAuth = () => {
   const isAuthenticated = () => {
-    if (process.client) {
+    if (import.meta.client) {
       const auth = localStorage.getItem('auth')
       return auth === 'token'
     }
@@ -8,13 +8,13 @@ export const useAuth = () => {
   }
 
   const login = (token) => {
-    if (process.client) {
+    if (import.meta.client) {
       localStorage.setItem('auth', token)
     }
   }
 
   const logout = () => {
-    if (process.client) {
+    if (import.meta.client) {
       localStorage.removeItem('auth')
     }
   }
