@@ -1,6 +1,6 @@
 <template>
   <UContainer>
-    <div class="py-12">
+    <ClientOnly class="py-12">
       <!-- Page Header -->
       <div class="flex items-center justify-between mb-12">
         <div>
@@ -14,7 +14,7 @@
           </p>
         </div>
         <UButton color="red" variant="outline" @click="handleLogout">
-          خروج از حساب
+          خروج از حساب کاربری
         </UButton>
       </div>
 
@@ -34,7 +34,7 @@
               </div>
               <div>
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                  کاربر گرامی
+                  {{ userName || 'کاربر گرامی' }}
                 </h3>
                 <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">
                   خوش آمدید
@@ -114,35 +114,57 @@
           </UCard>
         </div>
       </div>
-    </div>
+    </ClientOnly>
   </UContainer>
 </template>
 
-<script>
-export default {
-  name: 'PanelPage',
-  middleware: 'auth',
+<script setup>
+definePageMeta({
+  middleware: () => {
+    const nuxtApp = useNuxtApp()
 
-  head() {
-    return {
-      title: 'پنل کاربری | داروخانه آنلاین',
+    if (!nuxtApp.$auth.loggedIn) {
+      return navigateTo('/login')
     }
   },
+})
+const app = useNuxtApp()
+// const router = useRouter()
+// const toast = useToast()
 
-  methods: {
-    handleLogout() {
-      const { logout } = useAuth()
-      logout()
+// Set page meta
+useHead({
+  title: 'پنل کاربری | داروخانه آنلاین',
+})
 
-      const toast = useToast()
-      toast.add({
-        title: 'با موفقیت خارج شدید',
-        icon: 'i-heroicons-check-circle',
-        color: 'green',
-      })
+// const username = computed(() => app.$auth.user?.username)
 
-      navigateTo('/')
-    },
-  },
+// Logout handler
+const handleLogout = async () => {
+  try {
+    // const config = {
+    //   data: {
+    //     username: username.value,
+    //   },
+    // }
+
+    // const response = await app.$api.auth.logout(config)
+    app.$auth.reset()
+    navigateTo('/')
+
+    // if (response.status === 200) {
+    //   app.$auth.reset()
+    //
+    //   toast.add({
+    //     title: 'با موفقیت خارج شدید',
+    //     icon: 'i-heroicons-check-circle',
+    //     color: 'green',
+    //   })
+
+    // await router.push('/')
+    // }
+  } catch (error) {
+    console.error('Logout error:', error)
+  }
 }
 </script>
