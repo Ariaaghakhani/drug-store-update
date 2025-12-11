@@ -585,9 +585,7 @@ export default {
 
   methods: {
     goToPanel() {
-      const { isAuthenticated } = useAuth()
-
-      if (isAuthenticated()) {
+      if (this.$auth.loggedIn) {
         // User is authenticated, navigate to panel
         navigateTo('/panel')
       } else {
