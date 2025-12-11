@@ -31,25 +31,12 @@
 </template>
 
 <script setup>
-import { useAsyncData } from '#app'
 useAsyncData('index-page-events', async () => {
   const app = useNuxtApp()
-  // const data = {
-  //   username: '09128946210',
-  //   password: 'user',
-  //   phone: '09128946210',
-  //   loginType: 'PASSWORD',
-  //   otpCode: '123456',
-  // }
   try {
     if (!import.meta.client) return
-    console.log(app.$auth.loggedIn)
     if (app.$auth.loggedIn) return
-    // const response = await app.$api.auth.login({ data })
-    console.log(response)
-
-    // const response = await app.$api.auth.checkUser(config)
-    // console.log(response.data)
+    console.log(app.$auth.loggedIn)
   } catch (error) {
     console.log(error)
   }
