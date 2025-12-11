@@ -31,7 +31,6 @@
 </template>
 
 <script setup>
-// import { useAsyncData } from '#app'
 useAsyncData('index-page-events', async () => {
   const app = useNuxtApp()
   try {
