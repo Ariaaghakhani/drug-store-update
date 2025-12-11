@@ -32,12 +32,13 @@
       </div>
 
       <!-- Categories -->
-      <div class="mb-8 flex flex-wrap gap-3">
+      <div class="mb-8 flex gap-3 max-w-full overflow-x-auto">
         <UButton
           v-for="category in categories"
           :key="category.value"
           :color="selectedCategory === category.value ? 'primary' : 'white'"
           :variant="selectedCategory === category.value ? 'solid' : 'outline'"
+          class="!min-w-fit"
           @click="selectedCategory = category.value"
         >
           {{ category.label }}
@@ -73,105 +74,91 @@
   </UContainer>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-import { useCartStore } from "~/stores/cart";
+<script setup>
+import { ref, computed } from 'vue'
+import { useCartStore } from '~/stores/cart'
 
-export default defineComponent({
-  name: "MedicationsPage",
+const searchQuery = ref('')
+const selectedCategory = ref('all')
 
-  data() {
-    return {
-      searchQuery: "",
-      selectedCategory: "all",
-      categories: [
-        { label: "همه", value: "all" },
-        { label: "مسکن‌ها", value: "pain" },
-        { label: "مکمل‌ها", value: "supplements" },
-        { label: "سلامت قلب", value: "heart" },
-        { label: "دیابت", value: "diabetes" },
-        { label: "آلرژی", value: "allergies" },
-      ],
-      products: [
-        {
-          id: "1",
-          name: "ویتامین D3 مقدار ۵۰۰۰ واحد",
-          category: "supplements",
-          price: 129000,
-          originalPrice: 169000,
-          rating: 4.8,
-          reviewCount: 1247,
-          image: "/images/products/vitamin-d3.jpg",
-          inStock: true,
-          badge: "Popular" as const,
-        },
-        {
-          id: "2",
-          name: "ایبوپروفن ۲۰۰ میلی‌گرم",
-          category: "pain",
-          price: 84900,
-          rating: 4.7,
-          reviewCount: 892,
-          image: "/images/products/ibuprofen.jpg",
-          inStock: true,
-          badge: "Best Seller" as const,
-        },
-        {
-          id: "3",
-          name: "امگا-۳ روغن ماهی",
-          category: "heart",
-          price: 199000,
-          originalPrice: 249000,
-          rating: 4.9,
-          reviewCount: 2156,
-          image: "/images/products/omega-3.jpg",
-          inStock: true,
-          badge: "Premium" as const,
-        },
-      ] as Product[],
-    };
+const categories = [
+  { label: 'همه', value: 'all' },
+  { label: 'مسکن‌ها', value: 'pain' },
+  { label: 'مکمل‌ها', value: 'supplements' },
+  { label: 'سلامت قلب', value: 'heart' },
+  { label: 'دیابت', value: 'diabetes' },
+  { label: 'آلرژی', value: 'allergies' },
+]
+
+const products = [
+  {
+    id: '1',
+    name: 'ویتامین D3 مقدار ۵۰۰۰ واحد',
+    category: 'supplements',
+    price: 129000,
+    originalPrice: 169000,
+    rating: 4.8,
+    reviewCount: 1247,
+    image: '/images/products/vitamin-d3.jpg',
+    inStock: true,
+    badge: 'Popular',
   },
-
-  head() {
-    return {
-      title: "همه داروها | داروخانه آنلاین",
-    };
+  {
+    id: '2',
+    name: 'ایبوپروفن ۲۰۰ میلی‌گرم',
+    category: 'pain',
+    price: 84900,
+    rating: 4.7,
+    reviewCount: 892,
+    image: '/images/products/ibuprofen.jpg',
+    inStock: true,
+    badge: 'Best Seller',
   },
-
-  computed: {
-    cartStore() {
-      return useCartStore();
-    },
-
-    filteredProducts() {
-      let filtered = this.products;
-
-      // Filter by category
-      if (this.selectedCategory !== "all") {
-        filtered = filtered.filter((p) => p.category === this.selectedCategory);
-      }
-
-      // Filter by search
-      if (this.searchQuery) {
-        const query = this.searchQuery.toLowerCase();
-        filtered = filtered.filter((p) => p.name.toLowerCase().includes(query));
-      }
-
-      return filtered;
-    },
+  {
+    id: '3',
+    name: 'امگا-۳ روغن ماهی',
+    category: 'heart',
+    price: 199000,
+    originalPrice: 249000,
+    rating: 4.9,
+    reviewCount: 2156,
+    image: '/images/products/omega-3.jpg',
+    inStock: true,
+    badge: 'Premium',
   },
+]
 
-  methods: {
-    handleAddToCart(product: Product) {
-      this.cartStore.addItem(product);
-      const toast = useToast();
-      toast.add({
-        title: "به سبد خرید اضافه شد",
-        description: product.name,
-        icon: "i-heroicons-check-circle",
-        color: "green",
-      });
-    },
-  },
-});
+const cartStore = useCartStore()
+const toast = useToast()
+
+const filteredProducts = computed(() => {
+  let filtered = products
+
+  // Filter by category
+  if (selectedCategory.value !== 'all') {
+    filtered = filtered.filter((p) => p.category === selectedCategory.value)
+  }
+
+  // Filter by search
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    filtered = filtered.filter((p) => p.name.toLowerCase().includes(query))
+  }
+
+  return filtered
+})
+
+const handleAddToCart = (product) => {
+  cartStore.addItem(product)
+  toast.add({
+    title: 'به سبد خرید اضافه شد',
+    description: product.name,
+    icon: 'i-heroicons-check-circle',
+    color: 'green',
+  })
+}
+
+useHead({
+  title: 'داروها | داروخانه آنلاین',
+})
 </script>
