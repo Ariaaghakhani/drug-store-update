@@ -8,7 +8,7 @@
         class="relative aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800"
       >
         <!-- Badge -->
-        <div v-if="product.badge" class="absolute top-3 right-3 z-10">
+        <div v-if="product.badge" class="absolute top-3 end-3 z-10">
           <UBadge :color="badgeColor" variant="solid" size="md">
             {{ getBadgeLabel(product.badge) }}
           </UBadge>

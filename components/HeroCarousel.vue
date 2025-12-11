@@ -1,7 +1,6 @@
 <template>
   <div
     class="relative w-full h-full overflow-hidden rounded-3xl"
-    dir="rtl"
     @mouseenter="pauseAutoplay"
     @mouseleave="resumeAutoplay"
   >
@@ -175,7 +174,9 @@ export default {
 
   computed: {
     currentTranslate() {
-      return this.currentIndex * 100
+      const isRTL = typeof document !== 'undefined' && document.documentElement.getAttribute('dir') === 'rtl'
+      // RTL: positive translate moves slides left, LTR: negative translate moves slides left
+      return isRTL ? this.currentIndex * 100 : -this.currentIndex * 100
     },
   },
 
@@ -255,12 +256,23 @@ export default {
       const swipeTime = Date.now() - this.touchStartTime
 
       // Only trigger if it's a quick swipe with enough distance
-      // In RTL: swipe right (diff < 0) = previous, swipe left (diff > 0) = next
+      const isRTL = document.documentElement.getAttribute('dir') === 'rtl'
+
       if (Math.abs(diff) > swipeThreshold && swipeTime < timeThreshold) {
-        if (diff > 0) {
-          this.prevSlide()
+        // RTL: swipe right (diff < 0) = previous, swipe left (diff > 0) = next
+        // LTR: swipe right (diff < 0) = next, swipe left (diff > 0) = previous
+        if (isRTL) {
+          if (diff > 0) {
+            this.prevSlide()
+          } else {
+            this.nextSlide()
+          }
         } else {
-          this.nextSlide()
+          if (diff > 0) {
+            this.nextSlide()
+          } else {
+            this.prevSlide()
+          }
         }
       }
 

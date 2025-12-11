@@ -99,11 +99,16 @@
             <UIcon name="i-heroicons-shopping-cart" class="w-5 h-5" />
             <span
               v-if="cartItemsCount > 0"
-              class="absolute top-1 left-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none"
+              class="absolute top-1 start-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none"
             >
               {{ cartItemsCount }}
             </span>
           </button>
+
+          <!-- Language Switcher - Desktop only -->
+          <div class="hidden md:block">
+            <LanguageSwitcher />
+          </div>
 
           <!-- Dark Mode Toggle - Desktop only -->
           <button
@@ -291,7 +296,7 @@
               @click="closeCartDropdown"
             >
               مشاهده سبد خرید
-              <UIcon name="i-heroicons-arrow-left" class="w-4 h-4 mr-2" />
+              <UIcon name="i-heroicons-arrow-left" class="w-4 h-4 ms-2" />
             </NuxtLink>
           </div>
         </div> </Transition
@@ -319,7 +324,7 @@
 
         <!-- Menu Panel -->
         <div
-          class="absolute top-0 right-0 w-full h-full bg-white dark:bg-gray-900 shadow-2xl"
+          class="absolute top-0 end-0 w-full h-full bg-white dark:bg-gray-900 shadow-2xl"
           @click.stop
         >
           <!-- Menu Header -->
@@ -400,7 +405,7 @@
                 >
                   <div
                     v-if="activeMobileDropdown === item.title"
-                    class="mr-4 mt-1 overflow-hidden"
+                    class="ms-4 mt-1 overflow-hidden"
                   >
                     <NuxtLink
                       v-for="subItem in item.menu"
@@ -426,12 +431,17 @@
 
             <!-- User Profile - Mobile only -->
             <button
-              class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-900 dark:text-gray-100 hover:bg-teal-50 dark:hover:bg-teal-950 hover:text-teal-600 dark:hover:text-teal-400 transition-all w-full text-right"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-900 dark:text-gray-100 hover:bg-teal-50 dark:hover:bg-teal-950 hover:text-teal-600 dark:hover:text-teal-400 transition-all w-full text-start"
               @click="goToPanel"
             >
               <UIcon name="i-heroicons-user" class="w-5 h-5" />
               <span class="font-semibold">پروفایل کاربری</span>
             </button>
+
+            <!-- Language Switcher - Mobile -->
+            <div class="px-4 py-3 w-full">
+              <LanguageSwitcher class="w-full" />
+            </div>
 
             <!-- Dark Mode Toggle - Mobile only -->
             <button
@@ -637,6 +647,7 @@ export default {
     updateCartDropdownPosition() {
       if (this.$refs.cartButton) {
         const isMobile = window.innerWidth < 768
+        const isRTL = document.documentElement.getAttribute('dir') === 'rtl'
 
         if (isMobile) {
           // On mobile, center the dropdown horizontally and position below header
@@ -648,9 +659,19 @@ export default {
         } else {
           // On desktop, position relative to cart button
           const buttonRect = this.$refs.cartButton.getBoundingClientRect()
-          this.cartDropdownStyle = {
-            top: `${buttonRect.bottom + 18}px`,
-            left: `${buttonRect.right - 192}px`, // 384px is w-96 (half width)
+
+          if (isRTL) {
+            // RTL: align to right edge of button
+            this.cartDropdownStyle = {
+              top: `${buttonRect.bottom + 18}px`,
+              left: `${buttonRect.right - 384}px`, // 384px is w-96 width
+            }
+          } else {
+            // LTR: align to left edge of button
+            this.cartDropdownStyle = {
+              top: `${buttonRect.bottom + 18}px`,
+              left: `${buttonRect.left}px`,
+            }
           }
         }
       }

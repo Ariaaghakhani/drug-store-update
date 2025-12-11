@@ -6,7 +6,7 @@
       size="xl"
       color="primary"
       icon="i-heroicons-chat-bubble-left-right"
-      class="fixed bottom-8 right-8 z-50 shadow-2xl hover:scale-105 transition-transform"
+      class="fixed bottom-8 end-8 z-50 shadow-2xl hover:scale-105 transition-transform"
       @click="openChat"
     >
       <span class="hidden sm:inline font-bold">چت با دستیار هوشمند</span>
@@ -14,7 +14,7 @@
         v-if="unreadCount > 0"
         color="red"
         size="xs"
-        class="absolute -top-2 -left-2"
+        class="absolute -top-2 -start-2"
       >
         {{ unreadCount }}
       </UBadge>
@@ -23,7 +23,7 @@
     <!-- Chat Window -->
     <div
       v-if="chatStore.isOpen"
-      class="fixed bottom-8 right-8 z-50 flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 transition-all duration-300"
+      class="fixed bottom-8 end-8 z-50 flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 transition-all duration-300"
       :class="[
         chatStore.isMinimized
           ? 'w-80 h-16'
@@ -157,7 +157,7 @@
               </UButton>
             </div>
 
-            <div class="text-xs opacity-70 mt-2 text-left">
+            <div class="text-xs opacity-70 mt-2 text-start">
               {{ formatTime(message.timestamp) }}
             </div>
           </div>

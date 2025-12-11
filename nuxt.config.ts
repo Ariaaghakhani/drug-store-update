@@ -9,7 +9,33 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@nuxt/ui',
     '@vite-pwa/nuxt',
+    '@nuxtjs/i18n',
   ],
+  i18n: {
+    locales: [
+      {
+        code: 'fa',
+        name: 'فارسی',
+        dir: 'rtl',
+        file: 'fa.json',
+      },
+      {
+        code: 'en',
+        name: 'English',
+        dir: 'ltr',
+        file: 'en.json',
+      },
+    ],
+    lazy: true,
+    langDir: 'locales/',
+    defaultLocale: 'fa',
+    strategy: 'no_prefix',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root',
+    },
+  },
   css: ['~/assets/style/main.css'],
   app: {
     pageTransition: { name: 'page', mode: 'out-in' },

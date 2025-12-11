@@ -4,7 +4,7 @@
       <!-- Navigation Buttons -->
       <button
         v-if="canScrollPrev"
-        class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        class="absolute end-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         @click="scrollPrev"
       >
         <UIcon
@@ -15,7 +15,7 @@
 
       <button
         v-if="canScrollNext"
-        class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        class="absolute start-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         @click="scrollNext"
       >
         <UIcon
@@ -224,9 +224,12 @@ export default defineComponent({
       const container = this.$refs.carouselContainer as HTMLElement
       if (container) {
         const scrollAmount = container.clientWidth
-        // In RTL, scrolling right (prev) means positive scrollLeft
-        container.scrollBy({ left: scrollAmount, behavior: 'smooth' })
-        // Update state after smooth scroll completes
+        const isRTL = document.documentElement.getAttribute('dir') === 'rtl'
+
+        // RTL: prev means scroll right (positive), LTR: prev means scroll left (negative)
+        const scrollDirection = isRTL ? scrollAmount : -scrollAmount
+        container.scrollBy({ left: scrollDirection, behavior: 'smooth' })
+
         setTimeout(() => {
           this.handleScroll()
         }, 500)
@@ -237,9 +240,12 @@ export default defineComponent({
       const container = this.$refs.carouselContainer as HTMLElement
       if (container) {
         const scrollAmount = container.clientWidth
-        // In RTL, scrolling left (next) means negative scrollLeft
-        container.scrollBy({ left: -scrollAmount, behavior: 'smooth' })
-        // Update state after smooth scroll completes
+        const isRTL = document.documentElement.getAttribute('dir') === 'rtl'
+
+        // RTL: next means scroll left (negative), LTR: next means scroll right (positive)
+        const scrollDirection = isRTL ? -scrollAmount : scrollAmount
+        container.scrollBy({ left: scrollDirection, behavior: 'smooth' })
+
         setTimeout(() => {
           this.handleScroll()
         }, 500)
@@ -249,13 +255,15 @@ export default defineComponent({
     handleScroll() {
       const container = this.$refs.carouselContainer as HTMLElement
       if (container) {
-        // In RTL, scrollLeft is 0 at the start (right) and negative when scrolling left
-        const scrollLeft = Math.abs(container.scrollLeft)
+        const isRTL = document.documentElement.getAttribute('dir') === 'rtl'
+
+        // Get scroll position (handle RTL negative values)
+        const scrollLeft = isRTL ? Math.abs(container.scrollLeft) : container.scrollLeft
         const maxScroll = container.scrollWidth - container.clientWidth
 
-        // Can scroll prev (right) if we've scrolled away from the start
+        // Can scroll prev if we've scrolled away from the start
         this.canScrollPrev = scrollLeft > 10
-        // Can scroll next (left) if we haven't reached the end
+        // Can scroll next if we haven't reached the end
         this.canScrollNext = scrollLeft < maxScroll - 10
 
         // Calculate current dot

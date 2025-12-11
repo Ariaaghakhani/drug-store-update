@@ -188,7 +188,7 @@
 
       <!-- Footer Bottom -->
       <div
-        class="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-right"
+        class="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-start"
       >
         <p class="text-sm text-gray-500">
           © ۱۴۰۳ دارو پلاس. تمام حقوق محفوظ است. داروخانه مجاز - شماره پروانه:
