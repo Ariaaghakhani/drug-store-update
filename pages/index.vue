@@ -32,11 +32,11 @@
 
 <script setup>
 useAsyncData('index-page-events', async () => {
-  const app = useNuxtApp()
+  // const app = useNuxtApp()
   try {
-    if (!import.meta.client) return
-    if (app.$auth.loggedIn) return
-    console.log(app.$auth.loggedIn)
+    // if (!import.meta.client) return
+    // if (app.$auth.loggedIn) return
+    // console.log(app.$auth.loggedIn)
   } catch (error) {
     console.log(error)
   }

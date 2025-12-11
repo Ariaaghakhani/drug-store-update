@@ -75,11 +75,13 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
+import { useAsyncData } from '#app'
 import { useCartStore } from '~/stores/cart'
 
 const searchQuery = ref('')
 const selectedCategory = ref('all')
+const events = ref([])
 
 const categories = [
   { label: 'همه', value: 'all' },
@@ -89,6 +91,18 @@ const categories = [
   { label: 'دیابت', value: 'diabetes' },
   { label: 'آلرژی', value: 'allergies' },
 ]
+
+useAsyncData(async () => {
+  await setTimeout(() => {}, 2000)
+  try {
+    events.value = await $fetch(
+      'https://66b4d9dd9f9169621ea49b31.mockapi.io/events'
+    )
+    console.log('fetch')
+  } catch (error) {
+    console.log(error)
+  }
+})
 
 const products = [
   {
