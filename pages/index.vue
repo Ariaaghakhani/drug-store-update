@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { useAsyncData } from '#app'
+// import { useAsyncData } from '#app'
 useAsyncData('index-page-events', async () => {
   const app = useNuxtApp()
   // const data = {
@@ -43,11 +43,9 @@ useAsyncData('index-page-events', async () => {
   // }
   try {
     if (!import.meta.client) return
-    console.log(app.$auth.loggedIn)
     if (app.$auth.loggedIn) return
+    console.log(app.$auth.loggedIn)
     // const response = await app.$api.auth.login({ data })
-    console.log(response)
-
     // const response = await app.$api.auth.checkUser(config)
     // console.log(response.data)
   } catch (error) {
