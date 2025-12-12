@@ -13,6 +13,7 @@ export default defineNuxtConfig({
   css: ['~/assets/style/main.css'],
   app: {
     pageTransition: { name: 'page', mode: 'out-in' },
+    layoutTransition: { name: 'layout', mode: 'out-in' },
     head: {
       meta: [
         { name: 'apple-mobile-web-app-capable', content: 'yes' },

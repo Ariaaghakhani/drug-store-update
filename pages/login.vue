@@ -2,7 +2,7 @@
   <div
     class="min-h-screen select-none flex items-center justify-center p-4 bg-gradient-to-br from-teal-50 to-cyan-100 dark:from-slate-900 dark:to-slate-800"
   >
-    <div class="w-full max-w-4xl flex items-center justify-center">
+    <UContainer class="w-full max-w-4xl flex items-center justify-center">
       <div
         class="flex flex-col md:flex-row items-stretch w-full h-full flex-1 rounded-3xl overflow-hidden shadow-2xl"
       >
@@ -42,481 +42,928 @@
           </div>
         </div>
 
-        <!-- Left Side - Login Form -->
+        <!-- Left Side - Forms -->
         <div
           class="w-full md:w-1/2 bg-white flex-auto h-full dark:bg-gray-800 p-8 md:p-12 flex flex-col justify-center content-between grow gap-y-8"
         >
-          <UButton
-            icon="i-heroicons-arrow-right-20-solid"
-            variant="ghost"
-            color="primary"
-            class="self-start mb-4 !px-0"
-            to="/"
-          >
-            بازگشت
-          </UButton>
+          <NuxtLink to="/">
+            <UButton
+              icon="i-heroicons-arrow-right-20-solid"
+              variant="ghost"
+              color="primary"
+              class="self-start mb-4"
+            >
+              بازگشت به صفحه اصلی
+            </UButton>
+          </NuxtLink>
+
           <div class="flex-1 flex flex-col justify-center">
+            <!-- Header -->
+
             <div class="text-center mb-8">
               <div
                 class="inline-flex items-center justify-center w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-2xl mb-4"
               >
-                <svg
+                <UIcon
+                  name="i-heroicons-building-storefront"
                   class="w-8 h-8 text-teal-600 dark:text-teal-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
-                </svg>
+                />
               </div>
-              <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {{
-                  currentStep === 'phone'
-                    ? 'ورود به داروپلاس'
-                    : 'تایید شماره موبایل'
-                }}
-              </h2>
-              <p class="text-gray-600 dark:text-gray-400">
-                {{
-                  currentStep === 'phone'
-                    ? 'برای ادامه، شماره موبایل خود را وارد کنید'
-                    : 'کد تایید ارسال شده را وارد نمایید'
-                }}
-              </p>
-            </div>
-
-            <div v-if="currentStep === 'phone'" class="space-y-6">
-              <div class="relative mb-12">
-                <!-- margin below to avoid overlap with next input -->
-                <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  شماره موبایل
-                </label>
-
-                <div class="relative">
-                  <input
-                    v-model="phoneNumber"
-                    type="tel"
-                    placeholder="09xxxxxxxxx"
-                    maxlength="11"
-                    class="w-full px-4 py-4 pr-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
-                    :class="{
-                      'border-gray-300 dark:border-gray-600': !phoneError,
-                      'border-red-500 dark:border-red-500': phoneError,
-                    }"
-                    @input="validatePhone"
-                    @keyup.enter="handlePhoneSubmit"
-                  />
-
-                  <div
-                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+              <Transition name="fade" mode="out-in">
+                <div v-if="currentStep === 'phone'">
+                  <h2
+                    class="text-3xl font-bold text-gray-900 dark:text-white mb-2"
                   >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                    ورود به داروپلاس
+                  </h2>
+                  <p
+                    v-if="currentStep === 'phone'"
+                    class="text-gray-600 dark:text-gray-400"
+                  >
+                    برای ادامه، شماره موبایل خود را وارد کنید
+                  </p>
+                </div>
+                <div v-else-if="currentStep === 'password'">
+                  <h2
+                    class="text-3xl font-bold text-gray-900 dark:text-white mb-2"
+                  >
+                    ورود به داروپلاس
+                  </h2>
+                  <p class="text-gray-600 dark:text-gray-400">
+                    رمز عبور خود را وارد نمایید
+                  </p>
+                </div>
+                <div v-else-if="currentStep === 'otp'">
+                  <h2
+                    class="text-3xl font-bold text-gray-900 dark:text-white mb-2"
+                  >
+                    ورود با کد یکبار مصرف
+                  </h2>
+                  <p class="text-gray-600 dark:text-gray-400">
+                    کد تایید ارسال شده را وارد نمایید
+                  </p>
+                </div>
+                <div v-else>
+                  <h2
+                    class="text-3xl font-bold text-gray-900 dark:text-white mb-2"
+                  >
+                    تکمیل ثبت‌نام
+                  </h2>
+                  <p class="text-gray-600 dark:text-gray-400">
+                    لطفا اطلاعات خود را تکمیل کنید
+                  </p>
+                </div>
+              </Transition>
+            </div>
+            <Transition name="fade" mode="out-in">
+              <!-- Step 1: Phone Number -->
+              <form
+                v-if="currentStep === 'phone'"
+                class="space-y-6"
+                @submit.prevent="handlePhoneSubmit"
+              >
+                <div class="relative mb-12">
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    شماره موبایل
+                  </label>
+
+                  <div class="relative">
+                    <input
+                      v-model="phoneNumber"
+                      type="tel"
+                      placeholder="09xxxxxxxxx"
+                      maxlength="11"
+                      class="w-full px-4 pr-12 h-14 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all justify-center"
+                      :class="{
+                        'border-gray-300 dark:border-gray-600': !phoneError,
+                        'border-red-500 dark:border-red-500': phoneError,
+                      }"
+                      @input="validatePhone"
+                    />
+
+                    <div
+                      class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
                     >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                      <UIcon
+                        name="i-heroicons-device-phone-mobile"
+                        class="w-5 h-5"
                       />
-                    </svg>
+                    </div>
+                  </div>
+
+                  <div class="absolute left-0 right-0 mt-1">
+                    <Transition name="fade">
+                      <p
+                        v-if="phoneError"
+                        class="text-sm text-red-600 dark:text-red-400 absolute"
+                      >
+                        {{ phoneError }}
+                      </p>
+                    </Transition>
                   </div>
                 </div>
 
-                <!-- Reserve space for the error message -->
-                <div class="absolute left-0 right-0 mt-1">
-                  <Transition name="fade">
-                    <p
-                      v-if="phoneError"
-                      class="text-sm text-red-600 dark:text-red-400 absolute"
-                    >
-                      {{ phoneError }}
-                    </p>
-                  </Transition>
-                </div>
-              </div>
-
-              <button
-                :disabled="isLoading || !isValidPhone"
-                class="w-full py-4 px-6 text-lg font-semibold text-white rounded-2xl focus:ring-4 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-                style="
-                  background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
-                "
-                @click="handlePhoneSubmit"
-              >
-                <span v-if="!isLoading">ورود / ثبت نام</span>
-                <span v-else class="flex items-center justify-center gap-2">
-                  <svg
-                    class="animate-spin h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    />
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  در حال ارسال...
-                </span>
-              </button>
-
-              <p class="text-sm text-center text-gray-600 dark:text-gray-400">
-                ورود شما به معنای پذیرش
-                <a
-                  href="#"
-                  class="text-teal-600 dark:text-teal-400 hover:underline"
-                  >شرایط و قوانین</a
-                >
-                داروپلاس است.
-              </p>
-            </div>
-
-            <div v-else-if="currentStep === 'otp'" class="space-y-6">
-              <div
-                class="p-4 rounded-xl"
-                :class="
-                  isNewUser
-                    ? 'bg-blue-50 dark:bg-blue-900/20'
-                    : 'bg-green-50 dark:bg-green-900/20'
-                "
-              >
-                <p
-                  class="text-sm text-center"
-                  :class="
-                    isNewUser
-                      ? 'text-blue-700 dark:text-blue-300'
-                      : 'text-green-700 dark:text-green-300'
+                <button
+                  type="submit"
+                  :disabled="isLoading || !isValidPhone"
+                  class="w-full py-4 px-6 text-lg font-semibold text-white rounded-2xl focus:ring-4 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #0d9488 0%,
+                      #06b6d4 100%
+                    );
                   "
                 >
-                  {{
-                    isNewUser
-                      ? '🎉 خوش آمدید! برای تکمیل ثبت‌نام کد را وارد کنید'
-                      : '✅ کد تایید به شماره ' + phoneNumber + ' ارسال شد'
-                  }}
-                </p>
-              </div>
-
-              <div>
-                <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  کد تایید
-                </label>
-                <div class="flex gap-3 justify-center" dir="ltr">
-                  <input
-                    v-for="(digit, index) in otpDigits"
-                    :key="index"
-                    :ref="(el) => (otpInputs[index] = el)"
-                    v-model="otpDigits[index]"
-                    type="tel"
-                    maxlength="1"
-                    class="w-14 h-14 text-center text-2xl font-bold border-2 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
-                    :class="{
-                      'border-gray-300 dark:border-gray-600': !otpError,
-                      'border-red-500 dark:border-red-500': otpError,
-                    }"
-                    @input="handleOtpInput(index, $event)"
-                    @keydown="handleOtpKeydown(index, $event)"
-                    @paste="handleOtpPaste"
-                  />
-                </div>
-                <p
-                  v-if="otpError"
-                  class="mt-2 text-sm text-center text-red-600 dark:text-red-400"
-                >
-                  {{ otpError }}
-                </p>
-              </div>
-
-              <div class="text-center">
-                <p
-                  v-if="resendTimer > 0"
-                  class="text-sm text-gray-600 dark:text-gray-400"
-                >
-                  ارسال مجدد کد تا {{ resendTimer }} ثانیه دیگر
-                </p>
-                <button
-                  v-else
-                  class="text-sm text-teal-600 dark:text-teal-400 hover:underline"
-                  @click="resendOtp"
-                >
-                  ارسال مجدد کد تایید
+                  <span v-if="!isLoading">ادامه</span>
+                  <span v-else class="flex items-center justify-center gap-2">
+                    <UIcon
+                      name="i-heroicons-arrow-path"
+                      class="w-5 h-5 animate-spin"
+                    />
+                    در حال بررسی...
+                  </span>
                 </button>
-              </div>
 
-              <button
-                :disabled="isLoading || !isValidOtp"
-                class="w-full py-4 px-6 text-lg font-semibold text-white rounded-2xl focus:ring-4 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-                style="
-                  background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
-                "
-                @click="handleOtpSubmit"
-              >
-                <span v-if="!isLoading">{{
-                  isNewUser ? 'تکمیل ثبت‌نام' : 'ورود'
-                }}</span>
-                <span v-else class="flex items-center justify-center gap-2">
-                  <svg
-                    class="animate-spin h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
+                <p class="text-sm text-center text-gray-600 dark:text-gray-400">
+                  ورود شما به معنای پذیرش
+                  <NuxtLink
+                    to="/terms"
+                    class="text-teal-600 dark:text-teal-400 hover:underline"
                   >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    />
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  در حال بررسی...
-                </span>
-              </button>
+                    شرایط و قوانین
+                  </NuxtLink>
+                  داروپلاس است.
+                </p>
+              </form>
 
-              <button
-                class="w-full py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                @click="goBack"
+              <!-- Step 2: Password Entry (for registered users) -->
+              <form
+                v-else-if="currentStep === 'password'"
+                class="space-y-6"
+                @submit.prevent="handlePasswordSubmit"
               >
-                بازگشت و ویرایش شماره
-              </button>
-            </div>
+                <div>
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    رمز عبور
+                  </label>
+                  <div class="relative h-14">
+                    <input
+                      v-model="loginPassword"
+                      :type="showLoginPassword ? 'text' : 'password'"
+                      placeholder="رمز عبور خود را وارد کنید"
+                      class="w-full h-full px-4 pl-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                      :class="{
+                        'border-gray-300 dark:border-gray-600': !passwordError,
+                        'border-red-500 dark:border-red-500': passwordError,
+                      }"
+                    />
+                    <button
+                      type="button"
+                      class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex justify-center items-center"
+                      @click="showLoginPassword = !showLoginPassword"
+                    >
+                      <UIcon
+                        :name="
+                          showLoginPassword
+                            ? 'i-heroicons-eye-slash'
+                            : 'i-heroicons-eye'
+                        "
+                        class="w-5 h-5"
+                      />
+                    </button>
+                  </div>
+                  <p
+                    v-if="passwordError"
+                    class="mt-2 text-sm text-red-600 dark:text-red-400"
+                  >
+                    {{ passwordError }}
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  :disabled="isLoading || !loginPassword"
+                  class="w-full py-4 px-6 text-lg font-semibold text-white rounded-2xl focus:ring-4 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #0d9488 0%,
+                      #06b6d4 100%
+                    );
+                  "
+                >
+                  <span v-if="!isLoading">ورود</span>
+                  <span v-else class="flex items-center justify-center gap-2">
+                    <UIcon
+                      name="i-heroicons-arrow-path"
+                      class="w-5 h-5 animate-spin"
+                    />
+                    در حال بررسی...
+                  </span>
+                </button>
+
+                <!-- Switch to OTP and Forgot Password -->
+                <div class="flex items-center justify-between gap-4 pt-2">
+                  <button
+                    type="button"
+                    class="flex-1 py-3 px-4 text-sm font-medium text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 rounded-xl hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors"
+                    @click="switchToOtp"
+                  >
+                    ورود با پیامک
+                  </button>
+                  <button
+                    type="button"
+                    class="flex-1 py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    @click="handleForgotPassword"
+                  >
+                    فراموشی رمز عبور
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  class="w-full py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  @click="goBack"
+                >
+                  بازگشت و ویرایش شماره
+                </button>
+              </form>
+
+              <!-- Step 3: OTP Verification -->
+              <form
+                v-else-if="currentStep === 'otp'"
+                class="space-y-6"
+                @submit.prevent="handleOtpSubmit"
+              >
+                <div>
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    کد تایید
+                  </label>
+                  <div class="flex gap-3 justify-center h-14" dir="ltr">
+                    <input
+                      v-for="(digit, index) in otpDigits"
+                      :key="index"
+                      :ref="(el) => (otpInputs[index] = el)"
+                      v-model="otpDigits[index]"
+                      type="tel"
+                      maxlength="1"
+                      class="w-14 h-14 text-center text-2xl font-bold border-2 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                      :class="{
+                        'border-gray-300 dark:border-gray-600': !otpError,
+                        'border-red-500 dark:border-red-500': otpError,
+                      }"
+                      @input="handleOtpInput(index, $event)"
+                      @keydown="handleOtpKeydown(index, $event)"
+                      @paste="handleOtpPaste"
+                    />
+                  </div>
+                  <p
+                    v-if="otpError"
+                    class="mt-2 text-sm text-center text-red-600 dark:text-red-400"
+                  >
+                    {{ otpError }}
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  :disabled="isLoading || !isValidOtp"
+                  class="w-full py-4 px-6 text-lg font-semibold text-white rounded-2xl focus:ring-4 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #0d9488 0%,
+                      #06b6d4 100%
+                    );
+                  "
+                >
+                  <span v-if="!isLoading">تایید و ورود</span>
+                  <span v-else class="flex items-center justify-center gap-2">
+                    <UIcon
+                      name="i-heroicons-arrow-path"
+                      class="w-5 h-5 animate-spin"
+                    />
+                    در حال بررسی...
+                  </span>
+                </button>
+
+                <!-- Switch back to Password -->
+                <div class="flex items-center justify-between gap-4 pt-2">
+                  <div class="flex-1 text-center">
+                    <p
+                      v-if="resendTimer > 0"
+                      class="text-sm text-gray-600 dark:text-gray-400"
+                    >
+                      ارسال مجدد کد تا {{ resendTimer }} ثانیه دیگر
+                    </p>
+                    <button
+                      v-else
+                      type="button"
+                      :disabled="isLoading"
+                      class="text-sm text-teal-600 dark:text-teal-400 hover:underline disabled:opacity-50"
+                      @click="resendOtp"
+                    >
+                      ارسال مجدد کد تایید
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    class="flex-1 py-3 px-4 text-sm font-medium text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 rounded-xl hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors"
+                    @click="switchToPassword"
+                  >
+                    ورود با رمز عبور
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  class="w-full py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  @click="goBack"
+                >
+                  بازگشت و ویرایش شماره
+                </button>
+              </form>
+
+              <!-- Step 4: Registration Form (for new users) -->
+              <form
+                v-else-if="currentStep === 'register'"
+                class="space-y-6"
+                @submit.prevent="handleRegisterSubmit"
+              >
+                <div class="space-y-4">
+                  <!-- Name -->
+                  <div>
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                      for="fullName"
+                    >
+                      نام و نام خانوادگی
+                    </label>
+                    <input
+                      id="fullName"
+                      v-model="registerForm.name"
+                      autocomplete="off"
+                      type="text"
+                      placeholder="نام و نام خانوادگی خود را وارد کنید"
+                      class="w-full px-4 h-14 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                      :class="{
+                        'border-gray-300 dark:border-gray-600':
+                          !registerForm.errors.name,
+                        'border-red-500 dark:border-red-500':
+                          registerForm.errors.name,
+                      }"
+                    />
+                    <p
+                      v-if="registerForm.errors.name"
+                      class="mt-1 text-sm text-red-600 dark:text-red-400"
+                    >
+                      {{ registerForm.errors.name }}
+                    </p>
+                  </div>
+
+                  <!-- Password -->
+                  <div>
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      رمز عبور
+                    </label>
+                    <div class="relative h-14">
+                      <input
+                        v-model="registerForm.password"
+                        autocomplete="off"
+                        :type="showPassword ? 'text' : 'password'"
+                        placeholder="حداقل 8 کاراکتر"
+                        class="w-full h-full px-4 pl-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                        :class="{
+                          'border-gray-300 dark:border-gray-600':
+                            !registerForm.errors.password,
+                          'border-red-500 dark:border-red-500':
+                            registerForm.errors.password,
+                        }"
+                      />
+                      <button
+                        type="button"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        @click="showPassword = !showPassword"
+                      >
+                        <UIcon
+                          :name="
+                            showPassword
+                              ? 'i-heroicons-eye-slash'
+                              : 'i-heroicons-eye'
+                          "
+                          class="w-5 h-5"
+                        />
+                      </button>
+                    </div>
+                    <p
+                      v-if="registerForm.errors.password"
+                      class="mt-1 text-sm text-red-600 dark:text-red-400"
+                    >
+                      {{ registerForm.errors.password }}
+                    </p>
+                  </div>
+
+                  <!-- Password Confirmation -->
+                  <div>
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      تکرار رمز عبور
+                    </label>
+                    <div class="relative h-14">
+                      <input
+                        v-model="registerForm.passwordConfirm"
+                        :type="showPasswordConfirm ? 'text' : 'password'"
+                        placeholder="رمز عبور خود را دوباره وارد کنید"
+                        class="w-full h-full px-4 pl-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                        :class="{
+                          'border-gray-300 dark:border-gray-600':
+                            !registerForm.errors.passwordConfirm,
+                          'border-red-500 dark:border-red-500':
+                            registerForm.errors.passwordConfirm,
+                        }"
+                      />
+                      <button
+                        type="button"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        @click="showPasswordConfirm = !showPasswordConfirm"
+                      >
+                        <UIcon
+                          :name="
+                            showPasswordConfirm
+                              ? 'i-heroicons-eye-slash'
+                              : 'i-heroicons-eye'
+                          "
+                          class="w-5 h-5"
+                        />
+                      </button>
+                    </div>
+                    <p
+                      v-if="registerForm.errors.passwordConfirm"
+                      class="mt-1 text-sm text-red-600 dark:text-red-400"
+                    >
+                      {{ registerForm.errors.passwordConfirm }}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  :disabled="isLoading"
+                  class="w-full py-4 px-6 text-lg font-semibold text-white rounded-2xl focus:ring-4 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #0d9488 0%,
+                      #06b6d4 100%
+                    );
+                  "
+                >
+                  <span v-if="!isLoading">تکمیل ثبت‌نام</span>
+                  <span v-else class="flex items-center justify-center gap-2">
+                    <UIcon
+                      name="i-heroicons-arrow-path"
+                      class="w-5 h-5 animate-spin"
+                    />
+                    در حال ثبت‌نام...
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  class="w-full py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  @click="goBack"
+                >
+                  بازگشت و ویرایش شماره
+                </button>
+              </form>
+            </Transition>
           </div>
         </div>
       </div>
-    </div>
+    </UContainer>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'LoginPage',
-  setup() {
-    definePageMeta({
-      layout: 'auth',
-    })
+<script setup>
+import {
+  validatePhoneNumber,
+  isValidPhoneNumber,
+  validateRegisterForm,
+} from '@/utils/validations.js'
+
+definePageMeta({
+  layout: 'auth',
+})
+
+const app = useNuxtApp()
+const router = useRouter()
+const route = useRoute()
+const toast = useAppToast()
+
+// State
+const currentStep = ref('phone') // 'phone' | 'password' | 'otp' | 'register'
+const phoneNumber = ref('')
+const phoneError = ref('')
+const isLoading = ref(false)
+const isUserRegistered = ref(false)
+
+// Password Login State
+const loginPassword = ref('')
+const passwordError = ref('')
+const showLoginPassword = ref(false)
+
+// OTP State
+const otpDigits = ref(['', '', '', '', ''])
+const otpInputs = ref([])
+const otpError = ref('')
+const resendTimer = ref(0)
+const resendInterval = ref(null)
+
+// Registration Form State
+const registerForm = ref({
+  name: '',
+  password: '',
+  passwordConfirm: '',
+  errors: {
+    name: '',
+    password: '',
+    passwordConfirm: '',
   },
-  data() {
-    return {
-      currentStep: 'phone',
-      phoneNumber: '',
-      phoneError: '',
-      isLoading: false,
-      isNewUser: false,
-      otpDigits: ['', '', '', '', ''],
-      otpInputs: [],
-      otpError: '',
-      resendTimer: 0,
-      resendInterval: null,
-    }
-  },
-  computed: {
-    isValidPhone() {
-      return /^09\d{9}$/.test(this.phoneNumber)
-    },
-    isValidOtp() {
-      return this.otpDigits.every((digit) => digit !== '')
-    },
-    otpCode() {
-      return this.otpDigits.join('')
-    },
-  },
-  beforeUnmount() {
-    if (this.resendInterval) clearInterval(this.resendInterval)
-  },
-  methods: {
-    validatePhone() {
-      this.phoneError = ''
-      if (this.phoneNumber.length === 0) return
-      if (!this.phoneNumber.startsWith('09')) {
-        this.phoneError = 'شماره موبایل باید با 09 شروع شود'
-        return
-      }
-      if (this.phoneNumber.length > 0 && this.phoneNumber.length < 11) {
-        this.phoneError = 'شماره موبایل باید 11 رقم باشد'
-        return
-      }
-      if (
-        this.phoneNumber.length === 11 &&
-        !/^09\d{9}$/.test(this.phoneNumber)
-      ) {
-        this.phoneError = 'فرمت شماره موبایل صحیح نیست'
-      }
-    },
-    async handlePhoneSubmit() {
-      this.validatePhone()
-      if (!this.isValidPhone || this.isLoading) return
-      this.isLoading = true
-      try {
-        // TODO: Replace with your API call
-        // const response = await fetch('/api/auth/send-otp', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ phoneNumber: this.phoneNumber })
-        // })
-        // const data = await response.json()
-        // this.isNewUser = data.isNewUser
+})
 
-        await new Promise((resolve) => setTimeout(resolve, 1500))
-        this.isNewUser = Math.random() > 0.5
+// Password visibility toggles
+const showPassword = ref(false)
+const showPasswordConfirm = ref(false)
 
-        this.currentStep = 'otp'
-        this.startResendTimer()
+// Computed
+const isValidOtp = computed(() =>
+  otpDigits.value.every((digit) => digit !== '')
+)
 
-        this.$nextTick(() => {
-          if (this.otpInputs[0]) this.otpInputs[0].focus()
-        })
-      } catch {
-        this.phoneError = 'خطا در ارسال کد تایید. لطفا دوباره تلاش کنید.'
-      } finally {
-        this.isLoading = false
-      }
-    },
-    handleOtpInput(index, event) {
-      const value = event.target.value
-      if (value && !/^\d$/.test(value)) {
-        this.otpDigits[index] = ''
-        return
-      }
-      this.otpDigits[index] = value
-      this.otpError = ''
-      if (value && index < 5) {
-        this.$nextTick(() => {
-          if (this.otpInputs[index + 1]) this.otpInputs[index + 1].focus()
-        })
-      }
-      if (this.isValidOtp) this.handleOtpSubmit()
-    },
-    handleOtpKeydown(index, event) {
-      if (event.key === 'Backspace' && !this.otpDigits[index] && index > 0) {
-        this.$nextTick(() => {
-          if (this.otpInputs[index - 1]) this.otpInputs[index - 1].focus()
-        })
-      }
-    },
-    handleOtpPaste(event) {
-      event.preventDefault()
-      const pastedData = event.clipboardData.getData('text').trim()
-      if (/^\d{6}$/.test(pastedData)) {
-        this.otpDigits = pastedData.split('')
-        this.$nextTick(() => {
-          if (this.otpInputs[5]) this.otpInputs[5].focus()
-        })
-        if (this.isValidOtp) this.handleOtpSubmit()
-      }
-    },
-    async handleOtpSubmit() {
-      if (!this.isValidOtp || this.isLoading) return
-      this.isLoading = true
-      this.otpError = ''
-      try {
-        // TODO: Replace with your API call
-        // const response = await fetch('/api/auth/verify-otp', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({
-        //     phoneNumber: this.phoneNumber,
-        //     otp: this.otpCode,
-        //     isNewUser: this.isNewUser
-        //   })
-        // })
-        // const data = await response.json()
+const otpCode = computed(() => otpDigits.value.join(''))
 
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+const isValidPhone = computed(() => isValidPhoneNumber(phoneNumber.value))
 
-        // Set authentication
-        const { login } = useAuth()
-        login('token')
-
-        console.log('✅ Success:', {
-          phoneNumber: this.phoneNumber,
-          otp: this.otpCode,
-          isNewUser: this.isNewUser,
-        })
-
-        // Show success message
-        const toast = useToast()
-        toast.add({
-          title: `${this.isNewUser ? 'ثبت‌نام' : 'ورود'} موفقیت‌آمیز بود!`,
-          icon: 'i-heroicons-check-circle',
-          color: 'green',
-        })
-
-        // Redirect to intended page or default
-        const route = useRoute()
-        const redirectTo = route.query.redirect || '/panel'
-        this.$router.push(redirectTo)
-      } catch {
-        this.otpError = 'کد تایید نادرست است.'
-      } finally {
-        this.isLoading = false
-      }
-    },
-    async resendOtp() {
-      this.isLoading = true
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        this.startResendTimer()
-        this.otpDigits = ['', '', '', '', '', '']
-        this.otpError = ''
-        this.$nextTick(() => {
-          if (this.otpInputs[0]) this.otpInputs[0].focus()
-        })
-      } finally {
-        this.isLoading = false
-      }
-    },
-    startResendTimer() {
-      this.resendTimer = 120
-      if (this.resendInterval) clearInterval(this.resendInterval)
-      this.resendInterval = setInterval(() => {
-        this.resendTimer--
-        if (this.resendTimer <= 0) clearInterval(this.resendInterval)
-      }, 1000)
-    },
-    goBack() {
-      this.currentStep = 'phone'
-      this.otpDigits = ['', '', '', '', '', '']
-      this.otpError = ''
-      if (this.resendInterval) clearInterval(this.resendInterval)
-    },
-  },
+// Methods
+const validatePhone = () => {
+  phoneError.value = validatePhoneNumber(phoneNumber.value)
 }
+
+const handlePhoneSubmit = async () => {
+  validatePhone()
+  if (!isValidPhone.value || isLoading.value) return
+
+  isLoading.value = true
+  try {
+    const response = await app.$api.auth.checkUser({
+      data: {
+        phone: phoneNumber.value,
+      },
+    })
+
+    // response.data is true if user is registered, false if new user
+    isUserRegistered.value = response.data
+
+    if (isUserRegistered.value) {
+      // User exists → go to password entry (not OTP by default)
+      currentStep.value = 'password'
+    } else {
+      // New user → go to registration form
+      currentStep.value = 'register'
+    }
+  } catch (error) {
+    toast.error(
+      'خطا در بررسی شماره موبایل',
+      ' لطفا دوباره تلاش کنید',
+      'i-hugeicons:wifi-error-02'
+    )
+    console.error('Check user error:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handlePasswordSubmit = async () => {
+  if (!loginPassword.value || isLoading.value) return
+
+  isLoading.value = true
+  passwordError.value = ''
+
+  try {
+    const config = {
+      data: {
+        username: phoneNumber.value,
+        password: loginPassword.value,
+        phone: phoneNumber.value,
+        loginType: 'PASSWORD',
+      },
+    }
+    const response = await app.$api.auth.login(config)
+    app.$auth.setToken(response.data.accessToken)
+    app.$auth.setUser(response.data.user)
+
+    toast.add({
+      title: 'ورود موفقیت‌آمیز بود!',
+      icon: 'i-heroicons-check-circle',
+      color: 'green',
+    })
+
+    const redirectTo = route.query.redirect || '/'
+    await router.push(redirectTo)
+  } catch (error) {
+    passwordError.value = 'رمز عبور نادرست است.'
+    console.error('Password login error:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const switchToOtp = async () => {
+  isLoading.value = true
+  try {
+    // Send OTP to user's phone
+    // await app.$api.auth.sendOtp({
+    //   data: {
+    //     phone: phoneNumber.value,
+    //   },
+    // })
+
+    currentStep.value = 'otp'
+    startResendTimer()
+
+    nextTick(() => {
+      if (otpInputs.value[0]) otpInputs.value[0].focus()
+    })
+
+    toast.add({
+      title: 'کد تایید ارسال شد',
+      icon: 'i-heroicons-check-circle',
+      color: 'green',
+    })
+  } catch {
+    toast.add({
+      title: 'خطا در ارسال کد تایید',
+      description: 'لطفا دوباره تلاش کنید.',
+      icon: 'i-heroicons-x-circle',
+      color: 'red',
+    })
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const switchToPassword = () => {
+  currentStep.value = 'password'
+  otpDigits.value = ['', '', '', '', '']
+  otpError.value = ''
+
+  if (resendInterval.value) {
+    clearInterval(resendInterval.value)
+    resendInterval.value = null
+  }
+}
+
+const handleForgotPassword = () => {
+  // TODO: Implement forgot password flow
+  toast.add({
+    title: 'بازیابی رمز عبور',
+    description: 'این قابلیت به زودی فعال می‌شود.',
+    icon: 'i-heroicons-information-circle',
+    color: 'blue',
+  })
+}
+
+const startResendTimer = () => {
+  resendTimer.value = 60
+  if (resendInterval.value) clearInterval(resendInterval.value)
+
+  resendInterval.value = setInterval(() => {
+    resendTimer.value--
+    if (resendTimer.value <= 0) {
+      clearInterval(resendInterval.value)
+    }
+  }, 1000)
+}
+
+const handleOtpInput = (index, event) => {
+  const value = event.target.value
+  if (value && !/^\d$/.test(value)) {
+    otpDigits.value[index] = ''
+    return
+  }
+
+  otpDigits.value[index] = value
+  otpError.value = ''
+
+  if (value && index < 5) {
+    nextTick(() => {
+      if (otpInputs.value[index + 1]) otpInputs.value[index + 1].focus()
+    })
+  }
+
+  if (isValidOtp.value) handleOtpSubmit()
+}
+
+const handleOtpKeydown = (index, event) => {
+  if (event.key === 'Backspace' && !otpDigits.value[index] && index > 0) {
+    nextTick(() => {
+      if (otpInputs.value[index - 1]) otpInputs.value[index - 1].focus()
+    })
+  }
+}
+
+const handleOtpPaste = (event) => {
+  event.preventDefault()
+  const pastedData = event.clipboardData.getData('text').trim()
+
+  if (/^\d{6}$/.test(pastedData)) {
+    otpDigits.value = pastedData.split('')
+    nextTick(() => {
+      if (otpInputs.value[5]) otpInputs.value[5].focus()
+    })
+    if (isValidOtp.value) handleOtpSubmit()
+  }
+}
+
+const handleOtpSubmit = async () => {
+  if (!isValidOtp.value || isLoading.value) return
+
+  isLoading.value = true
+  otpError.value = ''
+
+  try {
+    // const response = await app.$api.auth.verifyOtp({
+    //   data: {
+    //     phone: phoneNumber.value,
+    //     otp: otpCode.value,
+    //   },
+    // })
+
+    // Store authentication token
+    // const token = response.data.token
+    // Use your auth system to store the token
+
+    toast.add({
+      title: 'ورود موفقیت‌آمیز بود!',
+      icon: 'i-heroicons-check-circle',
+      color: 'green',
+    })
+
+    const redirectTo = route.query.redirect || '/panel'
+    await router.push(redirectTo)
+  } catch (error) {
+    otpError.value = 'کد تایید نادرست است.'
+    console.error('OTP verification error:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleRegisterSubmit = async () => {
+  const { isValid, errors } = validateRegisterForm(registerForm.value)
+
+  registerForm.value.errors = errors
+
+  if (!isValid) return
+
+  isLoading.value = true
+
+  try {
+    const config = {
+      data: {
+        phone: phoneNumber.value,
+      },
+    }
+    const response = await app.$api.auth.register(config, 'register')
+    console.log(response)
+    // const response = await app.$api.auth.register({
+    //   data: {
+    //     phone: phoneNumber.value,
+    //     name: registerForm.value.name.trim(),
+    //     password: registerForm.value.password,
+    //   },
+    // })
+
+    // Store authentication token
+    // const token = response.data.token
+    // Use your auth system to store the token
+
+    toast.add({
+      title: 'ثبت‌نام موفقیت‌آمیز بود!',
+      icon: 'i-heroicons-check-circle',
+      color: 'green',
+    })
+
+    const redirectTo = route.query.redirect || '/panel'
+    await router.push(redirectTo)
+  } catch (error) {
+    toast.add({
+      title: 'خطا در ثبت‌نام',
+      description: 'لطفا دوباره تلاش کنید.',
+      icon: 'i-heroicons-x-circle',
+      color: 'red',
+    })
+    console.error('Registration error:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const resendOtp = async () => {
+  if (isLoading.value) return
+
+  isLoading.value = true
+  try {
+    await app.$api.auth.sendOtp({
+      data: {
+        phone: phoneNumber.value,
+      },
+    })
+
+    startResendTimer()
+    otpDigits.value = ['', '', '', '', '']
+    otpError.value = ''
+
+    nextTick(() => {
+      if (otpInputs.value[0]) otpInputs.value[0].focus()
+    })
+
+    toast.add({
+      title: 'کد تایید مجدد ارسال شد',
+      icon: 'i-heroicons-check-circle',
+      color: 'green',
+    })
+  } catch {
+    toast.add({
+      title: 'خطا در ارسال مجدد کد',
+      description: 'لطفا دوباره تلاش کنید.',
+      icon: 'i-heroicons-x-circle',
+      color: 'red',
+    })
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const goBack = () => {
+  currentStep.value = 'phone'
+  loginPassword.value = ''
+  passwordError.value = ''
+  otpDigits.value = ['', '', '', '', '']
+  otpError.value = ''
+  resendTimer.value = 0
+
+  // Reset registration form
+  registerForm.value = {
+    name: '',
+    password: '',
+    passwordConfirm: '',
+    errors: {
+      name: '',
+      password: '',
+      passwordConfirm: '',
+    },
+  }
+  showPassword.value = false
+  showPasswordConfirm.value = false
+  showLoginPassword.value = false
+
+  if (resendInterval.value) {
+    clearInterval(resendInterval.value)
+    resendInterval.value = null
+  }
+}
+
+// Lifecycle
+onBeforeUnmount(() => {
+  if (resendInterval.value) clearInterval(resendInterval.value)
+})
 </script>
 
 <style scoped>
 input[type='tel']::-webkit-outer-spin-button,
-input[type='tel']::-webkit-inner-spin-button {
+input[type='tel']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-input[type='tel'] {
+
+input[type='tel'],
+input[type='number'] {
   -moz-appearance: textfield;
 }
+
 @keyframes float {
   0%,
   100% {
@@ -526,6 +973,7 @@ input[type='tel'] {
     transform: translateY(-10px) rotate(12deg);
   }
 }
+
 @keyframes float-delayed {
   0%,
   100% {
@@ -535,18 +983,32 @@ input[type='tel'] {
     transform: translateY(-15px) rotate(-6deg);
   }
 }
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
 .animate-float-delayed {
   animation: float-delayed 3s ease-in-out infinite;
   animation-delay: 0.5s;
 }
+
 .dark input {
   background-color: #1f2937;
   color: white;
 }
+
 .dark input::placeholder {
   color: #9ca3af;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
