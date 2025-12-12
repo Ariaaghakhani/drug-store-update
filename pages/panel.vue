@@ -19,7 +19,7 @@
       </div>
 
       <!-- User Profile Card -->
-      <div class="grid lg:grid-cols-3 gap-8">
+      <div v-if="$auth.user" class="grid lg:grid-cols-3 gap-8">
         <!-- Profile Info -->
         <div class="lg:col-span-1">
           <UCard>
@@ -34,7 +34,7 @@
               </div>
               <div>
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                  {{ username || 'کاربر گرامی' }}
+                  {{ userFullName || 'کاربر' }} گرامی
                 </h3>
                 <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">
                   خوش آمدید
@@ -131,7 +131,9 @@ definePageMeta({
 const app = useNuxtApp()
 // const router = useRouter()
 // const toast = useToast()
-
+const userFullName = computed(
+  () => app.$auth.user.person.firstName + ' ' + app.$auth.user.person.lastName
+)
 // Set page meta
 useHead({
   title: 'پنل کاربری | داروخانه آنلاین',
