@@ -1,12 +1,25 @@
 <template>
   <div class="font-dana" dir="rtl">
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
+    <UApp
+      :toaster="{ position: 'top-center' }"
+      :ui="{ toast: { slots: { title: 'text-right' } } }"
+      :locale="faLocale"
+    >
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+    </UApp>
   </div>
 </template>
 
 <script setup lang="ts">
+import type { Messages } from '@nuxt/ui'
+const faLocale = defineLocale<Messages>({
+  name: 'Persian',
+  code: 'fa',
+  dir: 'rtl',
+  messages: {},
+})
 useSeoMeta({
   title: 'دارو پلاس',
   description: 'خرید آنلاین دارو و محصولات بهداشتی',
