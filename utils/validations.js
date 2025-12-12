@@ -54,3 +54,45 @@ export function validateIranianNationalCode(code) {
     return 11 - remainder === lastDigit
   }
 }
+
+export const validateRegisterForm = (formData) => {
+  const errors = {
+    name: '',
+    password: '',
+    passwordConfirm: '',
+  }
+
+  let isValid = true
+
+  // Name validation
+  if (!formData.name.trim()) {
+    errors.name = 'نام و نام خانوادگی الزامی است'
+    isValid = false
+  } else if (formData.name.trim().length < 3) {
+    errors.name = 'نام باید حداقل 3 کاراکتر باشد'
+    isValid = false
+  }
+
+  // Password validation
+  if (!formData.password) {
+    errors.password = 'رمز عبور الزامی است'
+    isValid = false
+  } else if (formData.password.length < 8) {
+    errors.password = 'رمز عبور باید حداقل 8 کاراکتر باشد'
+    isValid = false
+  } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(formData.password)) {
+    errors.password = 'رمز عبور باید شامل حروف و اعداد باشد'
+    isValid = false
+  }
+
+  // Password confirmation validation
+  if (!formData.passwordConfirm) {
+    errors.passwordConfirm = 'تکرار رمز عبور الزامی است'
+    isValid = false
+  } else if (formData.password !== formData.passwordConfirm) {
+    errors.passwordConfirm = 'رمز عبور و تکرار آن مطابقت ندارند'
+    isValid = false
+  }
+
+  return { isValid, errors }
+}
