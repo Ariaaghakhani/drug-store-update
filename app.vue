@@ -18,4 +18,10 @@ useSeoMeta({
   ogLocale: 'fa_IR',
   twitterCard: 'summary_large_image',
 })
+// TODO: REMOVE BEFORE PRODUCTION - Suppressing router warnings
+if (import.meta.dev) {
+  const warn = console.warn
+  console.warn = (...args) =>
+    args[0]?.includes?.('No match found') ? null : warn(...args)
+}
 </script>
