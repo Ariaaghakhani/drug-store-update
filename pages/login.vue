@@ -88,7 +88,6 @@ definePageMeta({
 })
 
 const app = useNuxtApp()
-const router = useRouter()
 const route = useRoute()
 const toast = useAppToast()
 
