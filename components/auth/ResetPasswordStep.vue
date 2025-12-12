@@ -3,7 +3,9 @@
     <div class="space-y-4">
       <!-- New Password -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+        >
           رمز عبور جدید
         </label>
         <div class="relative h-14">
@@ -14,13 +16,14 @@
             autocomplete="new-password"
             class="w-full h-full px-4 pl-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
             :class="{
-              'border-gray-300 dark:border-gray-600': !localForm.errors.password,
-              'border-red-500 dark:border-red-500': localForm.errors.password
+              'border-gray-300 dark:border-gray-600':
+                !localForm.errors.password,
+              'border-red-500 dark:border-red-500': localForm.errors.password,
             }"
-          >
+          />
           <button
             type="button"
-            class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex justify-center items-center"
             @click="showPassword = !showPassword"
           >
             <UIcon
@@ -30,7 +33,10 @@
           </button>
         </div>
         <div class="h-6 mt-1">
-          <p v-if="localForm.errors.password" class="text-sm text-red-600 dark:text-red-400">
+          <p
+            v-if="localForm.errors.password"
+            class="text-sm text-red-600 dark:text-red-400"
+          >
             {{ localForm.errors.password }}
           </p>
         </div>
@@ -38,7 +44,9 @@
 
       <!-- Password Confirmation -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+        >
           تکرار رمز عبور
         </label>
         <div class="relative h-14">
@@ -49,23 +57,32 @@
             autocomplete="new-password"
             class="w-full h-full px-4 pl-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
             :class="{
-              'border-gray-300 dark:border-gray-600': !localForm.errors.passwordConfirm,
-              'border-red-500 dark:border-red-500': localForm.errors.passwordConfirm
+              'border-gray-300 dark:border-gray-600':
+                !localForm.errors.passwordConfirm,
+              'border-red-500 dark:border-red-500':
+                localForm.errors.passwordConfirm,
             }"
-          >
+          />
           <button
             type="button"
-            class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex justify-center items-center"
             @click="showPasswordConfirm = !showPasswordConfirm"
           >
             <UIcon
-              :name="showPasswordConfirm ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
+              :name="
+                showPasswordConfirm
+                  ? 'i-heroicons-eye-slash'
+                  : 'i-heroicons-eye'
+              "
               class="w-5 h-5"
             />
           </button>
         </div>
         <div class="h-6 mt-1">
-          <p v-if="localForm.errors.passwordConfirm" class="text-sm text-red-600 dark:text-red-400">
+          <p
+            v-if="localForm.errors.passwordConfirm"
+            class="text-sm text-red-600 dark:text-red-400"
+          >
             {{ localForm.errors.passwordConfirm }}
           </p>
         </div>
@@ -78,7 +95,7 @@
       class="w-full py-4 px-6 text-lg font-semibold text-white rounded-2xl focus:ring-4 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
       style="background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%)"
     >
-      <span v-if="!loading">تایید و ورود</span>
+      <span v-if="!loading">تایید و ادامه</span>
       <span v-else class="flex items-center justify-center gap-2">
         <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin" />
         در حال بروزرسانی...
@@ -99,19 +116,19 @@
 const props = defineProps({
   form: {
     type: Object,
-    required: true
+    required: true,
   },
   loading: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:form', 'submit', 'goBack'])
 
 const localForm = computed({
   get: () => props.form,
-  set: (value) => emit('update:form', value)
+  set: (value) => emit('update:form', value),
 })
 
 const showPassword = ref(false)
@@ -120,7 +137,7 @@ const showPasswordConfirm = ref(false)
 const validateForm = () => {
   const errors = {
     password: '',
-    passwordConfirm: ''
+    passwordConfirm: '',
   }
 
   if (!localForm.value.password) {

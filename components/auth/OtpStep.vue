@@ -130,7 +130,9 @@ const setInputRef = (el, index) => {
 const isValid = computed(() => localDigits.value.every((digit) => digit !== ''))
 
 const submitButtonText = computed(() => {
-  return props.context === 'register' ? 'تایید و ادامه' : 'تایید و ورود'
+  if (props.context === 'register') return 'تایید و ادامه'
+  if (props.context === 'forgot-password') return 'تایید'
+  return 'تایید و ورود'
 })
 
 const loadingText = computed(() => {

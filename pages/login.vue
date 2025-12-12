@@ -133,7 +133,9 @@ const stepComponents = {
   password: PasswordStep,
   'otp-login': OtpStep,
   'otp-register': OtpStep,
+  'forgot-password-otp': OtpStep,
   register: RegisterStep,
+  'reset-password': ResetPasswordStep,
 }
 
 const stepTitles = {
@@ -141,7 +143,9 @@ const stepTitles = {
   password: 'ورود به داروپلاس',
   'otp-login': 'ورود با کد یکبار مصرف',
   'otp-register': 'تایید شماره موبایل',
+  'forgot-password-otp': 'بازیابی رمز عبور',
   register: 'تکمیل ثبت‌نام',
+  'reset-password': 'تنظیم رمز عبور جدید',
 }
 
 const stepDescriptions = {
@@ -149,7 +153,9 @@ const stepDescriptions = {
   password: 'رمز عبور خود را وارد نمایید',
   'otp-login': 'کد تایید ارسال شده را وارد نمایید',
   'otp-register': 'کد تایید به شماره موبایل شما ارسال شد',
+  'forgot-password-otp': 'کد تایید برای بازیابی رمز عبور ارسال شد',
   register: 'لطفا اطلاعات خود را تکمیل کنید',
+  'reset-password': 'رمز عبور جدید خود را وارد کنید',
 }
 
 // Computed
@@ -187,8 +193,20 @@ const currentStepProps = computed(() => {
         context: 'register',
       }
 
+    case 'forgot-password-otp':
+      return {
+        ...baseProps,
+        digits: otpDigits.value,
+        error: otpError.value,
+        timer: resendTimer.value,
+        context: 'forgot-password',
+      }
+
     case 'register':
       return { ...baseProps, form: registerForm.value }
+
+    case 'reset-password':
+      return { ...baseProps, form: resetPasswordForm.value }
 
     default:
       return baseProps
@@ -215,8 +233,14 @@ const handleCurrentStepSubmit = async () => {
     case 'otp-register':
       await handleOtpRegisterSubmit()
       break
+    case 'forgot-password-otp':
+      await handleForgotPasswordOtpSubmit()
+      break
     case 'register':
       await handleRegisterSubmit()
+      break
+    case 'reset-password':
+      await handleResetPasswordSubmit()
       break
   }
 }
@@ -265,7 +289,6 @@ const handlePasswordSubmit = async () => {
     await finalizeLogin(response.data.data)
   } catch {
     passwordError.value = 'رمز عبور نادرست است.'
-    console.error('Password login error:', error)
   } finally {
     isLoading.value = false
   }
@@ -323,6 +346,36 @@ const handleOtpRegisterSubmit = async () => {
   }
 }
 
+const handleForgotPasswordOtpSubmit = async () => {
+  isLoading.value = true
+  otpError.value = ''
+
+  try {
+    const otpCode = otpDigits.value.join('')
+    // Verify OTP for password reset
+    await app.$api.auth.forgotPassword({
+      data: {
+        username: phoneNumber.value,
+        newPassword: resetPasswordForm.value.password,
+        phone: phoneNumber.value,
+        otpCode: otpCode,
+      },
+    })
+
+    toast.success(
+      'رمز عبور با موفقیت تغییر یافت',
+      '',
+      'i-heroicons-check-circle'
+    )
+    previousStep.value = 'forgot-password-otp'
+    currentStep.value = 'password'
+  } catch {
+    otpError.value = 'کد تایید نادرست است.'
+  } finally {
+    isLoading.value = false
+  }
+}
+
 const handleRegisterSubmit = async () => {
   isLoading.value = true
 
@@ -343,6 +396,28 @@ const handleRegisterSubmit = async () => {
     toast.error(
       'خطا در ثبت‌نام',
       'لطفا دوباره تلاش کنید.',
+      'i-heroicons-x-circle'
+    )
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleResetPasswordSubmit = async () => {
+  isLoading.value = true
+
+  try {
+    await app.$api.auth.forgotPasswordOtp({
+      data: {
+        phone: phoneNumber.value,
+      },
+    })
+    currentStep.value = 'forgot-password-otp'
+    startResendTimer()
+  } catch {
+    toast.error(
+      'خطا در ارسال کد یک‌بار مصرف',
+      'لطفا دوباره تلاش کنید',
       'i-heroicons-x-circle'
     )
   } finally {
@@ -415,13 +490,37 @@ const switchToPassword = () => {
   resetOtpState()
 }
 
-const handleForgotPassword = () => {
-  toast.add({
-    title: 'بازیابی رمز عبور',
-    description: 'این قابلیت به زودی فعال می‌شود.',
-    icon: 'i-heroicons-information-circle',
-    color: 'blue',
-  })
+const handleForgotPassword = async () => {
+  previousStep.value = currentStep.value
+  currentStep.value = 'reset-password'
+  // isLoading.value = true
+  //
+  // try {
+  //   // Send OTP for password reset
+  //   await app.$api.auth.sendResetOtp({
+  //     data: {
+  //       phone: phoneNumber.value,
+  //     },
+  //   })
+  //
+  //   previousStep.value = 'password'
+  //   currentStep.value = 'forgot-password-otp'
+  //   startResendTimer()
+  //
+  //   toast.success(
+  //     'کد تایید ارسال شد',
+  //     'کد بازیابی به شماره موبایل شما ارسال شد',
+  //     'i-heroicons-check-circle'
+  //   )
+  // } catch {
+  //   toast.error(
+  //     'خطا در ارسال کد تایید',
+  //     'لطفا دوباره تلاش کنید',
+  //     'i-heroicons-x-circle'
+  //   )
+  // } finally {
+  //   isLoading.value = false
+  // }
 }
 
 const handleResendOtp = async () => {
@@ -429,23 +528,36 @@ const handleResendOtp = async () => {
 
   isLoading.value = true
   try {
-    await handleOtpLoginSubmit()
+    // Determine which OTP endpoint to call based on current step
+    if (currentStep.value === 'forgot-password-otp') {
+      await app.$api.auth.forgotPasswordOtp({
+        data: { phone: phoneNumber.value },
+      })
+    } else if (currentStep.value === 'otp-register') {
+      await app.$api.auth.sendRegisterOtp({
+        data: { phone: phoneNumber.value },
+      })
+    } else {
+      await app.$api.auth.login({
+        data: {
+          phone: phoneNumber.value,
+          username: phoneNumber.value,
+          loginType: 'OTP',
+        },
+      })
+    }
+
     otpSessionActive.value = true
     startResendTimer()
     resetOtpDigits()
 
-    toast.add({
-      title: 'کد تایید مجدد ارسال شد',
-      icon: 'i-heroicons-check-circle',
-      color: 'green',
-    })
+    toast.success('کد تایید مجدد ارسال شد', '', 'i-heroicons-check-circle')
   } catch {
-    toast.add({
-      title: 'خطا در ارسال مجدد کد',
-      description: 'لطفا دوباره تلاش کنید.',
-      icon: 'i-heroicons-x-circle',
-      color: 'red',
-    })
+    toast.error(
+      'خطا در ارسال مجدد کد',
+      'لطفا دوباره تلاش کنید',
+      'i-heroicons-x-circle'
+    )
   } finally {
     isLoading.value = false
   }
@@ -462,6 +574,18 @@ const handleGoBack = () => {
       break
 
     case 'otp-login':
+      // Go back to password
+      currentStep.value = 'password'
+      resetOtpState()
+      break
+
+    case 'forgot-password-otp':
+      // Go back to phone (cancel reset process)
+      resetAll()
+      currentStep.value = 'phone'
+      break
+
+    case 'reset-password':
       // Go back to password
       currentStep.value = 'password'
       resetOtpState()
@@ -503,6 +627,12 @@ const resetAll = () => {
     password: '',
     passwordConfirm: '',
     errors: { name: '', password: '', passwordConfirm: '' },
+  }
+
+  resetPasswordForm.value = {
+    password: '',
+    passwordConfirm: '',
+    errors: { password: '', passwordConfirm: '' },
   }
 
   if (resendInterval.value) {
