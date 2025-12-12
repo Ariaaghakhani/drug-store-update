@@ -293,11 +293,10 @@ export default defineNuxtComponent({
 
   methods: {
     handleCheckout() {
-      const { isAuthenticated } = useAuth()
-      if (!isAuthenticated()) {
-        this.showAuthModal = true
-      } else {
+      if (this.$auth.loggedIn) {
         this.proceedToCheckout()
+      } else {
+        return navigateTo('/login?redirect=/cart')
       }
     },
 

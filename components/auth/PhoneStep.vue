@@ -23,7 +23,9 @@
           @input="handleInput"
         />
 
-        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+        <div
+          class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 flex justify-center items-center"
+        >
           <UIcon name="i-heroicons-device-phone-mobile" class="w-5 h-5" />
         </div>
       </div>
