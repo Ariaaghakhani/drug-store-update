@@ -522,7 +522,7 @@ const route = useRoute()
 const toast = useToast()
 
 // State
-const currentStep = ref('password') // 'phone' | 'password' | 'otp' | 'register'
+const currentStep = ref('phone') // 'phone' | 'password' | 'otp' | 'register'
 const phoneNumber = ref('')
 const phoneError = ref('')
 const isLoading = ref(false)
