@@ -568,10 +568,10 @@ definePageMeta({
 const app = useNuxtApp()
 const router = useRouter()
 const route = useRoute()
-const toast = useToast()
+const toast = useAppToast()
 
 // State
-const currentStep = ref('register') // 'phone' | 'password' | 'otp' | 'register'
+const currentStep = ref('phone') // 'phone' | 'password' | 'otp' | 'register'
 const phoneNumber = ref('')
 const phoneError = ref('')
 const isLoading = ref(false)
@@ -619,50 +619,6 @@ const validatePhone = () => {
   phoneError.value = validatePhoneNumber(phoneNumber.value)
 }
 
-// const validateRegisterForm = () => {
-//   let isValid = true
-//   registerForm.value.errors = {
-//     name: '',
-//     password: '',
-//     passwordConfirm: '',
-//   }
-//
-//   // Name validation
-//   if (!registerForm.value.name.trim()) {
-//     registerForm.value.errors.name = 'نام و نام خانوادگی الزامی است'
-//     isValid = false
-//   } else if (registerForm.value.name.trim().length < 3) {
-//     registerForm.value.errors.name = 'نام باید حداقل 3 کاراکتر باشد'
-//     isValid = false
-//   }
-//
-//   // Password validation
-//   if (!registerForm.value.password) {
-//     registerForm.value.errors.password = 'رمز عبور الزامی است'
-//     isValid = false
-//   } else if (registerForm.value.password.length < 8) {
-//     registerForm.value.errors.password = 'رمز عبور باید حداقل 8 کاراکتر باشد'
-//     isValid = false
-//   } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(registerForm.value.password)) {
-//     registerForm.value.errors.password = 'رمز عبور باید شامل حروف و اعداد باشد'
-//     isValid = false
-//   }
-//
-//   // Password confirmation validation
-//   if (!registerForm.value.passwordConfirm) {
-//     registerForm.value.errors.passwordConfirm = 'تکرار رمز عبور الزامی است'
-//     isValid = false
-//   } else if (
-//     registerForm.value.password !== registerForm.value.passwordConfirm
-//   ) {
-//     registerForm.value.errors.passwordConfirm =
-//       'رمز عبور و تکرار آن مطابقت ندارند'
-//     isValid = false
-//   }
-//
-//   return isValid
-// }
-
 const handlePhoneSubmit = async () => {
   validatePhone()
   if (!isValidPhone.value || isLoading.value) return
@@ -686,7 +642,11 @@ const handlePhoneSubmit = async () => {
       currentStep.value = 'register'
     }
   } catch (error) {
-    phoneError.value = 'خطا در بررسی شماره موبایل. لطفا دوباره تلاش کنید.'
+    toast.error(
+      'خطا در بررسی شماره موبایل',
+      ' لطفا دوباره تلاش کنید',
+      'i-hugeicons:wifi-error-02'
+    )
     console.error('Check user error:', error)
   } finally {
     isLoading.value = false
