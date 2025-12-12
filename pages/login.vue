@@ -2,7 +2,7 @@
   <div
     class="min-h-screen select-none flex items-center justify-center p-4 bg-gradient-to-br from-teal-50 to-cyan-100 dark:from-slate-900 dark:to-slate-800"
   >
-    <div class="w-full max-w-4xl flex items-center justify-center">
+    <UContainer class="w-full max-w-4xl flex items-center justify-center">
       <div
         class="flex flex-col md:flex-row items-stretch w-full h-full flex-1 rounded-3xl overflow-hidden shadow-2xl"
       >
@@ -75,7 +75,7 @@
                     : currentStep === 'password'
                       ? 'ورود با رمز عبور'
                       : currentStep === 'otp'
-                        ? 'ورود با کد تایید'
+                        ? 'ورود با کد یکبار مصرف'
                         : 'تکمیل ثبت‌نام'
                 }}
               </h2>
@@ -242,7 +242,7 @@
                   class="flex-1 py-3 px-4 text-sm font-medium text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 rounded-xl hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors"
                   @click="switchToOtp"
                 >
-                  ورود با کد تایید
+                  ورود با پیامک
                 </button>
                 <button
                   type="button"
@@ -505,7 +505,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </UContainer>
   </div>
 </template>
 
