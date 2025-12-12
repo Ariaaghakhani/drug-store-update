@@ -63,19 +63,10 @@
               <div
                 class="inline-flex items-center justify-center w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-2xl mb-4"
               >
-                <svg
+                <UIcon
+                  name="i-heroicons-building-storefront"
                   class="w-8 h-8 text-teal-600 dark:text-teal-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
-                </svg>
+                />
               </div>
               <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 {{
@@ -102,7 +93,11 @@
             </div>
 
             <!-- Step 1: Phone Number -->
-            <div v-if="currentStep === 'phone'" class="space-y-6">
+            <form
+              v-if="currentStep === 'phone'"
+              class="space-y-6"
+              @submit.prevent="handlePhoneSubmit"
+            >
               <div class="relative mb-12">
                 <label
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
@@ -116,31 +111,21 @@
                     type="tel"
                     placeholder="09xxxxxxxxx"
                     maxlength="11"
-                    class="w-full px-4 py-4 pr-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    class="w-full px-4 pr-12 h-14 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all justify-center"
                     :class="{
                       'border-gray-300 dark:border-gray-600': !phoneError,
                       'border-red-500 dark:border-red-500': phoneError,
                     }"
                     @input="validatePhone"
-                    @keyup.enter="handlePhoneSubmit"
                   />
 
                   <div
                     class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
                   >
-                    <svg
+                    <UIcon
+                      name="i-heroicons-device-phone-mobile"
                       class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                      />
-                    </svg>
+                    />
                   </div>
                 </div>
 
@@ -157,109 +142,71 @@
               </div>
 
               <button
+                type="submit"
                 :disabled="isLoading || !isValidPhone"
                 class="w-full py-4 px-6 text-lg font-semibold text-white rounded-2xl focus:ring-4 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                 style="
                   background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
                 "
-                @click="handlePhoneSubmit"
               >
                 <span v-if="!isLoading">ادامه</span>
                 <span v-else class="flex items-center justify-center gap-2">
-                  <svg
-                    class="animate-spin h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    />
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
+                  <UIcon
+                    name="i-heroicons-arrow-path"
+                    class="w-5 h-5 animate-spin"
+                  />
                   در حال بررسی...
                 </span>
               </button>
 
               <p class="text-sm text-center text-gray-600 dark:text-gray-400">
                 ورود شما به معنای پذیرش
-                <a
-                  href="#"
+                <NuxtLink
+                  to="/terms"
                   class="text-teal-600 dark:text-teal-400 hover:underline"
                 >
                   شرایط و قوانین
-                </a>
+                </NuxtLink>
                 داروپلاس است.
               </p>
-            </div>
+            </form>
 
             <!-- Step 2: Password Entry (for registered users) -->
-            <div v-else-if="currentStep === 'password'" class="space-y-6">
+            <form
+              v-else-if="currentStep === 'password'"
+              class="space-y-6"
+              @submit.prevent="handlePasswordSubmit"
+            >
               <div>
                 <label
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                 >
                   رمز عبور
                 </label>
-                <div class="relative">
+                <div class="relative h-14">
                   <input
                     v-model="loginPassword"
                     :type="showLoginPassword ? 'text' : 'password'"
                     placeholder="رمز عبور خود را وارد کنید"
-                    class="w-full px-4 py-4 pl-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    class="w-full h-full px-4 pl-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                     :class="{
                       'border-gray-300 dark:border-gray-600': !passwordError,
                       'border-red-500 dark:border-red-500': passwordError,
                     }"
-                    @keyup.enter="handlePasswordSubmit"
                   />
                   <button
                     type="button"
-                    class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex justify-center items-center"
                     @click="showLoginPassword = !showLoginPassword"
                   >
-                    <svg
-                      v-if="!showLoginPassword"
+                    <UIcon
+                      :name="
+                        showLoginPassword
+                          ? 'i-heroicons-eye-slash'
+                          : 'i-heroicons-eye'
+                      "
                       class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
-                    </svg>
-                    <svg
-                      v-else
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                      />
-                    </svg>
+                    />
                   </button>
                 </div>
                 <p
@@ -271,34 +218,19 @@
               </div>
 
               <button
+                type="submit"
                 :disabled="isLoading || !loginPassword"
                 class="w-full py-4 px-6 text-lg font-semibold text-white rounded-2xl focus:ring-4 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                 style="
                   background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
                 "
-                @click="handlePasswordSubmit"
               >
                 <span v-if="!isLoading">ورود</span>
                 <span v-else class="flex items-center justify-center gap-2">
-                  <svg
-                    class="animate-spin h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    />
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
+                  <UIcon
+                    name="i-heroicons-arrow-path"
+                    class="w-5 h-5 animate-spin"
+                  />
                   در حال بررسی...
                 </span>
               </button>
@@ -306,12 +238,14 @@
               <!-- Switch to OTP and Forgot Password -->
               <div class="flex items-center justify-between gap-4 pt-2">
                 <button
+                  type="button"
                   class="flex-1 py-3 px-4 text-sm font-medium text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 rounded-xl hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors"
                   @click="switchToOtp"
                 >
                   ورود با کد تایید
                 </button>
                 <button
+                  type="button"
                   class="flex-1 py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                   @click="handleForgotPassword"
                 >
@@ -320,22 +254,27 @@
               </div>
 
               <button
+                type="button"
                 class="w-full py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 @click="goBack"
               >
                 بازگشت و ویرایش شماره
               </button>
-            </div>
+            </form>
 
             <!-- Step 3: OTP Verification -->
-            <div v-else-if="currentStep === 'otp'" class="space-y-6">
+            <form
+              v-else-if="currentStep === 'otp'"
+              class="space-y-6"
+              @submit.prevent="handleOtpSubmit"
+            >
               <div>
                 <label
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                 >
                   کد تایید
                 </label>
-                <div class="flex gap-3 justify-center" dir="ltr">
+                <div class="flex gap-3 justify-center h-14" dir="ltr">
                   <input
                     v-for="(digit, index) in otpDigits"
                     :key="index"
@@ -361,74 +300,67 @@
                 </p>
               </div>
 
-              <div class="text-center">
-                <p
-                  v-if="resendTimer > 0"
-                  class="text-sm text-gray-600 dark:text-gray-400"
-                >
-                  ارسال مجدد کد تا {{ resendTimer }} ثانیه دیگر
-                </p>
-                <button
-                  v-else
-                  :disabled="isLoading"
-                  class="text-sm text-teal-600 dark:text-teal-400 hover:underline disabled:opacity-50"
-                  @click="resendOtp"
-                >
-                  ارسال مجدد کد تایید
-                </button>
-              </div>
-
               <button
+                type="submit"
                 :disabled="isLoading || !isValidOtp"
                 class="w-full py-4 px-6 text-lg font-semibold text-white rounded-2xl focus:ring-4 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                 style="
                   background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
                 "
-                @click="handleOtpSubmit"
               >
                 <span v-if="!isLoading">تایید و ورود</span>
                 <span v-else class="flex items-center justify-center gap-2">
-                  <svg
-                    class="animate-spin h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    />
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
+                  <UIcon
+                    name="i-heroicons-arrow-path"
+                    class="w-5 h-5 animate-spin"
+                  />
                   در حال بررسی...
                 </span>
               </button>
 
               <!-- Switch back to Password -->
-              <button
-                class="w-full py-3 px-4 text-sm font-medium text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 rounded-xl hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors"
-                @click="switchToPassword"
-              >
-                ورود با رمز عبور
-              </button>
+              <div class="flex items-center justify-between gap-4 pt-2">
+                <div class="flex-1 text-center">
+                  <p
+                    v-if="resendTimer > 0"
+                    class="text-sm text-gray-600 dark:text-gray-400"
+                  >
+                    ارسال مجدد کد تا {{ resendTimer }} ثانیه دیگر
+                  </p>
+                  <button
+                    v-else
+                    type="button"
+                    :disabled="isLoading"
+                    class="text-sm text-teal-600 dark:text-teal-400 hover:underline disabled:opacity-50"
+                    @click="resendOtp"
+                  >
+                    ارسال مجدد کد تایید
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  class="flex-1 py-3 px-4 text-sm font-medium text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 rounded-xl hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors"
+                  @click="switchToPassword"
+                >
+                  ورود با رمز عبور
+                </button>
+              </div>
 
               <button
+                type="button"
                 class="w-full py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 @click="goBack"
               >
                 بازگشت و ویرایش شماره
               </button>
-            </div>
+            </form>
 
             <!-- Step 4: Registration Form (for new users) -->
-            <div v-else-if="currentStep === 'register'" class="space-y-6">
+            <form
+              v-else-if="currentStep === 'register'"
+              class="space-y-6"
+              @submit.prevent="handleRegisterSubmit"
+            >
               <div class="space-y-4">
                 <!-- Name -->
                 <div>
@@ -441,7 +373,7 @@
                     v-model="registerForm.name"
                     type="text"
                     placeholder="نام و نام خانوادگی خود را وارد کنید"
-                    class="w-full px-4 py-3 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    class="w-full px-4 h-14 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                     :class="{
                       'border-gray-300 dark:border-gray-600':
                         !registerForm.errors.name,
@@ -464,12 +396,12 @@
                   >
                     رمز عبور
                   </label>
-                  <div class="relative">
+                  <div class="relative h-14">
                     <input
                       v-model="registerForm.password"
                       :type="showPassword ? 'text' : 'password'"
                       placeholder="حداقل 8 کاراکتر"
-                      class="w-full px-4 py-3 pl-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                      class="w-full h-full px-4 pl-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                       :class="{
                         'border-gray-300 dark:border-gray-600':
                           !registerForm.errors.password,
@@ -482,40 +414,14 @@
                       class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                       @click="showPassword = !showPassword"
                     >
-                      <svg
-                        v-if="!showPassword"
+                      <UIcon
+                        :name="
+                          showPassword
+                            ? 'i-heroicons-eye-slash'
+                            : 'i-heroicons-eye'
+                        "
                         class="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </svg>
-                      <svg
-                        v-else
-                        class="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                        />
-                      </svg>
+                      />
                     </button>
                   </div>
                   <p
@@ -533,12 +439,12 @@
                   >
                     تکرار رمز عبور
                   </label>
-                  <div class="relative">
+                  <div class="relative h-14">
                     <input
                       v-model="registerForm.passwordConfirm"
                       :type="showPasswordConfirm ? 'text' : 'password'"
                       placeholder="رمز عبور خود را دوباره وارد کنید"
-                      class="w-full px-4 py-3 pl-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                      class="w-full h-full px-4 pl-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                       :class="{
                         'border-gray-300 dark:border-gray-600':
                           !registerForm.errors.passwordConfirm,
@@ -551,40 +457,14 @@
                       class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                       @click="showPasswordConfirm = !showPasswordConfirm"
                     >
-                      <svg
-                        v-if="!showPasswordConfirm"
+                      <UIcon
+                        :name="
+                          showPasswordConfirm
+                            ? 'i-heroicons-eye-slash'
+                            : 'i-heroicons-eye'
+                        "
                         class="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </svg>
-                      <svg
-                        v-else
-                        class="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                        />
-                      </svg>
+                      />
                     </button>
                   </div>
                   <p
@@ -597,45 +477,31 @@
               </div>
 
               <button
+                type="submit"
                 :disabled="isLoading"
                 class="w-full py-4 px-6 text-lg font-semibold text-white rounded-2xl focus:ring-4 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                 style="
                   background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
                 "
-                @click="handleRegisterSubmit"
               >
                 <span v-if="!isLoading">تکمیل ثبت‌نام</span>
                 <span v-else class="flex items-center justify-center gap-2">
-                  <svg
-                    class="animate-spin h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    />
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
+                  <UIcon
+                    name="i-heroicons-arrow-path"
+                    class="w-5 h-5 animate-spin"
+                  />
                   در حال ثبت‌نام...
                 </span>
               </button>
 
               <button
+                type="button"
                 class="w-full py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 @click="goBack"
               >
                 بازگشت و ویرایش شماره
               </button>
-            </div>
+            </form>
           </div>
         </div>
       </div>
@@ -656,7 +522,7 @@ const route = useRoute()
 const toast = useToast()
 
 // State
-const currentStep = ref('phone') // 'phone' | 'password' | 'otp' | 'register'
+const currentStep = ref('password') // 'phone' | 'password' | 'otp' | 'register'
 const phoneNumber = ref('')
 const phoneError = ref('')
 const isLoading = ref(false)
@@ -795,6 +661,7 @@ const handlePasswordSubmit = async () => {
     }
     const response = await app.$api.auth.login(config)
     app.$auth.setToken(response.data.accessToken)
+    app.$auth.setUser(response.data.user)
 
     toast.add({
       title: 'ورود موفقیت‌آمیز بود!',
