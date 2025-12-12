@@ -25,3 +25,14 @@ if (import.meta.dev) {
     args[0]?.includes?.('No match found') ? null : warn(...args)
 }
 </script>
+
+<style>
+.layout-enter-active,
+.layout-leave-active {
+  transition: opacity 0.3s;
+}
+.layout-enter-from,
+.layout-leave-to {
+  opacity: 0;
+}
+</style>
