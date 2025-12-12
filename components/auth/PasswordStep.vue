@@ -19,7 +19,7 @@
         />
         <button
           type="button"
-          class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex justify-center items-center"
           @click="showPassword = !showPassword"
         >
           <UIcon
