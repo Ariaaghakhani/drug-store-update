@@ -1,7 +1,7 @@
 <template>
   <div class="font-dana" dir="rtl">
     <UApp
-      :toaster="{ position: 'top-center' }"
+      :toaster="{ position: 'top-center', duration: 3000 }"
       :ui="{ toast: { slots: { title: 'text-right' } } }"
       :locale="faLocale"
     >
@@ -13,8 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Messages } from '@nuxt/ui'
-const faLocale = defineLocale<Messages>({
+const faLocale = defineLocale({
   name: 'Persian',
   code: 'fa',
   dir: 'rtl',
