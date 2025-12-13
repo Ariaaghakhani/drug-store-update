@@ -61,7 +61,7 @@
             icon="i-heroicons-magnifying-glass"
             size="lg"
             :disabled="!searchQuery"
-            class="absolute start-5 top-1/2 -translate-y-1/2"
+            class="absolute end-5 top-1/2 -translate-y-1/2"
             @click="handleSearch"
           />
         </div>

@@ -105,7 +105,7 @@
                     type="tel"
                     placeholder="09xxxxxxxxx"
                     maxlength="11"
-                    class="w-full px-4 py-4 pe-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                    class="w-full px-4 py-4 ps-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                     :class="{
                       'border-gray-300 dark:border-gray-600': !phoneError,
                       'border-red-500 dark:border-red-500': phoneError,
@@ -115,7 +115,7 @@
                   />
 
                   <div
-                    class="absolute end-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    class="absolute start-4 top-1/2 -translate-y-1/2 text-gray-400"
                   >
                     <svg
                       class="w-5 h-5"

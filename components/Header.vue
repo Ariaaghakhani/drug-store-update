@@ -99,7 +99,7 @@
             <UIcon name="i-heroicons-shopping-cart" class="w-5 h-5" />
             <span
               v-if="cartItemsCount > 0"
-              class="absolute top-1 start-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none"
+              class="absolute top-1 end-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none"
             >
               {{ cartItemsCount }}
             </span>
@@ -324,7 +324,7 @@
 
         <!-- Menu Panel -->
         <div
-          class="absolute top-0 end-0 w-full h-full bg-white dark:bg-gray-900 shadow-2xl"
+          class="absolute top-0 start-0 w-full h-full bg-white dark:bg-gray-900 shadow-2xl"
           @click.stop
         >
           <!-- Menu Header -->
