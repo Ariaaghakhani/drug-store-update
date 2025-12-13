@@ -224,10 +224,10 @@ export default defineComponent({
       const container = this.$refs.carouselContainer as HTMLElement
       if (container) {
         const scrollAmount = container.clientWidth
-        const isRTL = document.documentElement.getAttribute('dir') === 'rtl'
+        const { $dir } = useNuxtApp()
 
         // RTL: prev means scroll right (positive), LTR: prev means scroll left (negative)
-        const scrollDirection = isRTL ? scrollAmount : -scrollAmount
+        const scrollDirection = $dir.rtl.value ? scrollAmount : -scrollAmount
         container.scrollBy({ left: scrollDirection, behavior: 'smooth' })
 
         setTimeout(() => {
@@ -240,10 +240,10 @@ export default defineComponent({
       const container = this.$refs.carouselContainer as HTMLElement
       if (container) {
         const scrollAmount = container.clientWidth
-        const isRTL = document.documentElement.getAttribute('dir') === 'rtl'
+        const { $dir } = useNuxtApp()
 
         // RTL: next means scroll left (negative), LTR: next means scroll right (positive)
-        const scrollDirection = isRTL ? -scrollAmount : scrollAmount
+        const scrollDirection = $dir.rtl.value ? -scrollAmount : scrollAmount
         container.scrollBy({ left: scrollDirection, behavior: 'smooth' })
 
         setTimeout(() => {
@@ -255,10 +255,10 @@ export default defineComponent({
     handleScroll() {
       const container = this.$refs.carouselContainer as HTMLElement
       if (container) {
-        const isRTL = document.documentElement.getAttribute('dir') === 'rtl'
+        const { $dir } = useNuxtApp()
 
         // Get scroll position (handle RTL negative values)
-        const scrollLeft = isRTL ? Math.abs(container.scrollLeft) : container.scrollLeft
+        const scrollLeft = $dir.rtl.value ? Math.abs(container.scrollLeft) : container.scrollLeft
         const maxScroll = container.scrollWidth - container.clientWidth
 
         // Can scroll prev if we've scrolled away from the start

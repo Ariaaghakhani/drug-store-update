@@ -1,5 +1,5 @@
 <template>
-  <div class="font-dana" :dir="currentLocale?.dir || 'rtl'">
+  <div class="font-dana" :dir="$dir.value">
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
@@ -7,18 +7,13 @@
 </template>
 
 <script setup lang="ts">
-const { locale, locales } = useI18n()
-
-// Get current locale config for direction
-const currentLocale = computed(() =>
-  (locales.value as any[]).find(l => l.code === locale.value)
-)
+const { locale } = useI18n()
+const { $dir } = useNuxtApp()
 
 // Watch for locale changes and update HTML dir attribute
 watch(() => locale.value, (newLocale) => {
-  const localeConfig = (locales.value as any[]).find(l => l.code === newLocale)
   if (typeof document !== 'undefined') {
-    document.documentElement.setAttribute('dir', localeConfig?.dir || 'rtl')
+    document.documentElement.setAttribute('dir', $dir.value.value)
     document.documentElement.setAttribute('lang', newLocale)
   }
 }, { immediate: true })
