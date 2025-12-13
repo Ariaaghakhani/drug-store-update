@@ -647,7 +647,6 @@ export default {
     updateCartDropdownPosition() {
       if (this.$refs.cartButton) {
         const isMobile = window.innerWidth < 768
-        const { $dir } = useNuxtApp()
 
         if (isMobile) {
           // On mobile, center the dropdown horizontally and position below header
@@ -660,7 +659,7 @@ export default {
           // On desktop, position relative to cart button
           const buttonRect = this.$refs.cartButton.getBoundingClientRect()
 
-          if ($dir.rtl.value) {
+          if (this.$dir.rtl.value) {
             // RTL: align to right edge of button
             this.cartDropdownStyle = {
               top: `${buttonRect.bottom + 18}px`,

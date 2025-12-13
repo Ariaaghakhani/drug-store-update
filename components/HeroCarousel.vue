@@ -174,9 +174,8 @@ export default {
 
   computed: {
     currentTranslate() {
-      const { $dir } = useNuxtApp()
       // RTL: positive translate moves slides left, LTR: negative translate moves slides left
-      return $dir.rtl.value ? this.currentIndex * 100 : -this.currentIndex * 100
+      return this.$dir.rtl.value ? this.currentIndex * 100 : -this.currentIndex * 100
     },
   },
 
@@ -256,12 +255,10 @@ export default {
       const swipeTime = Date.now() - this.touchStartTime
 
       // Only trigger if it's a quick swipe with enough distance
-      const { $dir } = useNuxtApp()
-
       if (Math.abs(diff) > swipeThreshold && swipeTime < timeThreshold) {
         // RTL: swipe right (diff < 0) = previous, swipe left (diff > 0) = next
         // LTR: swipe right (diff < 0) = next, swipe left (diff > 0) = previous
-        if ($dir.rtl.value) {
+        if (this.$dir.rtl.value) {
           if (diff > 0) {
             this.prevSlide()
           } else {
