@@ -2,551 +2,657 @@
   <div
     class="min-h-screen select-none flex items-center justify-center p-4 bg-gradient-to-br from-teal-50 to-cyan-100 dark:from-slate-900 dark:to-slate-800"
   >
-    <div class="w-full max-w-4xl flex items-center justify-center">
+    <UContainer class="w-full max-w-4xl flex items-center justify-center">
       <div
         class="flex flex-col md:flex-row items-stretch w-full h-full flex-1 rounded-3xl overflow-hidden shadow-2xl"
       >
-        <!-- Right Side - Hero Image -->
-        <div
-          class="hidden md:flex w-1/2 bg-gradient-to-br relative from-teal-600 to-cyan-500 text-white items-center justify-center p-12"
-        >
-          <div
-            class="absolute inset-0"
-            style="
-              background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
-            "
-          />
-          <div
-            class="relative z-10 p-12 flex flex-col items-center justify-center text-white"
-          >
-            <div class="text-center space-y-6">
-              <h1 class="text-4xl font-bold leading-tight">
-                سلامتی شما،<br />اولویت ماست
-              </h1>
-              <p class="text-lg text-white/90">
-                خرید آسان و امن دارو با بهترین قیمت و مشاوره رایگان
-              </p>
+        <!-- Hero Section -->
+        <AuthHero />
 
-              <div class="flex items-center justify-center gap-4 mt-8">
-                <div
-                  class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl rotate-12 animate-float"
-                />
-                <div
-                  class="w-20 h-20 bg-white/30 backdrop-blur-sm rounded-3xl -rotate-6 animate-float-delayed"
-                />
-                <div
-                  class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl rotate-12 animate-float"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Left Side - Login Form -->
+        <!-- Forms Section -->
         <div
           class="w-full md:w-1/2 bg-white flex-auto h-full dark:bg-gray-800 p-8 md:p-12 flex flex-col justify-center content-between grow gap-y-8"
         >
-          <UButton
-            icon="i-heroicons-arrow-right-20-solid"
-            variant="ghost"
-            color="primary"
-            class="self-start mb-4 !px-0"
-            to="/"
-          >
-            بازگشت
-          </UButton>
+          <NuxtLink to="/">
+            <UButton
+              icon="i-heroicons-arrow-right-20-solid"
+              variant="ghost"
+              color="primary"
+              class="self-start mb-4"
+            >
+              بازگشت به صفحه اصلی
+            </UButton>
+          </NuxtLink>
+
           <div class="flex-1 flex flex-col justify-center">
+            <!-- Header -->
             <div class="text-center mb-8">
               <div
                 class="inline-flex items-center justify-center w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-2xl mb-4"
               >
-                <svg
+                <UIcon
+                  name="i-heroicons-building-storefront"
                   class="w-8 h-8 text-teal-600 dark:text-teal-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
-                </svg>
+                />
               </div>
-              <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {{
-                  currentStep === 'phone'
-                    ? 'ورود به داروپلاس'
-                    : 'تایید شماره موبایل'
-                }}
-              </h2>
-              <p class="text-gray-600 dark:text-gray-400">
-                {{
-                  currentStep === 'phone'
-                    ? 'برای ادامه، شماره موبایل خود را وارد کنید'
-                    : 'کد تایید ارسال شده را وارد نمایید'
-                }}
-              </p>
+
+              <Transition name="fade" mode="out-in">
+                <div :key="currentStep">
+                  <h2
+                    class="text-3xl font-bold text-gray-900 dark:text-white mb-2"
+                  >
+                    {{ stepTitles[currentStep] }}
+                  </h2>
+                  <p class="text-gray-600 dark:text-gray-400">
+                    {{ stepDescriptions[currentStep] }}
+                  </p>
+                </div>
+              </Transition>
             </div>
 
-            <div v-if="currentStep === 'phone'" class="space-y-6">
-              <div class="relative mb-12">
-                <!-- margin below to avoid overlap with next input -->
-                <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  شماره موبایل
-                </label>
-
-                <div class="relative">
-                  <input
-                    v-model="phoneNumber"
-                    type="tel"
-                    placeholder="09xxxxxxxxx"
-                    maxlength="11"
-                    class="w-full px-4 py-4 ps-12 text-lg border-2 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
-                    :class="{
-                      'border-gray-300 dark:border-gray-600': !phoneError,
-                      'border-red-500 dark:border-red-500': phoneError,
-                    }"
-                    @input="validatePhone"
-                    @keyup.enter="handlePhoneSubmit"
-                  />
-
-                  <div
-                    class="absolute start-4 top-1/2 -translate-y-1/2 text-gray-400"
-                  >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-
-                <!-- Reserve space for the error message -->
-                <div class="absolute left-0 right-0 mt-1">
-                  <Transition name="fade">
-                    <p
-                      v-if="phoneError"
-                      class="text-sm text-red-600 dark:text-red-400 absolute"
-                    >
-                      {{ phoneError }}
-                    </p>
-                  </Transition>
-                </div>
-              </div>
-
-              <button
-                :disabled="isLoading || !isValidPhone"
-                class="w-full py-4 px-6 text-lg font-semibold text-white rounded-2xl focus:ring-4 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-                style="
-                  background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
-                "
-                @click="handlePhoneSubmit"
-              >
-                <span v-if="!isLoading">ورود / ثبت نام</span>
-                <span v-else class="flex items-center justify-center gap-2">
-                  <svg
-                    class="animate-spin h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    />
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  در حال ارسال...
-                </span>
-              </button>
-
-              <p class="text-sm text-center text-gray-600 dark:text-gray-400">
-                ورود شما به معنای پذیرش
-                <a
-                  href="#"
-                  class="text-teal-600 dark:text-teal-400 hover:underline"
-                  >شرایط و قوانین</a
-                >
-                داروپلاس است.
-              </p>
-            </div>
-
-            <div v-else-if="currentStep === 'otp'" class="space-y-6">
-              <div
-                class="p-4 rounded-xl"
-                :class="
-                  isNewUser
-                    ? 'bg-blue-50 dark:bg-blue-900/20'
-                    : 'bg-green-50 dark:bg-green-900/20'
-                "
-              >
-                <p
-                  class="text-sm text-center"
-                  :class="
-                    isNewUser
-                      ? 'text-blue-700 dark:text-blue-300'
-                      : 'text-green-700 dark:text-green-300'
-                  "
-                >
-                  {{
-                    isNewUser
-                      ? '🎉 خوش آمدید! برای تکمیل ثبت‌نام کد را وارد کنید'
-                      : '✅ کد تایید به شماره ' + phoneNumber + ' ارسال شد'
-                  }}
-                </p>
-              </div>
-
-              <div>
-                <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  کد تایید
-                </label>
-                <div class="flex gap-3 justify-center" dir="ltr">
-                  <input
-                    v-for="(digit, index) in otpDigits"
-                    :key="index"
-                    :ref="(el) => (otpInputs[index] = el)"
-                    v-model="otpDigits[index]"
-                    type="tel"
-                    maxlength="1"
-                    class="w-14 h-14 text-center text-2xl font-bold border-2 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
-                    :class="{
-                      'border-gray-300 dark:border-gray-600': !otpError,
-                      'border-red-500 dark:border-red-500': otpError,
-                    }"
-                    @input="handleOtpInput(index, $event)"
-                    @keydown="handleOtpKeydown(index, $event)"
-                    @paste="handleOtpPaste"
-                  />
-                </div>
-                <p
-                  v-if="otpError"
-                  class="mt-2 text-sm text-center text-red-600 dark:text-red-400"
-                >
-                  {{ otpError }}
-                </p>
-              </div>
-
-              <div class="text-center">
-                <p
-                  v-if="resendTimer > 0"
-                  class="text-sm text-gray-600 dark:text-gray-400"
-                >
-                  ارسال مجدد کد تا {{ resendTimer }} ثانیه دیگر
-                </p>
-                <button
-                  v-else
-                  class="text-sm text-teal-600 dark:text-teal-400 hover:underline"
-                  @click="resendOtp"
-                >
-                  ارسال مجدد کد تایید
-                </button>
-              </div>
-
-              <button
-                :disabled="isLoading || !isValidOtp"
-                class="w-full py-4 px-6 text-lg font-semibold text-white rounded-2xl focus:ring-4 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-                style="
-                  background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
-                "
-                @click="handleOtpSubmit"
-              >
-                <span v-if="!isLoading">{{
-                  isNewUser ? 'تکمیل ثبت‌نام' : 'ورود'
-                }}</span>
-                <span v-else class="flex items-center justify-center gap-2">
-                  <svg
-                    class="animate-spin h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    />
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  در حال بررسی...
-                </span>
-              </button>
-
-              <button
-                class="w-full py-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                @click="goBack"
-              >
-                بازگشت و ویرایش شماره
-              </button>
-            </div>
+            <!-- Forms -->
+            <Transition name="fade" mode="out-in">
+              <component
+                :is="currentStepComponent"
+                v-bind="currentStepProps"
+                @update:phone-number="phoneNumber = $event"
+                @update:password="loginPassword = $event"
+                @update:error="passwordError = $event"
+                @update:digits="otpDigits = $event"
+                @update:form="registerForm = $event"
+                @submit="handleCurrentStepSubmit"
+                @switch-to-otp="switchToOtp"
+                @switch-to-password="switchToPassword"
+                @forgot-password="handleForgotPassword"
+                @resend="handleResendOtp"
+                @go-back="handleGoBack"
+              />
+            </Transition>
           </div>
         </div>
       </div>
-    </div>
+    </UContainer>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'LoginPage',
-  setup() {
-    definePageMeta({
-      layout: 'auth',
-    })
-  },
-  data() {
-    return {
-      currentStep: 'phone',
-      phoneNumber: '',
-      phoneError: '',
-      isLoading: false,
-      isNewUser: false,
-      otpDigits: ['', '', '', '', ''],
-      otpInputs: [],
-      otpError: '',
-      resendTimer: 0,
-      resendInterval: null,
-    }
-  },
-  computed: {
-    isValidPhone() {
-      return /^09\d{9}$/.test(this.phoneNumber)
-    },
-    isValidOtp() {
-      return this.otpDigits.every((digit) => digit !== '')
-    },
-    otpCode() {
-      return this.otpDigits.join('')
-    },
-  },
-  beforeUnmount() {
-    if (this.resendInterval) clearInterval(this.resendInterval)
-  },
-  methods: {
-    validatePhone() {
-      this.phoneError = ''
-      if (this.phoneNumber.length === 0) return
-      if (!this.phoneNumber.startsWith('09')) {
-        this.phoneError = 'شماره موبایل باید با 09 شروع شود'
-        return
-      }
-      if (this.phoneNumber.length > 0 && this.phoneNumber.length < 11) {
-        this.phoneError = 'شماره موبایل باید 11 رقم باشد'
-        return
-      }
-      if (
-        this.phoneNumber.length === 11 &&
-        !/^09\d{9}$/.test(this.phoneNumber)
-      ) {
-        this.phoneError = 'فرمت شماره موبایل صحیح نیست'
-      }
-    },
-    async handlePhoneSubmit() {
-      this.validatePhone()
-      if (!this.isValidPhone || this.isLoading) return
-      this.isLoading = true
-      try {
-        // TODO: Replace with your API call
-        // const response = await fetch('/api/auth/send-otp', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ phoneNumber: this.phoneNumber })
-        // })
-        // const data = await response.json()
-        // this.isNewUser = data.isNewUser
+<script setup>
+import PhoneStep from '@/components/auth/PhoneStep.vue'
+import PasswordStep from '@/components/auth/PasswordStep.vue'
+import OtpStep from '@/components/auth/OtpStep.vue'
+import RegisterStep from '@/components/auth/RegisterStep.vue'
+import ResetPasswordStep from '@/components/auth/ResetPasswordStep.vue'
+import AuthHero from '@/components/auth/AuthHero.vue'
 
-        await new Promise((resolve) => setTimeout(resolve, 1500))
-        this.isNewUser = Math.random() > 0.5
+definePageMeta({
+  layout: 'auth',
+})
 
-        this.currentStep = 'otp'
-        this.startResendTimer()
+const app = useNuxtApp()
+const route = useRoute()
+const toast = useAppToast()
 
-        this.$nextTick(() => {
-          if (this.otpInputs[0]) this.otpInputs[0].focus()
-        })
-      } catch {
-        this.phoneError = 'خطا در ارسال کد تایید. لطفا دوباره تلاش کنید.'
-      } finally {
-        this.isLoading = false
-      }
-    },
-    handleOtpInput(index, event) {
-      const value = event.target.value
-      if (value && !/^\d$/.test(value)) {
-        this.otpDigits[index] = ''
-        return
-      }
-      this.otpDigits[index] = value
-      this.otpError = ''
-      if (value && index < 5) {
-        this.$nextTick(() => {
-          if (this.otpInputs[index + 1]) this.otpInputs[index + 1].focus()
-        })
-      }
-      if (this.isValidOtp) this.handleOtpSubmit()
-    },
-    handleOtpKeydown(index, event) {
-      if (event.key === 'Backspace' && !this.otpDigits[index] && index > 0) {
-        this.$nextTick(() => {
-          if (this.otpInputs[index - 1]) this.otpInputs[index - 1].focus()
-        })
-      }
-    },
-    handleOtpPaste(event) {
-      event.preventDefault()
-      const pastedData = event.clipboardData.getData('text').trim()
-      if (/^\d{6}$/.test(pastedData)) {
-        this.otpDigits = pastedData.split('')
-        this.$nextTick(() => {
-          if (this.otpInputs[5]) this.otpInputs[5].focus()
-        })
-        if (this.isValidOtp) this.handleOtpSubmit()
-      }
-    },
-    async handleOtpSubmit() {
-      if (!this.isValidOtp || this.isLoading) return
-      this.isLoading = true
-      this.otpError = ''
-      try {
-        // TODO: Replace with your API call
-        // const response = await fetch('/api/auth/verify-otp', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({
-        //     phoneNumber: this.phoneNumber,
-        //     otp: this.otpCode,
-        //     isNewUser: this.isNewUser
-        //   })
-        // })
-        // const data = await response.json()
+// State
+const currentStep = ref('phone') // 'phone' | 'password' | 'otp-login' | 'register' | 'otp-register' | 'forgot-password-otp' | 'reset-password'
+const phoneNumber = ref('')
+const isLoading = ref(false)
 
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+// Password State
+const loginPassword = ref('')
+const passwordError = ref('')
 
-        // Set authentication
-        const { login } = useAuth()
-        login('token')
+// OTP State
+const otpDigits = ref(['', '', '', '', ''])
+const otpError = ref('')
+const resendTimer = ref(0)
+const resendInterval = ref(null)
+const otpSent = ref(false)
+const otpSessionActive = ref(false)
 
-        console.log('✅ Success:', {
-          phoneNumber: this.phoneNumber,
-          otp: this.otpCode,
-          isNewUser: this.isNewUser,
-        })
+// Register State
+const registerForm = ref({
+  name: '',
+  password: '',
+  passwordConfirm: '',
+  errors: { name: '', password: '', passwordConfirm: '' },
+})
 
-        // Show success message
-        const toast = useToast()
-        toast.add({
-          title: `${this.isNewUser ? 'ثبت‌نام' : 'ورود'} موفقیت‌آمیز بود!`,
-          icon: 'i-heroicons-check-circle',
-          color: 'green',
-        })
+// Reset Password State
+const resetPasswordForm = ref({
+  password: '',
+  passwordConfirm: '',
+  errors: { password: '', passwordConfirm: '' },
+})
 
-        // Redirect to intended page or default
-        const route = useRoute()
-        const redirectTo = route.query.redirect || '/panel'
-        this.$router.push(redirectTo)
-      } catch {
-        this.otpError = 'کد تایید نادرست است.'
-      } finally {
-        this.isLoading = false
-      }
-    },
-    async resendOtp() {
-      this.isLoading = true
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        this.startResendTimer()
-        this.otpDigits = ['', '', '', '', '', '']
-        this.otpError = ''
-        this.$nextTick(() => {
-          if (this.otpInputs[0]) this.otpInputs[0].focus()
-        })
-      } finally {
-        this.isLoading = false
-      }
-    },
-    startResendTimer() {
-      this.resendTimer = 120
-      if (this.resendInterval) clearInterval(this.resendInterval)
-      this.resendInterval = setInterval(() => {
-        this.resendTimer--
-        if (this.resendTimer <= 0) clearInterval(this.resendInterval)
-      }, 1000)
-    },
-    goBack() {
-      this.currentStep = 'phone'
-      this.otpDigits = ['', '', '', '', '', '']
-      this.otpError = ''
-      if (this.resendInterval) clearInterval(this.resendInterval)
-    },
-  },
+// Track previous step for better navigation
+const previousStep = ref(null)
+
+// Step Configuration
+const stepComponents = {
+  phone: PhoneStep,
+  password: PasswordStep,
+  'otp-login': OtpStep,
+  'otp-register': OtpStep,
+  'forgot-password-otp': OtpStep,
+  register: RegisterStep,
+  'reset-password': ResetPasswordStep,
 }
+
+const stepTitles = {
+  phone: 'ورود به داروپلاس',
+  password: 'ورود به داروپلاس',
+  'otp-login': 'ورود با کد یکبار مصرف',
+  'otp-register': 'تایید شماره موبایل',
+  'forgot-password-otp': 'بازیابی رمز عبور',
+  register: 'تکمیل ثبت‌نام',
+  'reset-password': 'تنظیم رمز عبور جدید',
+}
+
+const stepDescriptions = {
+  phone: 'برای ادامه، شماره موبایل خود را وارد کنید',
+  password: 'رمز عبور خود را وارد نمایید',
+  'otp-login': 'کد تایید ارسال شده را وارد نمایید',
+  'otp-register': 'کد تایید به شماره موبایل شما ارسال شد',
+  'forgot-password-otp': 'کد تایید برای بازیابی رمز عبور ارسال شد',
+  register: 'لطفا اطلاعات خود را تکمیل کنید',
+  'reset-password': 'رمز عبور جدید خود را وارد کنید',
+}
+
+// Computed
+const currentStepComponent = computed(() => stepComponents[currentStep.value])
+
+const currentStepProps = computed(() => {
+  const baseProps = { loading: isLoading.value }
+
+  switch (currentStep.value) {
+    case 'phone':
+      return { ...baseProps, phoneNumber: phoneNumber.value }
+
+    case 'password':
+      return {
+        ...baseProps,
+        password: loginPassword.value,
+        error: passwordError.value,
+      }
+
+    case 'otp-login':
+      return {
+        ...baseProps,
+        digits: otpDigits.value,
+        error: otpError.value,
+        timer: resendTimer.value,
+        context: 'login',
+      }
+
+    case 'otp-register':
+      return {
+        ...baseProps,
+        digits: otpDigits.value,
+        error: otpError.value,
+        timer: resendTimer.value,
+        context: 'register',
+      }
+
+    case 'forgot-password-otp':
+      return {
+        ...baseProps,
+        digits: otpDigits.value,
+        error: otpError.value,
+        timer: resendTimer.value,
+        context: 'forgot-password',
+      }
+
+    case 'register':
+      return { ...baseProps, form: registerForm.value }
+
+    case 'reset-password':
+      return { ...baseProps, form: resetPasswordForm.value }
+
+    default:
+      return baseProps
+  }
+})
+
+// OTP Context
+// const otpContext = computed(() => {
+//   return currentStep.value === 'otp-register' ? 'register' : 'login'
+// })
+
+// Methods
+const handleCurrentStepSubmit = async () => {
+  switch (currentStep.value) {
+    case 'phone':
+      await handlePhoneSubmit()
+      break
+    case 'password':
+      await handlePasswordSubmit()
+      break
+    case 'otp-login':
+      await handleOtpLoginSubmit()
+      break
+    case 'otp-register':
+      await handleOtpRegisterSubmit()
+      break
+    case 'forgot-password-otp':
+      await handleForgotPasswordOtpSubmit()
+      break
+    case 'register':
+      await handleRegisterSubmit()
+      break
+    case 'reset-password':
+      await handleResetPasswordSubmit()
+      break
+  }
+}
+
+const handlePhoneSubmit = async () => {
+  isLoading.value = true
+  try {
+    const response = await app.$api.auth.checkUser({
+      data: { phone: phoneNumber.value },
+    })
+
+    if (response.data.data) {
+      // User exists → go to password
+      previousStep.value = 'phone'
+      currentStep.value = 'password'
+    } else {
+      // New user → go to register
+      previousStep.value = 'phone'
+      currentStep.value = 'register'
+    }
+  } catch {
+    toast.error(
+      'خطا در بررسی شماره موبایل',
+      'لطفا دوباره تلاش کنید',
+      'i-hugeicons:wifi-error-02'
+    )
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handlePasswordSubmit = async () => {
+  isLoading.value = true
+  passwordError.value = ''
+
+  try {
+    const response = await app.$api.auth.login({
+      data: {
+        username: phoneNumber.value,
+        password: loginPassword.value,
+        phone: phoneNumber.value,
+        loginType: 'PASSWORD',
+      },
+    })
+
+    await finalizeLogin(response.data.data)
+  } catch {
+    passwordError.value = 'رمز عبور نادرست است.'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleOtpLoginSubmit = async () => {
+  isLoading.value = true
+  otpError.value = ''
+
+  try {
+    const otpCode = otpDigits.value.join('')
+    const response = await app.$api.auth.loginOtp({
+      data: {
+        phone: phoneNumber.value,
+        otpCode: otpCode,
+      },
+    })
+
+    await finalizeLogin(response.data.data)
+  } catch {
+    toast.error(
+      'خطا در ارسال کد یکبار مصرف',
+      'لطفا دوباره تلاش کنید',
+      'i-hugeicons:wifi-error-02'
+    )
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleOtpRegisterSubmit = async () => {
+  isLoading.value = true
+  otpError.value = ''
+  const firstName = registerForm.value.name.split(' ')[0]
+  const lastName = registerForm.value.name.split(' ')[1]
+  try {
+    const otpCode = otpDigits.value.join('')
+    const response = await app.$api.auth.register({
+      data: {
+        username: phoneNumber.value,
+        phone: phoneNumber.value,
+        password: registerForm.value.password,
+        otpCode: otpCode,
+        firstName: firstName,
+        lastName: lastName,
+      },
+      mode: 'register',
+    })
+    await finalizeLogin(response.data.data)
+  } catch (error) {
+    console.log(error)
+    toast.error('کد تایید نادرست است.', 'لطفا از صحت کد وارد شده مطمئن شوید')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleForgotPasswordOtpSubmit = async () => {
+  isLoading.value = true
+  otpError.value = ''
+
+  try {
+    const otpCode = otpDigits.value.join('')
+    // Verify OTP for password reset
+    await app.$api.auth.forgotPassword({
+      data: {
+        username: phoneNumber.value,
+        newPassword: resetPasswordForm.value.password,
+        phone: phoneNumber.value,
+        otpCode: otpCode,
+      },
+    })
+
+    toast.success(
+      'رمز عبور با موفقیت تغییر یافت',
+      '',
+      'i-heroicons-check-circle'
+    )
+    previousStep.value = 'forgot-password-otp'
+    currentStep.value = 'password'
+  } catch {
+    otpError.value = 'کد تایید نادرست است.'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleRegisterSubmit = async () => {
+  isLoading.value = true
+
+  try {
+    const response = await app.$api.auth.sendRegisterOtp({
+      data: {
+        phone: phoneNumber.value,
+      },
+    })
+    toast.success(
+      response.data.message,
+      '',
+      'i-heroicons:chat-bubble-bottom-center-text-16-solid'
+    )
+    currentStep.value = 'otp-register'
+    startResendTimer()
+  } catch {
+    toast.error(
+      'خطا در ثبت‌نام',
+      'لطفا دوباره تلاش کنید.',
+      'i-heroicons-x-circle'
+    )
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleResetPasswordSubmit = async () => {
+  isLoading.value = true
+
+  try {
+    await app.$api.auth.forgotPasswordOtp({
+      data: {
+        phone: phoneNumber.value,
+      },
+    })
+    currentStep.value = 'forgot-password-otp'
+    startResendTimer()
+  } catch {
+    toast.error(
+      'خطا در ارسال کد یک‌بار مصرف',
+      'لطفا دوباره تلاش کنید',
+      'i-heroicons-x-circle'
+    )
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const finalizeLogin = async (data) => {
+  app.$auth.setToken(data.accessToken)
+  app.$auth.setUser(data.user)
+
+  toast.success('ورود موفقیت‌آمیز بود', '', 'i-heroicons-check-circle')
+
+  const redirectTo = route.query.redirect || '/'
+  navigateTo(redirectTo)
+}
+
+const startResendTimer = () => {
+  resendTimer.value = 120
+  if (resendInterval.value) clearInterval(resendInterval.value)
+
+  resendInterval.value = setInterval(() => {
+    resendTimer.value--
+    if (resendTimer.value <= 0) {
+      clearInterval(resendInterval.value)
+      otpSessionActive.value = false
+    }
+  }, 1000)
+}
+
+const switchToOtp = async () => {
+  // Check if OTP is already sent and session is active
+  if (otpSent.value && otpSessionActive.value) {
+    previousStep.value = currentStep.value
+    currentStep.value = 'otp-login'
+
+    if (resendTimer.value === 0) {
+      startResendTimer()
+    }
+    return
+  }
+
+  // Send OTP for the first time
+  isLoading.value = true
+  try {
+    await app.$api.auth.login({
+      data: {
+        phone: phoneNumber.value,
+        username: phoneNumber.value,
+        loginType: 'OTP',
+      },
+    })
+
+    otpSent.value = true
+    otpSessionActive.value = true
+    previousStep.value = currentStep.value
+    currentStep.value = 'otp-login'
+    startResendTimer()
+    toast.success('کد تایید ارسال شد', '', 'i-heroicons-check-circle')
+  } catch {
+    toast.error('خطا در ارسال کد تایید', '', 'i-heroicons-x-circle')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const switchToPassword = () => {
+  previousStep.value = currentStep.value
+  currentStep.value = 'password'
+  resetOtpState()
+}
+
+const handleForgotPassword = async () => {
+  previousStep.value = currentStep.value
+  currentStep.value = 'reset-password'
+  // isLoading.value = true
+  //
+  // try {
+  //   // Send OTP for password reset
+  //   await app.$api.auth.sendResetOtp({
+  //     data: {
+  //       phone: phoneNumber.value,
+  //     },
+  //   })
+  //
+  //   previousStep.value = 'password'
+  //   currentStep.value = 'forgot-password-otp'
+  //   startResendTimer()
+  //
+  //   toast.success(
+  //     'کد تایید ارسال شد',
+  //     'کد بازیابی به شماره موبایل شما ارسال شد',
+  //     'i-heroicons-check-circle'
+  //   )
+  // } catch {
+  //   toast.error(
+  //     'خطا در ارسال کد تایید',
+  //     'لطفا دوباره تلاش کنید',
+  //     'i-heroicons-x-circle'
+  //   )
+  // } finally {
+  //   isLoading.value = false
+  // }
+}
+
+const handleResendOtp = async () => {
+  if (isLoading.value) return
+
+  isLoading.value = true
+  try {
+    // Determine which OTP endpoint to call based on current step
+    if (currentStep.value === 'forgot-password-otp') {
+      await app.$api.auth.forgotPasswordOtp({
+        data: { phone: phoneNumber.value },
+      })
+    } else if (currentStep.value === 'otp-register') {
+      await app.$api.auth.sendRegisterOtp({
+        data: { phone: phoneNumber.value },
+      })
+    } else {
+      await app.$api.auth.login({
+        data: {
+          phone: phoneNumber.value,
+          username: phoneNumber.value,
+          loginType: 'OTP',
+        },
+      })
+    }
+
+    otpSessionActive.value = true
+    startResendTimer()
+    resetOtpDigits()
+
+    toast.success('کد تایید مجدد ارسال شد', '', 'i-heroicons-check-circle')
+  } catch {
+    toast.error(
+      'خطا در ارسال مجدد کد',
+      'لطفا دوباره تلاش کنید',
+      'i-heroicons-x-circle'
+    )
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleGoBack = () => {
+  // Smart back navigation based on current step
+  switch (currentStep.value) {
+    case 'password':
+    case 'register':
+      // Go back to phone
+      resetAll()
+      currentStep.value = 'phone'
+      break
+
+    case 'otp-login':
+      // Go back to password
+      currentStep.value = 'password'
+      resetOtpState()
+      break
+
+    case 'forgot-password-otp':
+      // Go back to phone (cancel reset process)
+      resetAll()
+      currentStep.value = 'phone'
+      break
+
+    case 'reset-password':
+      // Go back to password
+      currentStep.value = 'password'
+      resetOtpState()
+      break
+
+    case 'otp-register':
+      // Go back to phone (user wants to change number)
+      resetAll()
+      currentStep.value = 'phone'
+      break
+
+    default:
+      currentStep.value = 'phone'
+      resetAll()
+  }
+}
+
+const resetOtpDigits = () => {
+  otpDigits.value = ['', '', '', '', '']
+  otpError.value = ''
+}
+
+const resetOtpState = () => {
+  resetOtpDigits()
+  // Don't reset otpSent and timer - keep session active
+}
+
+const resetAll = () => {
+  loginPassword.value = ''
+  passwordError.value = ''
+  otpDigits.value = ['', '', '', '', '']
+  otpError.value = ''
+  resendTimer.value = 0
+  otpSent.value = false
+  otpSessionActive.value = false
+
+  registerForm.value = {
+    name: '',
+    password: '',
+    passwordConfirm: '',
+    errors: { name: '', password: '', passwordConfirm: '' },
+  }
+
+  resetPasswordForm.value = {
+    password: '',
+    passwordConfirm: '',
+    errors: { password: '', passwordConfirm: '' },
+  }
+
+  if (resendInterval.value) {
+    clearInterval(resendInterval.value)
+    resendInterval.value = null
+  }
+}
+
+onBeforeUnmount(() => {
+  if (resendInterval.value) clearInterval(resendInterval.value)
+})
 </script>
 
 <style scoped>
-input[type='tel']::-webkit-outer-spin-button,
-input[type='tel']::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
 }
-input[type='tel'] {
-  -moz-appearance: textfield;
-}
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(12deg);
-  }
-  50% {
-    transform: translateY(-10px) rotate(12deg);
-  }
-}
-@keyframes float-delayed {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-6deg);
-  }
-  50% {
-    transform: translateY(-15px) rotate(-6deg);
-  }
-}
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-.animate-float-delayed {
-  animation: float-delayed 3s ease-in-out infinite;
-  animation-delay: 0.5s;
-}
-.dark input {
-  background-color: #1f2937;
-  color: white;
-}
-.dark input::placeholder {
-  color: #9ca3af;
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
