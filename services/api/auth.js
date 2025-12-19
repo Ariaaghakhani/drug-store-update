@@ -1,4 +1,7 @@
 export default (apiCaller) => ({
+  checkUser(config) {
+    return apiCaller.post('api/auth/check-username', config)
+  },
   login(config) {
     return apiCaller.post('api/auth/login', config)
   },
@@ -11,21 +14,14 @@ export default (apiCaller) => ({
   register(config) {
     return apiCaller.post('api/auth/register/verify-otp', config)
   },
-  submitOtp(config, mode) {
-    if (mode === 'login') {
-      this.login(config)
-    } else {
-      this.register(config)
-    }
-  },
   forgotPassword(config) {
     return apiCaller.post('api/auth/forgot-password', config)
   },
   forgotPasswordOtp(config) {
     return apiCaller.post('api/auth/forgot-password/send-otp', config)
   },
-  checkUser(config) {
-    return apiCaller.post('api/auth/check-username', config)
+  refresh() {
+    return apiCaller.get('api/auth/refresh')
   },
   logout(config) {
     return apiCaller.post('api/auth/logout', config)
