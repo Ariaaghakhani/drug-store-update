@@ -222,7 +222,7 @@
                 <h4
                   class="text-sm font-semibold text-gray-900 dark:text-white truncate"
                 >
-                  {{ item.name }}
+                  {{ item.nameFa }}
                 </h4>
                 <p
                   class="text-sm font-bold text-teal-600 dark:text-teal-400 mt-1"

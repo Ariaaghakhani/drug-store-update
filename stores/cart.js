@@ -36,27 +36,43 @@ export const useCartStore = defineStore('cart', {
         const saved = localStorage.getItem('cart')
         if (saved) {
           try {
-            this.items = JSON.parse(saved) // Need to parse the JSON string
+            this.items = JSON.parse(saved)
           } catch (e) {
             console.error('Failed to load cart from storage', e)
           }
         }
       }
     },
+
     addItem(product) {
       const existingItem = this.items.find((item) => item.id === product.id)
+      let quantityAdded
 
       if (existingItem) {
-        existingItem.quantity++
+        // Item already exists, just add 1 more
+        existingItem.quantity += 1
+        quantityAdded = 1
       } else {
+        // New item: add with minimum order quantity
+        quantityAdded =
+          product.minOrderQuantity && product.minOrderQuantity > 1
+            ? Number(product.minOrderQuantity)
+            : 1
+
         this.items.push({
           ...product,
-          quantity: 1,
+          quantity: quantityAdded,
         })
       }
 
-      // Save to localStorage manually
+      // Open cart dropdown when item is added
+      this.isOpen = true
+
+      // Save to localStorage
       this.saveToStorage()
+
+      // Return quantity added for toast message
+      return quantityAdded
     },
 
     removeItem(productId) {
@@ -73,7 +89,7 @@ export const useCartStore = defineStore('cart', {
         if (quantity <= 0) {
           this.removeItem(productId)
         } else {
-          item.quantity = quantity
+          item.quantity = Number(quantity)
         }
       }
       this.saveToStorage()
@@ -106,6 +122,14 @@ export const useCartStore = defineStore('cart', {
 
     toggleCart() {
       this.isOpen = !this.isOpen
+    },
+
+    openCart() {
+      this.isOpen = true
+    },
+
+    closeCart() {
+      this.isOpen = false
     },
 
     // Manual persistence methods
