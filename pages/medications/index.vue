@@ -73,105 +73,108 @@
   </UContainer>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-import { useCartStore } from "~/stores/cart";
+<script setup>
+import { ref, computed } from 'vue'
+import { useCartStore } from '~/stores/cart'
 
-export default defineComponent({
-  name: "MedicationsPage",
+// Head metadata
+useHead({
+  title: 'همه داروها | داروخانه آنلاین',
+})
 
-  data() {
-    return {
-      searchQuery: "",
-      selectedCategory: "all",
-      categories: [
-        { label: "همه", value: "all" },
-        { label: "مسکن‌ها", value: "pain" },
-        { label: "مکمل‌ها", value: "supplements" },
-        { label: "سلامت قلب", value: "heart" },
-        { label: "دیابت", value: "diabetes" },
-        { label: "آلرژی", value: "allergies" },
-      ],
-      products: [
-        {
-          id: "1",
-          name: "ویتامین D3 مقدار ۵۰۰۰ واحد",
-          category: "supplements",
-          price: 129000,
-          originalPrice: 169000,
-          rating: 4.8,
-          reviewCount: 1247,
-          image: "/images/products/vitamin-d3.jpg",
-          inStock: true,
-          badge: "Popular" as const,
-        },
-        {
-          id: "2",
-          name: "ایبوپروفن ۲۰۰ میلی‌گرم",
-          category: "pain",
-          price: 84900,
-          rating: 4.7,
-          reviewCount: 892,
-          image: "/images/products/ibuprofen.jpg",
-          inStock: true,
-          badge: "Best Seller" as const,
-        },
-        {
-          id: "3",
-          name: "امگا-۳ روغن ماهی",
-          category: "heart",
-          price: 199000,
-          originalPrice: 249000,
-          rating: 4.9,
-          reviewCount: 2156,
-          image: "/images/products/omega-3.jpg",
-          inStock: true,
-          badge: "Premium" as const,
-        },
-      ] as Product[],
-    };
+// Composables
+const cartStore = useCartStore()
+const toast = useToast()
+const app = useNuxtApp()
+
+// Reactive state
+const searchQuery = ref('')
+const selectedCategory = ref('all')
+const _products = ref([])
+
+const categories = ref([
+  { label: 'همه', value: 'all' },
+  { label: 'مسکن‌ها', value: 'pain' },
+  { label: 'مکمل‌ها', value: 'supplements' },
+  { label: 'سلامت قلب', value: 'heart' },
+  { label: 'دیابت', value: 'diabetes' },
+  { label: 'آلرژی', value: 'allergies' },
+])
+
+const products = ref([
+  {
+    id: '1',
+    nameFa: 'ویتامین D3 مقدار ۵۰۰۰ واحد',
+    category: 'supplements',
+    price: 129000,
+    originalPrice: 169000,
+    rating: 4.8,
+    reviewCount: 1247,
+    image: '/images/products/vitamin-d3.jpg',
+    inStock: true,
+    badge: 'Popular',
   },
-
-  head() {
-    return {
-      title: "همه داروها | داروخانه آنلاین",
-    };
+  {
+    id: '2',
+    nameFa: 'ایبوپروفن ۲۰۰ میلی‌گرم',
+    category: 'pain',
+    price: 84900,
+    rating: 4.7,
+    reviewCount: 892,
+    image: '/images/products/ibuprofen.jpg',
+    inStock: true,
+    badge: 'Best Seller',
   },
-
-  computed: {
-    cartStore() {
-      return useCartStore();
-    },
-
-    filteredProducts() {
-      let filtered = this.products;
-
-      // Filter by category
-      if (this.selectedCategory !== "all") {
-        filtered = filtered.filter((p) => p.category === this.selectedCategory);
-      }
-
-      // Filter by search
-      if (this.searchQuery) {
-        const query = this.searchQuery.toLowerCase();
-        filtered = filtered.filter((p) => p.name.toLowerCase().includes(query));
-      }
-
-      return filtered;
-    },
+  {
+    id: '3',
+    nameFa: 'امگا-۳ روغن ماهی',
+    category: 'heart',
+    price: 199000,
+    originalPrice: 249000,
+    rating: 4.9,
+    reviewCount: 2156,
+    image: '/images/products/omega-3.jpg',
+    inStock: true,
+    badge: 'Premium',
   },
+])
 
-  methods: {
-    handleAddToCart(product: Product) {
-      this.cartStore.addItem(product);
-      const toast = useToast();
-      toast.add({
-        title: "به سبد خرید اضافه شد",
-        description: product.name,
-        icon: "i-heroicons-check-circle",
-        color: "green",
-      });
-    },
-  },
-});
+// Computed properties
+const filteredProducts = computed(() => {
+  let filtered = products.value
+
+  // Filter by category
+  if (selectedCategory.value !== 'all') {
+    filtered = filtered.filter((p) => p.category === selectedCategory.value)
+  }
+
+  // Filter by search
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    filtered = filtered.filter((p) => p.name.toLowerCase().includes(query))
+  }
+
+  return filtered
+})
+
+// Methods
+const handleAddToCart = (product) => {
+  cartStore.addItem(product)
+  toast.add({
+    title: 'به سبد خرید اضافه شد',
+    description: product.name,
+    icon: 'i-heroicons-check-circle',
+    color: 'green',
+  })
+}
+useAsyncData(async () => {
+  try {
+    const [productsResponse] = await Promise.all([
+      app.$api.products.fetchProductsList(),
+    ])
+    _products.value = productsResponse.data.data
+  } catch (error) {
+    console.log(error)
+  }
+})
 </script>

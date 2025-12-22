@@ -50,7 +50,7 @@
         <h3
           class="font-bold text-gray-900 dark:text-white line-clamp-2 text-lg leading-tight"
         >
-          {{ product.name }}
+          {{ product.nameFa }}
         </h3>
 
         <!-- Rating -->
