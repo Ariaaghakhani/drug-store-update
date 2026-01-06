@@ -428,7 +428,7 @@ const handleResetPasswordSubmit = async () => {
 const finalizeLogin = async (data) => {
   app.$auth.setToken(data.accessToken)
   app.$auth.setUser(data.user)
-  userStore.currentUser = data.user
+  userStore.setUser(data.user)
   toast.success('ورود موفقیت‌آمیز بود', '', 'i-heroicons-check-circle')
 
   const redirectTo = route.query.redirect || '/'
