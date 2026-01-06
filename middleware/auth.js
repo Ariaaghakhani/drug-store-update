@@ -1,8 +1,9 @@
 export default defineNuxtRouteMiddleware((to, from) => {
   if (process.client) {
-    const { isAuthenticated } = useAuth()
+    // Check for token synchronously to avoid race condition on page refresh
+    const token = localStorage.getItem('auth.local')
 
-    if (!isAuthenticated()) {
+    if (!token) {
       // Store the intended destination
       const intendedRoute = to.fullPath
 
