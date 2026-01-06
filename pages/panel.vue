@@ -133,9 +133,11 @@ definePageMeta({
 const app = useNuxtApp()
 const userStore = useUserStore()
 
-const userFullName = computed(
-  () => app.$auth.user.person.firstName + ' ' + app.$auth.user.person.lastName
-)
+const userFullName = computed(() => {
+  const user = userStore.currentUser || app.$auth.user
+  if (!user?.person) return 'کاربر'
+  return `${user.person.firstName} ${user.person.lastName}`
+})
 // Set page meta
 useHead({
   title: 'پنل کاربری | داروخانه آنلاین',

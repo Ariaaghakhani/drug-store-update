@@ -50,8 +50,12 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     async fetchUser({ fetchFromRead = true } = {}) {
       try {
         const response = await nuxtApp.$api.auth.fetchUser({ fetchFromRead })
+        console.log('[Auth Plugin] fetchUser response:', response.data)
         this.setUser(response.data)
+        console.log('[Auth Plugin] User set in auth:', _user.value)
+        console.log('[Auth Plugin] User set in userStore:', userStore.currentUser)
       } catch (error) {
+        console.error('[Auth Plugin] fetchUser error:', error)
         const responseCode = error?.response?.status
         if ([401, 403].includes(responseCode)) {
           logoutAndResetAuthentication(nuxtApp, {
@@ -69,8 +73,11 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   nuxtApp.provide('auth', auth)
 
   const token = cachedToken.value
+  console.log('[Auth Plugin] Initializing with token:', token ? 'exists' : 'none')
   if (token) {
     initializeAuthorizedSession(token)
+    console.log('[Auth Plugin] Fetching user data...')
     await auth.fetchUser()
+    console.log('[Auth Plugin] Initialization complete')
   }
 })
