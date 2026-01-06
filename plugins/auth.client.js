@@ -13,16 +13,27 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   const userStore = useUserStore()
 
   const initializeAuthorizedSession = () => {
+    console.log('[Auth Plugin] initializeAuthorizedSession called')
     _loggedIn.value = true
   }
 
   const terminateAuthorizedSession = () => {
+    console.log('[Auth Plugin] terminateAuthorizedSession called')
+    console.trace('[Auth Plugin] Stack trace for terminateAuthorizedSession')
     _loggedIn.value = false
     _user.value = null
     localStorage.removeItem(tokenLocalStorageKey)
     cachedToken.value = null
     userStore.clearUser()
   }
+
+  // Watch for user changes
+  watch(_user, (newVal, oldVal) => {
+    console.log('[Auth Plugin] _user changed from:', oldVal, 'to:', newVal)
+    if (newVal === null && oldVal !== null) {
+      console.trace('[Auth Plugin] User was cleared! Stack trace:')
+    }
+  })
 
   const auth = reactive({
     user: readonly(_user),
