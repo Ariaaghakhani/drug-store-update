@@ -30,4 +30,7 @@ export default (apiCaller) => ({
   logout(config) {
     return apiCaller.post('api/auth/logout', config)
   },
+  fetchUser(config) {
+    return apiCaller.get('api/auth/me', config)
+  },
 })
