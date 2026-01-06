@@ -122,10 +122,11 @@
 definePageMeta({
   middleware: () => {
     // Check for token synchronously to avoid race condition on page refresh
-    const { isAuthenticated } = useAuth()
-
-    if (!isAuthenticated()) {
-      return navigateTo('/login')
+    if (process.client) {
+      const token = localStorage.getItem('auth.local')
+      if (!token) {
+        return navigateTo('/login')
+      }
     }
   },
 })

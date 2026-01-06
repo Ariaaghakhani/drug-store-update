@@ -442,8 +442,8 @@ export default {
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
         // Set authentication
-        const { login } = useAuth()
-        login('token')
+        const nuxtApp = useNuxtApp()
+        nuxtApp.$auth.setToken('token')
 
         const toast = useToast()
         toast.add({
@@ -493,8 +493,8 @@ export default {
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
         // Set authentication
-        const { login } = useAuth()
-        login('token')
+        const nuxtApp = useNuxtApp()
+        nuxtApp.$auth.setToken('token')
 
         const toast = useToast()
         toast.add({
