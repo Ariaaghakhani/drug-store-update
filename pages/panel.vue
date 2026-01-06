@@ -19,7 +19,7 @@
       </div>
 
       <!-- User Profile Card -->
-      <div v-if="$auth.user" class="grid lg:grid-cols-3 gap-8">
+      <div v-if="userStore.currentUser" class="grid lg:grid-cols-3 gap-8">
         <!-- Profile Info -->
         <div class="lg:col-span-1">
           <UCard>
@@ -121,18 +121,17 @@
 <script setup>
 definePageMeta({
   middleware: () => {
-    // Check for token synchronously to avoid race condition on page refresh
-    if (process.client) {
-      const token = localStorage.getItem('auth.local')
-      if (!token) {
-        return navigateTo('/login')
+    const nuxtApp = useNuxtApp()
+    if (import.meta.client) {
+      if (!nuxtApp.$auth.loggedIn) {
+        return navigateTo('/login?next=panel')
       }
     }
   },
 })
 const app = useNuxtApp()
-// const router = useRouter()
-// const toast = useToast()
+const userStore = useUserStore()
+
 const userFullName = computed(
   () => app.$auth.user.person.firstName + ' ' + app.$auth.user.person.lastName
 )
@@ -141,32 +140,11 @@ useHead({
   title: 'پنل کاربری | داروخانه آنلاین',
 })
 
-// const username = computed(() => app.$auth.user?.username)
-
 // Logout handler
 const handleLogout = async () => {
   try {
-    // const config = {
-    //   data: {
-    //     username: username.value,
-    //   },
-    // }
-
-    // const response = await app.$api.auth.logout(config)
     app.$auth.reset()
     navigateTo('/')
-
-    // if (response.status === 200) {
-    //   app.$auth.reset()
-    //
-    //   toast.add({
-    //     title: 'با موفقیت خارج شدید',
-    //     icon: 'i-heroicons-check-circle',
-    //     color: 'green',
-    //   })
-
-    // await router.push('/')
-    // }
   } catch (error) {
     console.error('Logout error:', error)
   }
