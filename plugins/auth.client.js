@@ -1,6 +1,7 @@
 import { reactive, ref, readonly } from 'vue'
 import { navigateTo } from '#app'
 import { logoutAndResetAuthentication } from '~/utils/auth.js'
+import { useUserStore } from '~/stores/user.js'
 
 export const tokenLocalStorageKey = 'auth.local'
 export const cachedToken = ref(null)
@@ -9,6 +10,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   const _user = ref(null)
   const _loggedIn = ref(false)
   cachedToken.value = localStorage.getItem(tokenLocalStorageKey)
+  const userStore = useUserStore()
 
   const initializeAuthorizedSession = () => {
     _loggedIn.value = true
@@ -19,6 +21,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     _user.value = null
     localStorage.removeItem(tokenLocalStorageKey)
     cachedToken.value = null
+    userStore.clearUser()
   }
 
   const auth = reactive({
@@ -26,7 +29,11 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     loggedIn: readonly(_loggedIn),
     setUser(userData) {
       _user.value = userData
-      if (!userData) return
+      if (!userData) {
+        userStore.clearUser()
+        return
+      }
+      userStore.setUser(userData)
       return userData
     },
     setToken(token) {

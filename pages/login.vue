@@ -90,7 +90,6 @@ definePageMeta({
 const app = useNuxtApp()
 const route = useRoute()
 const toast = useAppToast()
-const userStore = useUserStore()
 
 // State
 const currentStep = ref('phone') // 'phone' | 'password' | 'otp-login' | 'register' | 'otp-register' | 'forgot-password-otp' | 'reset-password'
@@ -427,8 +426,7 @@ const handleResetPasswordSubmit = async () => {
 
 const finalizeLogin = async (data) => {
   app.$auth.setToken(data.accessToken)
-  app.$auth.setUser(data.user)
-  userStore.setUser(data.user)
+  app.$auth.setUser(data.user) // This now automatically syncs with userStore
   toast.success('ورود موفقیت‌آمیز بود', '', 'i-heroicons-check-circle')
 
   const redirectTo = route.query.redirect || '/'
