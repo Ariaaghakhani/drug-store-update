@@ -121,9 +121,10 @@
 <script setup>
 definePageMeta({
   middleware: () => {
-    const nuxtApp = useNuxtApp()
+    // Check for token synchronously to avoid race condition on page refresh
+    const { isAuthenticated } = useAuth()
 
-    if (!nuxtApp.$auth.loggedIn) {
+    if (!isAuthenticated()) {
       return navigateTo('/login')
     }
   },
