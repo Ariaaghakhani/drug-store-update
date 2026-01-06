@@ -87,8 +87,16 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   console.log('[Auth Plugin] Initializing with token:', token ? 'exists' : 'none')
   if (token) {
     initializeAuthorizedSession(token)
-    console.log('[Auth Plugin] Fetching user data...')
-    await auth.fetchUser()
+
+    // TEMPORARY: Check if user is already in userStore from localStorage
+    if (userStore.currentUser) {
+      console.log('[Auth Plugin] User loaded from localStorage (temporary until API endpoint is ready)')
+      _user.value = userStore.currentUser
+    } else {
+      // Try to fetch from API (will be available tomorrow)
+      console.log('[Auth Plugin] Fetching user data...')
+      await auth.fetchUser()
+    }
     console.log('[Auth Plugin] Initialization complete')
   }
 })
