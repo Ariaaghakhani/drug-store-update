@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
 // TEMPORARY: Remove this when backend /api/auth/me endpoint is ready
 const USER_STORAGE_KEY = 'user.data'
@@ -7,7 +7,7 @@ const USER_STORAGE_KEY = 'user.data'
 export const useUserStore = defineStore('userStore', () => {
   // Helper to read from localStorage
   const readFromStorage = () => {
-    if (!process.client) return null
+    if (!import.meta.client) return null
     const stored = localStorage.getItem(USER_STORAGE_KEY)
     return stored ? JSON.parse(stored) : null
   }
@@ -16,7 +16,7 @@ export const useUserStore = defineStore('userStore', () => {
   const currentUser = ref(readFromStorage())
 
   // Watch for storage events (when localStorage changes in other tabs/windows)
-  if (process.client) {
+  if (import.meta.client) {
     window.addEventListener('storage', (event) => {
       if (event.key === USER_STORAGE_KEY) {
         console.log('[UserStore] localStorage changed externally, syncing...')
@@ -27,7 +27,9 @@ export const useUserStore = defineStore('userStore', () => {
     // Poll localStorage every 500ms to detect changes (for same-tab updates)
     setInterval(() => {
       const stored = readFromStorage()
-      const currentStringified = currentUser.value ? JSON.stringify(currentUser.value) : null
+      const currentStringified = currentUser.value
+        ? JSON.stringify(currentUser.value)
+        : null
       const storedStringified = stored ? JSON.stringify(stored) : null
 
       if (currentStringified !== storedStringified) {
@@ -40,7 +42,7 @@ export const useUserStore = defineStore('userStore', () => {
   const setUser = (user) => {
     currentUser.value = user
     // TEMPORARY: Persist to localStorage until API endpoint is ready
-    if (process.client) {
+    if (import.meta.client) {
       if (user) {
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
       } else {
@@ -52,7 +54,7 @@ export const useUserStore = defineStore('userStore', () => {
   const clearUser = () => {
     currentUser.value = null
     // TEMPORARY: Clear from localStorage
-    if (process.client) {
+    if (import.meta.client) {
       localStorage.removeItem(USER_STORAGE_KEY)
     }
   }
