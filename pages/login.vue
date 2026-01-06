@@ -90,6 +90,7 @@ definePageMeta({
 const app = useNuxtApp()
 const route = useRoute()
 const toast = useAppToast()
+const userStore = useUserStore()
 
 // State
 const currentStep = ref('phone') // 'phone' | 'password' | 'otp-login' | 'register' | 'otp-register' | 'forgot-password-otp' | 'reset-password'
@@ -284,9 +285,9 @@ const handlePasswordSubmit = async () => {
         loginType: 'PASSWORD',
       },
     })
-
     await finalizeLogin(response.data.data)
-  } catch {
+  } catch (error) {
+    console.log(error)
     passwordError.value = 'رمز عبور نادرست است.'
   } finally {
     isLoading.value = false
@@ -427,7 +428,7 @@ const handleResetPasswordSubmit = async () => {
 const finalizeLogin = async (data) => {
   app.$auth.setToken(data.accessToken)
   app.$auth.setUser(data.user)
-
+  userStore.currentUser = data.user
   toast.success('ورود موفقیت‌آمیز بود', '', 'i-heroicons-check-circle')
 
   const redirectTo = route.query.redirect || '/'
