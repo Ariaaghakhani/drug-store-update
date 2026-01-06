@@ -44,59 +44,7 @@
           </UCard>
         </div>
 
-        <!-- Quick Actions -->
         <div class="lg:col-span-2 space-y-4">
-          <UCard>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              دسترسی سریع
-            </h3>
-            <div class="grid md:grid-cols-2 gap-4">
-              <NuxtLink
-                to="/cart"
-                class="flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-teal-500 dark:hover:border-teal-400 transition-all"
-              >
-                <div
-                  class="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 rounded-xl flex items-center justify-center"
-                >
-                  <UIcon
-                    name="i-heroicons-shopping-cart"
-                    class="w-6 h-6 text-teal-600 dark:text-teal-400"
-                  />
-                </div>
-                <div>
-                  <h4 class="font-bold text-gray-900 dark:text-white">
-                    سبد خرید
-                  </h4>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">
-                    مشاهده سبد خرید
-                  </p>
-                </div>
-              </NuxtLink>
-
-              <NuxtLink
-                to="/medications"
-                class="flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-teal-500 dark:hover:border-teal-400 transition-all"
-              >
-                <div
-                  class="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 rounded-xl flex items-center justify-center"
-                >
-                  <UIcon
-                    name="i-heroicons-beaker"
-                    class="w-6 h-6 text-teal-600 dark:text-teal-400"
-                  />
-                </div>
-                <div>
-                  <h4 class="font-bold text-gray-900 dark:text-white">
-                    داروها
-                  </h4>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">
-                    مشاهده محصولات
-                  </p>
-                </div>
-              </NuxtLink>
-            </div>
-          </UCard>
-
           <!-- Orders Section -->
           <UCard>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
