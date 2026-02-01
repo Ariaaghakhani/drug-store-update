@@ -92,7 +92,7 @@ const quickActions = [
     label: 'مدیریت آدرس‌ها',
     icon: 'i-heroicons-map-pin',
     color: 'purple',
-    to: '/panel/addresses',
+    to: '/panel/address',
   },
   {
     label: 'خرید محصولات',

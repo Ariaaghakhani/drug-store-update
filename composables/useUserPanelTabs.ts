@@ -16,7 +16,6 @@ export const useUserPanelTabs = () => {
         label: 'سفارشات',
         icon: 'i-heroicons-shopping-bag',
         to: '/panel/orders',
-        badge: 0,
       },
       {
         id: 'profile',
@@ -28,7 +27,7 @@ export const useUserPanelTabs = () => {
         id: 'addresses',
         label: 'آدرس‌ها',
         icon: 'i-heroicons-map-pin',
-        to: '/panel/addresses',
+        to: '/panel/address',
       },
     ],
     admin: [
