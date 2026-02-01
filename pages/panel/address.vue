@@ -1,3 +1,4 @@
+<!-- pages/panel/addresses.vue -->
 <template>
   <UCard>
     <div class="flex items-center justify-between mb-6">
@@ -25,3 +26,9 @@
     </div>
   </UCard>
 </template>
+
+<script setup>
+useHead({
+  title: 'آدرس‌ها | پنل کاربری',
+})
+</script>

@@ -41,30 +41,42 @@
 
             <!-- Navigation Menu -->
             <nav class="space-y-1 pt-6">
-              <button
+              <NuxtLink
                 v-for="item in menuItems"
                 :key="item.id"
+                :to="item.to"
                 :class="[
                   'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-right transition-colors',
                   item.id === 'logout'
                     ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
-                    : activeTab === item.id
-                      ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400 font-medium'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800',
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800',
                 ]"
-                @click="handleMenuClick(item)"
+                active-class="bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400 font-medium"
+                @click="item.action && item.action()"
               >
                 <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
                 <span>{{ item.label }}</span>
                 <UBadge
                   v-if="item.badge !== undefined"
-                  :color="activeTab === item.id ? 'teal' : 'gray'"
+                  color="gray"
                   variant="subtle"
                   size="xs"
                   class="mr-auto"
                 >
                   {{ item.badge }}
                 </UBadge>
+              </NuxtLink>
+
+              <!-- Logout Button -->
+              <button
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-right transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                @click="handleLogout"
+              >
+                <UIcon
+                  name="i-heroicons-arrow-right-on-rectangle"
+                  class="w-5 h-5 flex-shrink-0"
+                />
+                <span>خروج از حساب</span>
               </button>
             </nav>
           </UCard>
@@ -72,30 +84,7 @@
 
         <!-- Main Content -->
         <main class="lg:col-span-3">
-          <!-- Debug info (remove after fixing) -->
-          <div
-            v-if="false"
-            class="mb-4 p-4 bg-gray-100 dark:bg-gray-800 rounded"
-          >
-            <p>Active Tab: {{ activeTab }}</p>
-            <p>Current Component: {{ currentTabComponent }}</p>
-            <p>User Role: {{ userRole }}</p>
-            <p>
-              Available Tabs: {{ availableTabs.map((t) => t.id).join(', ') }}
-            </p>
-          </div>
-
-          <Transition name="fade" mode="out-in">
-            <component
-              :is="currentTabComponent"
-              :key="activeTab"
-              v-model="profileForm"
-              :is-loading="isUpdating"
-              @change-tab="handleTabChange"
-              @submit="handleUpdateProfile"
-              @reset="resetProfileForm"
-            />
-          </Transition>
+          <NuxtPage />
         </main>
       </div>
     </ClientOnly>
@@ -103,31 +92,35 @@
 </template>
 
 <script setup>
+const app = useNuxtApp()
+
 definePageMeta({
-  middleware: () => {
+  middleware: (to) => {
     if (import.meta.client) {
+      // Check authentication
       const token = localStorage.getItem('auth.local')
       if (!token) {
         return navigateTo('/login?next=panel')
+      }
+
+      // If accessing /panel root, redirect to dashboard
+      if (to.path === '/panel' || to.path === '/panel/') {
+        return navigateTo('/panel/dashboard')
+      }
+
+      // Check if user has access to this specific route
+      const { hasAccessToRoute } = useUserPanelTabs()
+      if (!hasAccessToRoute(to.path)) {
+        console.log('Access denied to:', to.path)
+        return navigateTo('/panel/dashboard')
       }
     }
   },
 })
 
-const app = useNuxtApp()
 const userStore = useUserStore()
 const toast = useToast()
-const { getTabsForRole, getMenuItems, getUserRole } = useUserPanelTabs()
-
-// State
-const activeTab = ref('dashboard')
-const isUpdating = ref(false)
-const profileForm = ref({
-  firstName: '',
-  lastName: '',
-  email: '',
-  phone: '',
-})
+const { getMenuItems, getUserRole } = useUserPanelTabs()
 
 // Computed
 const userFullName = computed(() => {
@@ -164,31 +157,9 @@ const roleBadgeColor = computed(() => {
   return colors[userRole.value] || 'gray'
 })
 
-const availableTabs = computed(() => getTabsForRole())
-
 const menuItems = computed(() => getMenuItems())
 
-const currentTabComponent = computed(() => {
-  const tab = availableTabs.value.find((t) => t.id === activeTab.value)
-  console.log('Current tab:', activeTab.value, 'Component:', tab?.component)
-  return tab?.component || 'PanelUserDashboard'
-})
-
 // Methods
-const handleMenuClick = (item) => {
-  if (item.isAction) {
-    if (item.id === 'logout') {
-      handleLogout()
-    }
-  } else {
-    activeTab.value = item.id
-  }
-}
-
-const handleTabChange = (tabId) => {
-  activeTab.value = tabId
-}
-
 const handleLogout = async () => {
   try {
     app.$auth.reset()
@@ -208,66 +179,9 @@ const handleLogout = async () => {
   }
 }
 
-const loadUserData = () => {
-  const user = userStore.currentUser || app.$auth.user
-  if (user?.person) {
-    profileForm.value = {
-      firstName: user.person.firstName || '',
-      lastName: user.person.lastName || '',
-      email: user.email || '',
-      phone: user.person.phoneNumber || '',
-    }
-  }
-}
-
-const resetProfileForm = () => {
-  loadUserData()
-}
-
-const handleUpdateProfile = async (formData) => {
-  isUpdating.value = true
-  try {
-    // Add your API call here to update profile
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    toast.add({
-      title: 'موفق',
-      description: 'اطلاعات شما با موفقیت به‌روزرسانی شد',
-      color: 'green',
-    })
-  } catch (error) {
-    console.error('Update error:', error)
-    toast.add({
-      title: 'خطا',
-      description: 'مشکلی در به‌روزرسانی اطلاعات پیش آمد',
-      color: 'red',
-    })
-  } finally {
-    isUpdating.value = false
-  }
-}
-
-// Lifecycle
-onMounted(() => {
-  loadUserData()
-})
-
 // SEO
 useHead({
   title: 'پنل کاربری | داروخانه آنلاین',
   meta: [{ name: 'robots', content: 'noindex, nofollow' }],
 })
 </script>
-
-<style scoped>
-/* Fade Transition */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.25s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

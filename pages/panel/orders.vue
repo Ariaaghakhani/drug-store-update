@@ -1,3 +1,4 @@
+<!-- pages/panel/orders.vue -->
 <template>
   <UCard>
     <div class="flex items-center justify-between mb-6">
@@ -30,3 +31,9 @@
     </div>
   </UCard>
 </template>
+
+<script setup>
+useHead({
+  title: 'سفارشات | پنل کاربری',
+})
+</script>

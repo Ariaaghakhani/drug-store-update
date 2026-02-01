@@ -1,48 +1,34 @@
-// composables/useUserPanelTabs.ts
-type UserRole = 'customer' | 'admin' | 'owner'
-
-interface TabItem {
-  id: string
-  label: string
-  icon: string
-  component: string
-  badge?: number
-}
-
-interface MenuItem extends TabItem {
-  isAction?: boolean
-}
-
+// composables/useUserPanelTabs.js
 export const useUserPanelTabs = () => {
   const userStore = useUserStore()
 
-  // Define tabs for each role
-  const roleBasedTabs: Record<UserRole, TabItem[]> = {
+  // Define routes for each role
+  const roleBasedRoutes = {
     customer: [
       {
         id: 'dashboard',
         label: 'داشبورد',
         icon: 'i-heroicons-home',
-        component: 'PanelUserDashboard',
+        to: '/panel/dashboard',
       },
       {
         id: 'orders',
         label: 'سفارشات',
         icon: 'i-heroicons-shopping-bag',
-        component: 'PanelUserOrders',
+        to: '/panel/orders',
         badge: 0,
       },
       {
         id: 'profile',
         label: 'اطلاعات شخصی',
         icon: 'i-heroicons-user',
-        component: 'PanelUserProfile',
+        to: '/panel/profile',
       },
       {
         id: 'addresses',
         label: 'آدرس‌ها',
         icon: 'i-heroicons-map-pin',
-        component: 'PanelUserAddress',
+        to: '/panel/addresses',
       },
     ],
     admin: [
@@ -50,26 +36,38 @@ export const useUserPanelTabs = () => {
         id: 'dashboard',
         label: 'داشبورد مدیریت',
         icon: 'i-heroicons-home',
-        component: 'PanelAdminAdminDashboard',
+        to: '/panel/dashboard',
       },
       {
         id: 'users',
         label: 'مدیریت کاربران',
         icon: 'i-heroicons-users',
-        component: 'PanelAdminUsersManagement',
+        to: '/panel/users',
+      },
+      {
+        id: 'products',
+        label: 'مدیریت محصولات',
+        icon: 'i-heroicons-cube',
+        to: '/panel/products',
       },
       {
         id: 'orders',
         label: 'مدیریت سفارشات',
         icon: 'i-heroicons-shopping-bag',
-        component: 'PanelAdminOrdersManagement',
+        to: '/panel/orders',
         badge: 5,
+      },
+      {
+        id: 'reports',
+        label: 'گزارشات',
+        icon: 'i-heroicons-chart-bar',
+        to: '/panel/reports',
       },
       {
         id: 'profile',
         label: 'اطلاعات شخصی',
         icon: 'i-heroicons-user',
-        component: 'PanelUserProfile',
+        to: '/panel/profile',
       },
     ],
     owner: [
@@ -77,55 +75,89 @@ export const useUserPanelTabs = () => {
         id: 'dashboard',
         label: 'داشبورد مدیریت',
         icon: 'i-heroicons-home',
-        component: 'PanelAdminAdminDashboard',
+        to: '/panel/dashboard',
+      },
+      {
+        id: 'analytics',
+        label: 'تحلیل و آمار',
+        icon: 'i-heroicons-chart-pie',
+        to: '/panel/analytics',
       },
       {
         id: 'users',
         label: 'مدیریت کاربران',
         icon: 'i-heroicons-users',
-        component: 'PanelAdminUsersManagement',
+        to: '/panel/users',
+      },
+      {
+        id: 'products',
+        label: 'مدیریت محصولات',
+        icon: 'i-heroicons-cube',
+        to: '/panel/products',
+      },
+      {
+        id: 'orders',
+        label: 'مدیریت سفارشات',
+        icon: 'i-heroicons-shopping-bag',
+        to: '/panel/orders',
+        badge: 5,
+      },
+      {
+        id: 'finance',
+        label: 'مالی',
+        icon: 'i-heroicons-banknotes',
+        to: '/panel/finance',
+      },
+      {
+        id: 'settings',
+        label: 'تنظیمات',
+        icon: 'i-heroicons-cog-6-tooth',
+        to: '/panel/settings',
       },
       {
         id: 'profile',
         label: 'اطلاعات شخصی',
         icon: 'i-heroicons-user',
-        component: 'PanelUserProfile',
+        to: '/panel/profile',
       },
     ],
   }
 
-  // Get user role with proper typing
-  const getUserRole = (): UserRole => {
-    const role = userStore.currentUser?.role as UserRole | undefined
-    return role && ['customer', 'admin', 'owner'].includes(role)
-      ? role
-      : 'customer'
+  // Get user role
+  const getUserRole = () => {
+    const role = userStore.currentUser?.role
+    const validRoles = ['customer', 'admin', 'owner']
+    return validRoles.includes(role) ? role : 'customer'
   }
 
-  // Get tabs for current user role
-  const getTabsForRole = (): TabItem[] => {
+  // Get routes for current user role
+  const getRoutesForRole = () => {
     const role = getUserRole()
-    return roleBasedTabs[role]
+    return roleBasedRoutes[role] || roleBasedRoutes.customer
   }
 
-  // Get all menu items including logout
-  const getMenuItems = (): MenuItem[] => {
-    const tabs = getTabsForRole()
-    return [
-      ...tabs,
-      {
-        id: 'logout',
-        label: 'خروج از حساب',
-        icon: 'i-heroicons-arrow-right-on-rectangle',
-        component: '',
-        isAction: true,
-      },
-    ]
+  // Get all menu items
+  const getMenuItems = () => {
+    return getRoutesForRole()
+  }
+
+  // Check if user has access to a route
+  const hasAccessToRoute = (routePath) => {
+    const routes = getRoutesForRole()
+    return routes.some((route) => route.to === routePath)
+  }
+
+  // Get all accessible route paths for current user
+  const getAccessiblePaths = () => {
+    const routes = getRoutesForRole()
+    return routes.map((route) => route.to)
   }
 
   return {
     getUserRole,
-    getTabsForRole,
+    getRoutesForRole,
     getMenuItems,
+    hasAccessToRoute,
+    getAccessiblePaths,
   }
 }

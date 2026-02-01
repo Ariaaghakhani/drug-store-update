@@ -1,3 +1,4 @@
+<!-- pages/panel/users.vue (Admin only) -->
 <template>
   <UCard>
     <div class="flex items-center justify-between mb-6">
@@ -23,3 +24,20 @@
     </div>
   </UCard>
 </template>
+
+<script setup>
+// Add middleware to check admin role
+definePageMeta({
+  middleware: (to, from) => {
+    const userStore = useUserStore()
+    const role = userStore.currentUser?.role
+    if (role !== 'admin' && role !== 'owner') {
+      return navigateTo('/panel')
+    }
+  },
+})
+
+useHead({
+  title: 'مدیریت کاربران | پنل مدیریت',
+})
+</script>
