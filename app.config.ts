@@ -46,5 +46,14 @@ export default defineAppConfig({
         },
       },
     },
+    modal: {
+      slots: {
+        header: 'flex items-center justify-between',
+        title: 'text-right order-2 font-dana',
+        close: 'order-1 relative left-auto right-auto top-0',
+        body: 'text-right font-dana',
+        footer: 'text-right order-3 font-dana flex-row-reverse',
+      },
+    },
   },
 })

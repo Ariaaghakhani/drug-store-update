@@ -149,7 +149,7 @@
 
           <!-- Main Content -->
           <main class="lg:col-span-3">
-            <NuxtPage />
+            <NuxtPage class="h-full" />
           </main>
         </div>
       </div>
