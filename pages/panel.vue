@@ -1,6 +1,6 @@
 <!-- pages/panel.vue (Tabs Version - Simplified) -->
 <template>
-  <UContainer class="py-8 lg:py-12">
+  <UContainer class="px-0 lg:py-12 min-h-screen bg-gray-50">
     <ClientOnly>
       <div v-if="userStore.currentUser">
         <!-- Mobile Tabs -->
@@ -33,11 +33,11 @@
           <!--          </UCard>-->
 
           <!-- Horizontal Scrollable Tabs -->
-          <div class="relative bg-white dark:bg-gray-900">
+          <div class="relative bg-white dark:bg-gray-900 w-full px-4">
             <!-- Scroll Container -->
             <div
               ref="tabsContainer"
-              class="flex gap-6 overflow-x-auto"
+              class="flex gap-6 overflow-x-auto w-full"
               style="scrollbar-width: none; -ms-overflow-style: none"
             >
               <NuxtLink
@@ -163,6 +163,7 @@ const userStore = useUserStore()
 const { hasAccessToRoute } = useUserPanelTabs()
 
 definePageMeta({
+  layout: 'panel',
   middleware: (to) => {
     if (import.meta.client) {
       // Check authentication
