@@ -8,39 +8,32 @@
             <!-- Desktop Sidebar -->
             <aside class="hidden lg:block lg:col-span-1">
               <UCard class="flex flex-col">
-                <!-- Profile Section -->
+                <!-- Logo & Brand -->
                 <div
-                  class="text-center pb-6 border-b border-gray-200 dark:border-gray-700"
+                  class="flex items-center gap-3 pb-6 border-b border-gray-200 dark:border-gray-700"
                 >
-                  <div class="relative inline-block">
-                    <div
-                      class="w-20 h-20 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center shadow-lg"
-                    >
-                      <span class="text-2xl font-bold text-white">
-                        {{ userInitials }}
-                      </span>
-                    </div>
-                    <div
-                      class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white dark:border-gray-900"
-                    />
-                  </div>
-
-                  <h3
-                    class="text-lg font-bold text-gray-900 dark:text-white mt-4"
+                  <div
+                    class="w-10 h-10 flex items-center justify-center flex-shrink-0"
                   >
-                    {{ userFullName }}
-                  </h3>
-                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {{
-                      userStore.currentUser.email ||
-                      userStore.currentUser.person?.phoneNumber
-                    }}
-                  </p>
-
-                  <!-- Role Badge -->
-                  <UBadge :color="roleBadgeColor" variant="subtle" class="mt-2">
-                    {{ roleLabel }}
-                  </UBadge>
+                    <svg
+                      width="40"
+                      height="40"
+                      viewBox="0 0 32 32"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="16"
+                        cy="16"
+                        r="16"
+                        :fill="colorMode === 'dark' ? '#14B8A6' : '#2C7A7B'"
+                      />
+                      <circle cx="16" cy="16" r="8" fill="white" />
+                    </svg>
+                  </div>
+                  <span class="text-xl font-black text-gray-900 dark:text-white"
+                    >دارو پلاس</span
+                  >
                 </div>
 
                 <!-- Navigation Menu -->
@@ -105,7 +98,35 @@
             </aside>
 
             <!-- Main Content -->
-            <main class="lg:col-span-3">
+            <main class="lg:col-span-3 space-y-6">
+              <!-- Profile Banner -->
+              <UCard class="hidden md:flex flex-col">
+                <div class="flex items-center gap-4">
+                  <div
+                    class="w-14 h-14 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center shadow-md flex-shrink-0"
+                  >
+                    <span class="text-xl font-bold text-white">{{
+                      userInitials
+                    }}</span>
+                  </div>
+                  <div class="flex flex-wrap *:w-full gap-y-1 min-w-0">
+                    <h3
+                      class="text-base font-bold text-gray-900 dark:text-white"
+                    >
+                      {{ userFullName }}
+                    </h3>
+                    <p
+                      class="text-sm text-gray-500 dark:text-gray-400 truncate"
+                    >
+                      {{
+                        userStore.currentUser.username ||
+                        userStore.currentUser.person?.phoneNumber
+                      }}
+                    </p>
+                  </div>
+                </div>
+              </UCard>
+
               <NuxtPage class="h-full" />
             </main>
           </div>

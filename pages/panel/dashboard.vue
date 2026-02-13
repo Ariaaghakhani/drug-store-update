@@ -98,7 +98,7 @@ const quickActions = [
     label: 'خرید محصولات',
     icon: 'i-heroicons-shopping-cart',
     color: 'green',
-    to: '/products',
+    to: '/medications',
   },
 ]
 
