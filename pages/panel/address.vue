@@ -180,7 +180,7 @@ useHead({
   title: 'آدرس‌ها | پنل کاربری',
 })
 
-const isOpen = ref(true)
+const isOpen = ref(false)
 const formRef = ref(null)
 
 const addressForm = reactive({

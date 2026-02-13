@@ -1,9 +1,20 @@
-// composables/useUserPanelTabs.js
+// composables/useUserPanelTabs.js (or .ts)
+
+interface RouteItem {
+  id: string
+  label: string
+  icon: string
+  to: string
+  badge?: number
+}
+
+type UserRole = 'customer' | 'admin' | 'owner'
+
 export const useUserPanelTabs = () => {
   const userStore = useUserStore()
 
   // Define routes for each role
-  const roleBasedRoutes = {
+  const roleBasedRoutes: Record<UserRole, RouteItem[]> = {
     customer: [
       {
         id: 'dashboard',
@@ -123,33 +134,35 @@ export const useUserPanelTabs = () => {
   }
 
   // Get user role
-  const getUserRole = () => {
+  const getUserRole = (): UserRole => {
     const role = userStore.currentUser?.role
-    const validRoles = ['customer', 'admin', 'owner']
-    return validRoles.includes(role) ? role : 'customer'
+    const validRoles: UserRole[] = ['customer', 'admin', 'owner']
+    return validRoles.includes(role as UserRole)
+      ? (role as UserRole)
+      : 'customer'
   }
 
   // Get routes for current user role
-  const getRoutesForRole = () => {
+  const getRoutesForRole = (): RouteItem[] => {
     const role = getUserRole()
     return roleBasedRoutes[role] || roleBasedRoutes.customer
   }
 
   // Get all menu items
-  const getMenuItems = () => {
+  const getMenuItems = (): RouteItem[] => {
     return getRoutesForRole()
   }
 
   // Check if user has access to a route
-  const hasAccessToRoute = (routePath) => {
+  const hasAccessToRoute = (path: string): boolean => {
     const routes = getRoutesForRole()
-    return routes.some((route) => route.to === routePath)
+    return routes.some((item) => item.to === path)
   }
 
   // Get all accessible route paths for current user
-  const getAccessiblePaths = () => {
+  const getAccessiblePaths = (): string[] => {
     const routes = getRoutesForRole()
-    return routes.map((route) => route.to)
+    return routes.map((item) => item.to)
   }
 
   return {
