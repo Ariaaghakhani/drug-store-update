@@ -8,7 +8,7 @@ export const useUserPanelTabs = () => {
       {
         id: 'dashboard',
         label: 'داشبورد',
-        icon: 'i-heroicons-home',
+        icon: 'i-heroicons-rectangle-group',
         to: '/panel/dashboard',
       },
       {
