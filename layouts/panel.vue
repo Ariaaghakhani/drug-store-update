@@ -1,6 +1,5 @@
 <template>
   <div dir="rtl" class="font-dana">
-    <Header />
     <main class="min-h-screen">
       <NuxtPage />
     </main>

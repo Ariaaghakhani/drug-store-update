@@ -1,6 +1,6 @@
 <!-- pages/panel.vue (Tabs Version - Simplified) -->
 <template>
-  <UContainer class="px-0 lg:py-12 min-h-screen bg-gray-50">
+  <UContainer class="px-0 lg:py-8 min-h-screen bg-gray-50">
     <ClientOnly>
       <div v-if="userStore.currentUser">
         <!-- Mobile Tabs -->
