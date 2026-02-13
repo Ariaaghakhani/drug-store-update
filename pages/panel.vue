@@ -1,183 +1,277 @@
-<!-- pages/panel.vue (Tabs Version - Simplified) -->
+<!-- pages/panel.vue -->
 <template>
-  <UContainer class="px-0 lg:py-8 min-h-screen bg-gray-50">
-    <ClientOnly>
-      <div v-if="userStore.currentUser">
-        <!-- Mobile Tabs -->
-        <div class="lg:hidden mb-6">
-          <!-- User Info Card -->
-          <!--          <UCard class="mb-4">-->
-          <!--            <div class="flex items-center gap-3 py-2">-->
-          <!--              <div-->
-          <!--                class="w-12 h-12 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center"-->
-          <!--              >-->
-          <!--                <span class="text-lg font-bold text-white">{{-->
-          <!--                  userInitials-->
-          <!--                }}</span>-->
-          <!--              </div>-->
-          <!--              <div class="flex-1">-->
-          <!--                <p class="font-semibold text-gray-900 dark:text-white">-->
-          <!--                  {{ userFullName }}-->
-          <!--                </p>-->
-          <!--                <p class="text-xs text-gray-600 dark:text-gray-400">-->
-          <!--                  {{-->
-          <!--                    userStore.currentUser.email ||-->
-          <!--                    userStore.currentUser.person?.phoneNumber-->
-          <!--                  }}-->
-          <!--                </p>-->
-          <!--              </div>-->
-          <!--              <UBadge :color="roleBadgeColor" variant="subtle">-->
-          <!--                {{ roleLabel }}-->
-          <!--              </UBadge>-->
-          <!--            </div>-->
-          <!--          </UCard>-->
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <UContainer class="lg:py-8 py-4 pb-28 lg:pb-8">
+      <ClientOnly>
+        <div v-if="userStore.currentUser">
+          <div class="grid lg:grid-cols-4 gap-6">
+            <!-- Desktop Sidebar -->
+            <aside class="hidden lg:block lg:col-span-1">
+              <UCard class="flex flex-col">
+                <!-- Profile Section -->
+                <div
+                  class="text-center pb-6 border-b border-gray-200 dark:border-gray-700"
+                >
+                  <div class="relative inline-block">
+                    <div
+                      class="w-20 h-20 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center shadow-lg"
+                    >
+                      <span class="text-2xl font-bold text-white">
+                        {{ userInitials }}
+                      </span>
+                    </div>
+                    <div
+                      class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white dark:border-gray-900"
+                    />
+                  </div>
 
-          <!-- Horizontal Scrollable Tabs -->
-          <div class="relative bg-white dark:bg-gray-900 w-full px-4">
-            <!-- Scroll Container -->
+                  <h3
+                    class="text-lg font-bold text-gray-900 dark:text-white mt-4"
+                  >
+                    {{ userFullName }}
+                  </h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {{
+                      userStore.currentUser.email ||
+                      userStore.currentUser.person?.phoneNumber
+                    }}
+                  </p>
+
+                  <!-- Role Badge -->
+                  <UBadge :color="roleBadgeColor" variant="subtle" class="mt-2">
+                    {{ roleLabel }}
+                  </UBadge>
+                </div>
+
+                <!-- Navigation Menu -->
+                <nav class="space-y-1 pt-6 flex-1">
+                  <NuxtLink
+                    v-for="item in menuItems"
+                    :key="item.id"
+                    :to="item.to"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-right transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    active-class="!bg-teal-50 dark:!bg-teal-900/20 !text-teal-600 dark:!text-teal-400 font-medium"
+                  >
+                    <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
+                    <span>{{ item.label }}</span>
+                    <UBadge
+                      v-if="item.badge !== undefined"
+                      color="gray"
+                      variant="subtle"
+                      size="xs"
+                      class="mr-auto"
+                    >
+                      {{ item.badge }}
+                    </UBadge>
+                  </NuxtLink>
+                </nav>
+
+                <!-- Quick Links + Logout (separated) -->
+                <div
+                  class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-1"
+                >
+                  <NuxtLink
+                    to="/"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-right transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <UIcon
+                      name="i-heroicons-home"
+                      class="w-5 h-5 flex-shrink-0"
+                    />
+                    <span>صفحه اصلی</span>
+                  </NuxtLink>
+                  <NuxtLink
+                    to="/medications"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-right transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <UIcon
+                      name="i-heroicons-squares-2x2"
+                      class="w-5 h-5 flex-shrink-0"
+                    />
+                    <span>محصولات</span>
+                  </NuxtLink>
+                  <button
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-right transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    @click="handleLogout"
+                  >
+                    <UIcon
+                      name="i-heroicons-arrow-right-on-rectangle"
+                      class="w-5 h-5 flex-shrink-0"
+                    />
+                    <span>خروج از حساب</span>
+                  </button>
+                </div>
+              </UCard>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="lg:col-span-3">
+              <NuxtPage class="h-full" />
+            </main>
+          </div>
+        </div>
+      </ClientOnly>
+    </UContainer>
+
+    <!-- Mobile Bottom Navigation -->
+    <ClientOnly>
+      <div v-if="userStore.currentUser" class="lg:hidden">
+        <!-- Profile Slide-up Menu Backdrop -->
+        <Transition name="fade">
+          <div
+            v-if="isProfileMenuOpen"
+            class="fixed inset-0 z-40 bg-black/40 dark:bg-black/60"
+            @click="isProfileMenuOpen = false"
+          />
+        </Transition>
+
+        <!-- Profile Slide-up Menu -->
+        <Transition name="slide-up">
+          <div
+            v-if="isProfileMenuOpen"
+            dir="rtl"
+            class="fixed bottom-16 inset-x-0 z-50 bg-white dark:bg-gray-900 rounded-t-2xl shadow-2xl"
+          >
+            <!-- User Info -->
             <div
-              ref="tabsContainer"
-              class="flex gap-6 overflow-x-auto w-full"
-              style="scrollbar-width: none; -ms-overflow-style: none"
+              class="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800"
             >
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center flex-shrink-0"
+              >
+                <span class="text-base font-bold text-white">{{
+                  userInitials
+                }}</span>
+              </div>
+              <div class="flex flex-1 min-w-0 flex-wrap *:w-full gap-y-2">
+                <p class="font-semibold text-gray-900 dark:text-white truncate">
+                  {{ userFullName }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {{
+                    userStore.currentUser.username ||
+                    userStore.currentUser.person?.phoneNumber
+                  }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Menu Items -->
+            <nav class="px-3 py-3 space-y-0.5">
               <NuxtLink
                 v-for="item in menuItems"
                 :key="item.id"
                 :to="item.to"
-                class="pb-3 pt-1 whitespace-nowrap text-sm transition-all flex-shrink-0 relative"
-                active-class="text-teal-600 dark:text-teal-400 font-semibold border-teal-600 dark:border-teal-400 border-b-2"
-                inactive-class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 border-transparent"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                active-class="!bg-teal-50 dark:!bg-teal-900/20 !text-teal-600 dark:!text-teal-400 font-medium"
+                @click="isProfileMenuOpen = false"
               >
-                <span>{{ item.label }}</span>
+                <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
+                <span class="flex-1">{{ item.label }}</span>
                 <UBadge
                   v-if="item.badge !== undefined"
                   color="gray"
                   variant="subtle"
                   size="xs"
-                  class="ml-1"
+                  >{{ item.badge }}</UBadge
                 >
-                  {{ item.badge }}
-                </UBadge>
               </NuxtLink>
+            </nav>
 
-              <!-- Logout Tab -->
+            <!-- Dark/Light + Logout -->
+            <div
+              class="pb-4 pt-1 border-t border-gray-100 dark:border-gray-800 mx-3 space-y-0.5"
+            >
               <button
-                class="pb-3 pt-1 whitespace-nowrap text-sm transition-all flex-shrink-0 border-b-2 border-transparent text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                @click="toggleColorMode"
+              >
+                <UIcon
+                  :name="
+                    colorMode === 'dark'
+                      ? 'i-heroicons-sun'
+                      : 'i-heroicons-moon'
+                  "
+                  class="w-5 h-5 flex-shrink-0"
+                />
+                <span>{{ colorMode === 'dark' ? 'حالت روز' : 'حالت شب' }}</span>
+              </button>
+              <button
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 @click="handleLogout"
               >
-                خروج
+                <UIcon
+                  name="i-heroicons-arrow-right-on-rectangle"
+                  class="w-5 h-5 flex-shrink-0"
+                />
+                <span>خروج از حساب</span>
               </button>
             </div>
           </div>
-        </div>
+        </Transition>
 
-        <div class="grid lg:grid-cols-4 gap-6">
-          <!-- Desktop Sidebar -->
-          <aside class="hidden lg:block lg:col-span-1">
-            <UCard>
-              <!-- Profile Section -->
-              <div
-                class="text-center pb-6 border-b border-gray-200 dark:border-gray-700"
-              >
-                <div class="relative inline-block">
-                  <div
-                    class="w-20 h-20 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center shadow-lg"
-                  >
-                    <span class="text-2xl font-bold text-white">
-                      {{ userInitials }}
-                    </span>
-                  </div>
-                  <div
-                    class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white dark:border-gray-900"
-                  />
-                </div>
+        <!-- Bottom Bar -->
+        <nav
+          dir="rtl"
+          class="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700"
+        >
+          <div class="flex items-center justify-around h-16 px-4">
+            <!-- Home -->
+            <NuxtLink
+              to="/"
+              class="flex flex-col items-center gap-1 py-2 px-4 text-gray-500 dark:text-gray-400 transition-colors hover:text-teal-600 dark:hover:text-teal-400"
+            >
+              <UIcon name="i-heroicons-home" class="w-6 h-6" />
+              <span class="text-[10px]">خانه</span>
+            </NuxtLink>
 
-                <h3
-                  class="text-lg font-bold text-gray-900 dark:text-white mt-4"
-                >
-                  {{ userFullName }}
-                </h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {{
-                    userStore.currentUser.email ||
-                    userStore.currentUser.person?.phoneNumber
-                  }}
-                </p>
+            <!-- Products -->
+            <NuxtLink
+              to="/medications"
+              class="flex flex-col items-center gap-1 py-2 px-4 text-gray-500 dark:text-gray-400 transition-colors"
+              active-class="!text-teal-600 dark:!text-teal-400"
+            >
+              <UIcon name="i-heroicons-squares-2x2" class="w-6 h-6" />
+              <span class="text-[10px]">محصولات</span>
+            </NuxtLink>
 
-                <!-- Role Badge -->
-                <UBadge :color="roleBadgeColor" variant="subtle" class="mt-2">
-                  {{ roleLabel }}
-                </UBadge>
-              </div>
-
-              <!-- Navigation Menu -->
-              <nav class="space-y-1 pt-6">
-                <NuxtLink
-                  v-for="item in menuItems"
-                  :key="item.id"
-                  :to="item.to"
-                  class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-right transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                  active-class="!bg-teal-50 dark:!bg-teal-900/20 !text-teal-600 dark:!text-teal-400 font-medium"
-                >
-                  <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
-                  <span>{{ item.label }}</span>
-                  <UBadge
-                    v-if="item.badge !== undefined"
-                    color="gray"
-                    variant="subtle"
-                    size="xs"
-                    class="mr-auto"
-                  >
-                    {{ item.badge }}
-                  </UBadge>
-                </NuxtLink>
-
-                <!-- Logout Button -->
-                <button
-                  class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-right transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  @click="handleLogout"
-                >
-                  <UIcon
-                    name="i-heroicons-arrow-right-on-rectangle"
-                    class="w-5 h-5 flex-shrink-0"
-                  />
-                  <span>خروج از حساب</span>
-                </button>
-              </nav>
-            </UCard>
-          </aside>
-
-          <!-- Main Content -->
-          <main class="lg:col-span-3">
-            <NuxtPage class="h-full" />
-          </main>
-        </div>
+            <!-- Profile (opens menu) -->
+            <button
+              class="flex flex-col items-center gap-1 py-2 px-4 transition-colors"
+              :class="
+                isProfileMenuOpen
+                  ? 'text-teal-600 dark:text-teal-400'
+                  : 'text-gray-500 dark:text-gray-400'
+              "
+              @click="isProfileMenuOpen = !isProfileMenuOpen"
+            >
+              <UIcon name="i-heroicons-user-circle" class="w-6 h-6" />
+              <span class="text-[10px]">پروفایل</span>
+            </button>
+          </div>
+        </nav>
       </div>
     </ClientOnly>
-  </UContainer>
+  </div>
 </template>
 
 <script setup>
 const route = useRoute()
 const userStore = useUserStore()
-const { hasAccessToRoute } = useUserPanelTabs()
 
 definePageMeta({
   layout: 'panel',
   middleware: (to) => {
     if (import.meta.client) {
-      // Check authentication
       const token = localStorage.getItem('auth.local')
       if (!token) {
         return navigateTo('/login?next=panel')
       }
 
-      // If accessing /panel root, redirect to dashboard
       if (to.path === '/panel' || to.path === '/panel/') {
         return navigateTo('/panel/dashboard')
       }
 
-      // Check if user has access to this specific route
       const { hasAccessToRoute } = useUserPanelTabs()
       if (!hasAccessToRoute(to.path)) {
         console.log('Access denied to:', to.path)
@@ -190,9 +284,6 @@ definePageMeta({
 const app = useNuxtApp()
 const toast = useToast()
 const { getMenuItems, getUserRole } = useUserPanelTabs()
-
-// Refs
-const tabsContainer = ref(null)
 
 // Computed
 const userFullName = computed(() => {
@@ -231,37 +322,25 @@ const roleBadgeColor = computed(() => {
 
 const menuItems = computed(() => getMenuItems())
 
-// Auto-scroll to active tab on mount and route change
-const scrollToActiveTab = () => {
-  if (import.meta.client && tabsContainer.value) {
-    nextTick(() => {
-      const activeTab = tabsContainer.value?.querySelector(
-        '.text-teal-600, .dark\\:text-teal-400'
-      )
-      if (activeTab) {
-        activeTab.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center',
-        })
-      }
-    })
-  }
+const _colorMode = useColorMode()
+const colorMode = computed(() => _colorMode.value)
+const toggleColorMode = () => {
+  _colorMode.preference = _colorMode.value === 'dark' ? 'light' : 'dark'
 }
 
+const isProfileMenuOpen = ref(false)
+
+// Close profile menu on route change
 watch(
   () => route.path,
   () => {
-    scrollToActiveTab()
+    isProfileMenuOpen.value = false
   }
 )
 
-onMounted(() => {
-  scrollToActiveTab()
-})
-
 // Methods
 const handleLogout = async () => {
+  isProfileMenuOpen.value = false
   try {
     app.$auth.reset()
     toast.add({
@@ -288,8 +367,23 @@ useHead({
 </script>
 
 <style scoped>
-/* Hide scrollbar but keep functionality */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+/* Fade backdrop */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Slide-up menu */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
 }
 </style>
