@@ -92,14 +92,20 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const defaultInstance = $fetch.create({
     baseURL: runtimeConfig.public.BACKEND_URL,
-    headers: {
-      'ngrok-skip-browser-warning': '69420',
-    },
     onRequest({ request, options }) {
-      // Only add token on client side
+      // Set headers directly in options
+      const headers = {
+        'ngrok-skip-browser-warning': '69420',
+      }
+
+      // Add token on client side
       if (import.meta.client && cachedToken?.value) {
-        options.headers = options.headers || {}
-        options.headers['Authorization'] = cachedToken.value
+        headers['Authorization'] = `Bearer ${cachedToken.value}` // Added Bearer prefix too
+      }
+
+      options.headers = {
+        ...options.headers,
+        ...headers,
       }
     },
     onResponse,
