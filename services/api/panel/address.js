@@ -21,6 +21,9 @@ export default (apiCaller) => ({
         item.type === 'city'
     )
   },
+  getAddresses(config) {
+    return apiCaller.post('api/addresses/person', config)
+  },
   addAddress(config) {
     return apiCaller.post('/api/addresses/create', config)
   },
