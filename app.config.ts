@@ -1,5 +1,13 @@
 export default defineAppConfig({
   ui: {
+    skeleton: {
+      base: 'skeleton-shimmer rounded-md',
+    },
+    input: {
+      slots: {
+        root: 'min-h-9',
+      },
+    },
     colors: {
       primary: 'brand',
       secondary: 'secondary',

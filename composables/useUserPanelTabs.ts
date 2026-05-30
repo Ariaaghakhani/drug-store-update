@@ -40,6 +40,12 @@ export const useUserPanelTabs = () => {
         icon: 'i-heroicons-map-pin',
         to: '/panel/address',
       },
+      {
+        id: 'security',
+        label: 'امنیت',
+        icon: 'i-heroicons-shield-check',
+        to: '/panel/security',
+      },
     ],
     admin: [
       {
