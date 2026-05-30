@@ -348,5 +348,7 @@ Layouts: `default.vue` (storefront), `panel.vue` (dashboard shell), `auth.vue` (
 - [ ] Prices via `.toLocaleString('fa-IR')` + ` تومان`.
 - [ ] Stock/Rx/discount → use the badge color map above.
 - [ ] Every surface gets a `dark:` counterpart (`bg-white dark:bg-gray-900`, `text-gray-900 dark:text-white`).
-- [ ] Loading → `USkeleton`; empty → centered icon + heading + CTA.
+- [ ] Loading → `USkeleton` (shimmer, not pulse — configured globally); skeleton input placeholders use `h-9`, switches `h-6 w-11 rounded-full`; wrap in `<Transition name="sk">` with absolute leave for CLS-free swap.
+- [ ] Toast colors: `'success'` / `'error'` / `'primary'` — never `'green'` / `'red'` / `'teal'`.
+- [ ] Nuxt UI component colors: only `primary`, `secondary`, `success`, `info`, `warning`, `error`, `neutral` are valid.
 - [ ] Icons through `UIcon`, Heroicons first, sized `w-5` in buttons.
