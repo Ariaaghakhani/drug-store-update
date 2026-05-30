@@ -1,5 +1,8 @@
 export default defineAppConfig({
   ui: {
+    skeleton: {
+      base: 'skeleton-shimmer rounded-md',
+    },
     colors: {
       primary: 'brand',
       secondary: 'secondary',
