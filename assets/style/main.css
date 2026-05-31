@@ -9,6 +9,25 @@
     }
 }
 
+/* Skeleton shimmer animation */
+@keyframes skeleton-shimmer {
+    0%   { background-position: 200% center; }
+    100% { background-position: -200% center; }
+}
+
+.skeleton-shimmer {
+    --sk-base: #f1f5f9;
+    --sk-shine: #e8ecf1;
+    background: linear-gradient(90deg, var(--sk-base) 30%, var(--sk-shine) 50%, var(--sk-base) 70%);
+    background-size: 400% 100%;
+    animation: skeleton-shimmer 4.5s linear infinite;
+}
+
+.dark .skeleton-shimmer {
+    --sk-base: #1e2533;
+    --sk-shine: #242e40;
+}
+
 @theme static {
     /* ---- Brand (primary, with shades) ---- */
     --color-brand-50: #e7f7f7;
