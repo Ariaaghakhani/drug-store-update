@@ -152,29 +152,54 @@
           </template>
         </UModal>
       </div>
-
-      <div class="text-center py-16">
-        <div
-          class="w-24 h-24 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4"
-        >
-          <UIcon
-            name="i-heroicons-map-pin"
-            class="w-12 h-12 text-gray-400 dark:text-gray-600"
-          />
+      <div v-if="pending" class="flex flex-wrap gap-y-4">
+        <USkeleton v-for="n in 2" :key="n" class="w-full h-24" />
+      </div>
+      <div v-else>
+        <div v-if="addresses.length">
+          <div
+            v-for="address in addresses"
+            :key="address.id"
+            class="w-full flex justify-between items-center"
+          >
+            <div class="flex flex-col !w-full">
+              <span class="font-bold">{{ address.title }}</span>
+              <span>{{ address.fullAddress }}</span>
+            </div>
+            <div class="flex w-fit">
+              <UButton>ویرایش</UButton>
+              <UButton @click="deleteAddress(address.id)">حذف</UButton>
+            </div>
+          </div>
         </div>
-        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          آدرسی ثبت نشده است
-        </h4>
-        <p class="text-gray-600 dark:text-gray-400">
-          برای تکمیل سفارشات خود، یک آدرس اضافه کنید
-        </p>
+        <div v-else class="text-center py-16">
+          <div
+            class="w-24 h-24 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4"
+          >
+            <UIcon
+              name="i-heroicons-map-pin"
+              class="w-12 h-12 text-gray-400 dark:text-gray-600"
+            />
+          </div>
+          <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            آدرسی ثبت نشده است
+          </h4>
+          <p class="text-gray-600 dark:text-gray-400">
+            برای تکمیل سفارشات خود، یک آدرس اضافه کنید
+          </p>
+        </div>
       </div>
     </UCard>
   </div>
 </template>
 
 <script setup>
+import { useAsyncData } from '#app'
+
 const app = useNuxtApp()
+const userStore = useUserStore()
+const toast = useAppToast()
+const route = useRoute()
 
 useHead({
   title: 'آدرس‌ها | پنل کاربری',
@@ -182,6 +207,8 @@ useHead({
 
 const isOpen = ref(false)
 const formRef = ref(null)
+
+const addresses = ref([])
 
 const addressForm = reactive({
   title: '',
@@ -197,11 +224,7 @@ const selectedState = ref({})
 const citiesLoading = ref(false)
 const cities = ref([])
 const selectedCity = ref({})
-
-const cityOptions = computed(() => {
-  if (!addressForm.state) return []
-  return cities[addressForm.state] || []
-})
+const formSubmitLoading = ref(false)
 
 watch(
   () => addressForm.state,
@@ -209,6 +232,26 @@ watch(
     addressForm.city = ''
   }
 )
+async function getUserAddresses() {
+  const config = {
+    data: {
+      personId: userStore.currentUser.person.id,
+    },
+  }
+  return await app.$api.address.getAddresses(config)
+}
+
+const { data, pending } = useAsyncData(route.path, async () => {
+  const config = {
+    data: {
+      personId: userStore.currentUser.person.id,
+    },
+  }
+  const response = await app.$api.address.getAddresses(config)
+  console.log(response)
+  addresses.value = response.data
+  return { data: data.value, pending }
+})
 
 function resetForm() {
   addressForm.title = ''
@@ -223,20 +266,27 @@ function closeDialog() {
   resetForm()
 }
 
-// This function will be called when form is submitted
-function submitAddress() {
+async function submitAddress() {
+  formSubmitLoading.value = true
   const config = {
     data: {
       title: addressForm.title,
-      state: addressForm.state,
-      city: addressForm.city,
-      fullAddress: addressForm.fullAddress,
+      fullAddress: `${addressForm.state.name},${addressForm.city.name},${addressForm.fullAddress}`,
       postalCode: addressForm.postalCode,
     },
   }
 
-  app.$api.address.addAddress(config)
-  closeDialog()
+  try {
+    await app.$api.address.addAddress(config)
+    toast.success('آدرس با موفقیت ثبت گردید')
+    closeDialog()
+    resetForm()
+  } catch (error) {
+    console.log(error)
+    toast.error('مشکلی در ثبت آدرس پیش آمده است')
+  } finally {
+    formSubmitLoading.value = false
+  }
 }
 
 // Trigger form submission programmatically from footer button
