@@ -1,7 +1,5 @@
-<!-- pages/panel/address.vue -->
 <template>
   <div class="space-y-4 font-dana" dir="rtl">
-    <!-- ─── Page Header ────────────────────────────────────────────────────── -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
         <UIcon
@@ -22,7 +20,6 @@
       </UButton>
     </div>
 
-    <!-- ─── Loading Skeleton ───────────────────────────────────────────────── -->
     <template v-if="isLoading">
       <UCard v-for="i in 2" :key="i" :ui="{ body: 'p-0' }">
         <div
@@ -49,7 +46,6 @@
       </UCard>
     </template>
 
-    <!-- ─── Empty State ────────────────────────────────────────────────────── -->
     <template v-else-if="addresses.length === 0">
       <div
         class="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl py-14 flex flex-col items-center gap-4 text-center"
@@ -73,7 +69,6 @@
       </div>
     </template>
 
-    <!-- ─── Filled State ───────────────────────────────────────────────────── -->
     <template v-else>
       <div class="space-y-3">
         <UCard
@@ -86,7 +81,6 @@
               : ''
           "
         >
-          <!-- Header row -->
           <div
             class="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800"
           >
@@ -112,7 +106,6 @@
             </UBadge>
           </div>
 
-          <!-- Body -->
           <div
             class="px-4 sm:px-6 py-4 space-y-1.5 border-b border-gray-100 dark:border-gray-800"
           >
@@ -136,7 +129,6 @@
             </div>
           </div>
 
-          <!-- Footer -->
           <div class="flex items-center justify-between px-4 sm:px-6 py-3">
             <div
               v-if="address.isDefault"
@@ -180,7 +172,6 @@
           </div>
         </UCard>
 
-        <!-- Add new dashed card -->
         <button
           class="w-full border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl py-5 flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400 hover:border-brand-500/50 hover:text-brand-500 dark:hover:border-brand-400/50 dark:hover:text-brand-400 transition-colors"
           @click="openModal()"
@@ -191,16 +182,13 @@
       </div>
     </template>
 
-    <!-- ─── Add / Edit Modal ───────────────────────────────────────────────── -->
     <UModal
       v-model:open="isModalOpen"
       :ui="{ content: 'sm:max-w-lg p-0 gap-0 overflow-hidden' }"
       :dismissible="false"
-      @close="closeModal"
     >
       <template #content>
         <div class="flex flex-col max-h-[90vh] font-dana" dir="rtl">
-          <!-- Sticky header -->
           <div
             class="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800"
           >
@@ -227,9 +215,7 @@
             </div>
           </div>
 
-          <!-- Scrollable body -->
           <div class="overflow-y-auto flex-1 px-5 py-5 space-y-5">
-            <!-- Address type selector -->
             <div class="space-y-2">
               <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
                 نوع آدرس
@@ -244,7 +230,7 @@
                       ? 'border-brand-500 bg-brand-500/5 dark:bg-brand-500/10 text-brand-500'
                       : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600',
                   ]"
-                  @click="form.type = type.value"
+                  @click="onTypeSelect(type.value)"
                 >
                   <UIcon :name="type.icon" class="w-5 h-5" />
                   <span class="text-xs font-medium">{{ type.label }}</span>
@@ -252,7 +238,6 @@
               </div>
             </div>
 
-            <!-- Label -->
             <UFormField
               label="عنوان آدرس"
               name="label"
@@ -265,7 +250,6 @@
               />
             </UFormField>
 
-            <!-- Province + City -->
             <div class="grid grid-cols-2 gap-3">
               <UFormField
                 label="استان"
@@ -325,7 +309,6 @@
               </UFormField>
             </div>
 
-            <!-- Full address -->
             <UFormField
               label="آدرس کامل"
               name="street"
@@ -339,7 +322,6 @@
               />
             </UFormField>
 
-            <!-- Postal code + Phone -->
             <div class="grid grid-cols-2 gap-3">
               <UFormField
                 label="کد پستی"
@@ -365,7 +347,6 @@
               </UFormField>
             </div>
 
-            <!-- Default toggle -->
             <label
               :class="[
                 'flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-colors',
@@ -387,7 +368,6 @@
             </label>
           </div>
 
-          <!-- Sticky footer -->
           <div
             class="flex-shrink-0 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 px-5 py-4 flex justify-end gap-2"
           >
@@ -408,8 +388,7 @@
 const app = useNuxtApp()
 const userStore = useUserStore()
 const toast = useToast()
-
-// ─── State ──────────────────────────────────────────────────────────────────
+const route = useRoute()
 
 const isLoading = ref(true)
 const isModalOpen = ref(false)
@@ -419,11 +398,8 @@ const editingId = ref(null)
 
 const addresses = ref([])
 
-// Province / city data from local JSON (via $api.address); static fallback used if it throws
 const allProvinces = ref([])
 const cityOptions = ref([])
-
-// ─── Static fallbacks (shown when API is unavailable) ───────────────────────
 
 const FALLBACK_PROVINCES = [
   { id: null, name: 'تهران', nameFa: 'تهران' },
@@ -456,8 +432,6 @@ const FALLBACK_CITIES = {
   ],
 }
 
-// ─── Derived ─────────────────────────────────────────────────────────────────
-
 const provinceOptions = computed(() => {
   const list = allProvinces.value.length
     ? allProvinces.value
@@ -465,12 +439,8 @@ const provinceOptions = computed(() => {
   return list.map((p) => ({ ...p, label: p.nameFa || p.name }))
 })
 
-// These hold the full objects so USelectMenu can match items by reference.
-// form.province / form.city stay as plain name strings for the API payload.
 const selectedProvinceObj = ref(null)
 const selectedCityObj = ref(null)
-
-// ─── Form ─────────────────────────────────────────────────────────────────────
 
 const addressTypes = [
   { value: 'home', label: 'خانه', icon: 'i-heroicons-home' },
@@ -481,9 +451,17 @@ const addressTypes = [
 const typeIcon = (type) =>
   addressTypes.find((t) => t.value === type)?.icon ?? 'i-heroicons-map-pin'
 
+const TYPE_LABELS = { home: 'خانه', work: 'محل کار' }
+
+function onTypeSelect(typeValue) {
+  form.value.type = typeValue
+
+  form.value.label = TYPE_LABELS[typeValue] ?? ''
+}
+
 const defaultForm = () => ({
   type: 'home',
-  label: '',
+  label: 'خانه',
   province: '',
   city: '',
   district: '',
@@ -496,16 +474,13 @@ const defaultForm = () => ({
 const form = ref(defaultForm())
 
 const formErrors = reactive({
-  label: '',
+  label: 'خانه',
   province: '',
   city: '',
   street: '',
   postalCode: '',
 })
 
-// Only show validation errors after the user first tries to submit.
-// UFormField treats any non-undefined :error prop as an error state — even ''.
-// So we return undefined (not '') for clean fields.
 const hasSubmitted = ref(false)
 
 const visibleErrors = computed(() => {
@@ -521,7 +496,6 @@ function clearErrors() {
 }
 
 function validateForm() {
-  // Mark as submitted so errors become visible from this point on
   hasSubmitted.value = true
   Object.keys(formErrors).forEach((k) => (formErrors[k] = ''))
   let valid = true
@@ -550,10 +524,6 @@ function validateForm() {
   return valid
 }
 
-// ─── Province / city loading ─────────────────────────────────────────────────
-// getState() and getCity() are synchronous — they read from a local JSON asset,
-// no network call involved.
-
 function loadProvinces() {
   try {
     const result = app.$api.address.getState()
@@ -561,7 +531,6 @@ function loadProvinces() {
       a.name.localeCompare(b.name, 'fa-IR')
     )
   } catch {
-    // JSON import failure is extremely unlikely; fall back silently
     allProvinces.value = []
   }
 }
@@ -597,8 +566,6 @@ function onCityChange(cityObj) {
   form.value.city = cityObj?.name ?? ''
 }
 
-// ─── Addresses CRUD ──────────────────────────────────────────────────────────
-
 async function fetchAddresses() {
   isLoading.value = true
   try {
@@ -626,7 +593,6 @@ const setDefault = (id) => {
 async function deleteAddress(id) {
   deletingId.value = id
   try {
-    // TODO: wire up when endpoint is available — await app.$api.address.deleteAddress({ data: { id } })
     addresses.value = addresses.value.filter((a) => a.id !== id)
     toast.add({ title: 'آدرس حذف شد', color: 'success' })
   } catch {
@@ -642,14 +608,10 @@ async function saveAddress() {
   isSaving.value = true
   try {
     if (editingId.value) {
-      // ── Edit existing ──
-      // TODO: wire up when endpoint is available:
-      // await app.$api.address.updateAddress({ data: { id: editingId.value, ... } })
       addresses.value = addresses.value.map((a) =>
         a.id === editingId.value ? { ...a, ...form.value } : a
       )
     } else {
-      // ── Add new ──
       const config = {
         data: {
           title: form.value.label,
@@ -668,7 +630,7 @@ async function saveAddress() {
           isDefault: false,
         }))
       }
-      // Merge API-returned id with local form data for immediate UI update
+
       addresses.value.push({
         ...form.value,
         id: response?.data?.id ?? Date.now(),
@@ -685,8 +647,6 @@ async function saveAddress() {
   }
 }
 
-// ─── Modal helpers ────────────────────────────────────────────────────────────
-
 const openModal = (address = null) => {
   clearErrors()
 
@@ -694,12 +654,10 @@ const openModal = (address = null) => {
     editingId.value = address.id
     form.value = { ...address }
 
-    // Restore province object so the select shows the right label
     const provinceObj =
       provinceOptions.value.find((p) => p.name === address.province) ?? null
     selectedProvinceObj.value = provinceObj
 
-    // Load cities for this province (sync), then restore city object
     if (provinceObj) {
       if (provinceObj.id) {
         try {
@@ -740,11 +698,9 @@ const closeModal = () => {
   clearErrors()
 }
 
-// ─── Init ─────────────────────────────────────────────────────────────────────
-
 onMounted(async () => {
-  loadProvinces() // sync — reads local JSON
-  await fetchAddresses() // async — real network call
+  loadProvinces()
+  await fetchAddresses()
 })
 
 useHead({ title: 'آدرس‌های من | پنل کاربری' })
