@@ -195,6 +195,7 @@
     <UModal
       v-model:open="isModalOpen"
       :ui="{ content: 'sm:max-w-lg p-0 gap-0 overflow-hidden' }"
+      :dismissible="false"
       @close="closeModal"
     >
       <template #content>
@@ -223,19 +224,6 @@
               >
                 <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
               </button>
-            </div>
-            <!-- Progress dots -->
-            <div class="flex items-center gap-1.5 px-5 pb-4">
-              <div
-                v-for="i in 5"
-                :key="i"
-                :class="[
-                  'h-1 rounded-full flex-1 transition-colors duration-300',
-                  i <= formProgress
-                    ? 'bg-brand-500'
-                    : 'bg-gray-200 dark:bg-gray-700',
-                ]"
-              />
             </div>
           </div>
 
@@ -420,7 +408,6 @@
 const app = useNuxtApp()
 const userStore = useUserStore()
 const toast = useToast()
-const route = useRoute()
 
 // ─── State ──────────────────────────────────────────────────────────────────
 
@@ -482,17 +469,6 @@ const provinceOptions = computed(() => {
 // form.province / form.city stay as plain name strings for the API payload.
 const selectedProvinceObj = ref(null)
 const selectedCityObj = ref(null)
-
-/** How many of the 5 progress dots should be filled */
-const formProgress = computed(() => {
-  let score = 0
-  if (form.value.type) score++
-  if (form.value.label) score++
-  if (form.value.province && form.value.city) score++
-  if (form.value.street) score++
-  if (form.value.postalCode) score++
-  return score
-})
 
 // ─── Form ─────────────────────────────────────────────────────────────────────
 
