@@ -6,7 +6,9 @@
         <div v-if="userStore.currentUser">
           <div class="grid lg:grid-cols-4 gap-6">
             <!-- Desktop Sidebar -->
-            <aside class="hidden lg:block lg:col-span-1">
+            <aside
+              class="hidden lg:block lg:col-span-1 sticky top-8 self-start"
+            >
               <UCard class="flex flex-col">
                 <!-- Logo & Brand -->
                 <div
