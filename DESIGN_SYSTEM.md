@@ -178,7 +178,7 @@ Only these strings are registered semantic tokens: `primary`, `secondary`, `succ
 **Never pass** `"red"`, `"green"`, `"gray"`, `"teal"`, `"blue"`, `"orange"`, `"purple"` to Nuxt UI components — they silently produce unstyled output.
 
 ### Buttons (`UButton`)
-- **Primary:** `color="primary"` (= brand). Default CTA. Sizes used: `size="xl"` for main actions, `size="lg"` filters, `size="sm"` inline.
+- **Primary:** `color="primary"` (= brand). Default CTA. Sizes used: `size="xl"` for main actions, `size="lg"` panel header CTAs, `size="md"` list item actions, `size="sm"` inline.
 - **Outline/white:** `color="neutral" variant="outline"` for secondary actions.
 - **Soft:** `variant="soft"` (e.g. "پیگیری سفارش").
 - **Ghost:** `variant="ghost"` for icon-only and tertiary. Invisible at rest — avoid for actions that must always be visible; use `outline` or `soft` instead.
