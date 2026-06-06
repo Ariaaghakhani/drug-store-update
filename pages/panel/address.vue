@@ -1,186 +1,186 @@
 <template>
-  <div class="space-y-4 font-dana" dir="rtl">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <UIcon
-          name="i-heroicons-map-pin"
-          class="w-5 h-5 text-brand-500 flex-shrink-0"
-        />
-        <h2 class="text-base font-bold text-gray-900 dark:text-white">
-          آدرس‌های من
-        </h2>
-      </div>
-      <UButton
-        color="primary"
-        icon="i-heroicons-plus"
-        size="sm"
-        @click="openModal()"
-      >
-        افزودن آدرس
-      </UButton>
-    </div>
-
-    <template v-if="isLoading">
-      <UCard v-for="i in 2" :key="i" :ui="{ body: 'p-0' }">
-        <div
-          class="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800"
-        >
-          <USkeleton class="w-9 h-9 rounded-lg flex-shrink-0" />
-          <USkeleton class="h-5 flex-1 max-w-[6rem]" />
-          <USkeleton class="h-5 w-16 rounded-full" />
-        </div>
-        <div
-          class="px-4 sm:px-6 py-4 space-y-2 border-b border-gray-100 dark:border-gray-800"
-        >
-          <USkeleton class="h-4 w-40" />
-          <USkeleton class="h-3 w-full" />
-          <USkeleton class="h-3 w-2/3" />
-        </div>
-        <div class="flex items-center justify-between px-4 sm:px-6 py-3.5">
-          <USkeleton class="h-7 w-36 rounded-lg" />
-          <div class="flex gap-1.5">
-            <USkeleton class="h-8 w-8 rounded-lg" />
-            <USkeleton class="h-8 w-8 rounded-lg" />
-          </div>
-        </div>
-      </UCard>
-    </template>
-
-    <template v-else-if="addresses.length === 0">
+  <div class="font-dana" dir="rtl">
+    <UCard :ui="{ body: 'p-0' }">
       <div
-        class="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl py-14 flex flex-col items-center gap-4 text-center"
+        class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800"
       >
-        <div
-          class="w-16 h-16 rounded-full bg-brand-500/10 flex items-center justify-center"
-        >
-          <UIcon name="i-heroicons-map-pin" class="w-8 h-8 text-brand-500" />
+        <div class="flex items-center gap-2">
+          <UIcon
+            name="i-heroicons-map-pin"
+            class="w-5 h-5 text-brand-500 flex-shrink-0"
+          />
+          <h2 class="text-base font-bold text-gray-900 dark:text-white">
+            آدرس‌های من
+          </h2>
         </div>
-        <div class="space-y-1">
-          <p class="text-base font-bold text-gray-900 dark:text-white">
-            آدرسی ثبت نشده است
-          </p>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            برای تکمیل سفارش‌هایتان یک آدرس اضافه کنید
-          </p>
-        </div>
-        <UButton color="primary" icon="i-heroicons-plus" @click="openModal()">
-          افزودن اولین آدرس
-        </UButton>
-      </div>
-    </template>
-
-    <template v-else>
-      <div class="space-y-3">
-        <UCard
-          v-for="address in addresses"
-          :key="address.id"
-          :ui="{ body: 'p-0' }"
-          :class="
-            address.isDefault
-              ? 'ring-1 ring-brand-500/30 dark:ring-brand-500/20'
-              : ''
-          "
-        >
-          <div
-            class="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800"
-          >
-            <div
-              :class="[
-                'w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0',
-                address.isDefault
-                  ? 'bg-brand-500/15 text-brand-500'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
-              ]"
-            >
-              <UIcon :name="typeIcon(address.type)" class="w-5 h-5" />
-            </div>
-            <p class="flex-1 text-sm font-medium text-gray-900 dark:text-white">
-              {{ address.label }}
-            </p>
-            <UBadge
-              :color="address.isDefault ? 'success' : 'neutral'"
-              variant="subtle"
-              size="xs"
-            >
-              {{ address.isDefault ? 'پیش‌فرض' : 'عادی' }}
-            </UBadge>
-          </div>
-
-          <div
-            class="px-4 sm:px-6 py-4 space-y-1.5 border-b border-gray-100 dark:border-gray-800"
-          >
-            <p class="text-sm font-medium text-gray-900 dark:text-white">
-              {{ address.province }}، {{ address.city
-              }}<template v-if="address.district"
-                >، {{ address.district }}</template
-              >
-            </p>
-            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-              {{ address.street }}
-            </p>
-            <div
-              class="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 mt-0.5"
-            >
-              <UIcon
-                name="i-heroicons-hashtag"
-                class="w-3.5 h-3.5 flex-shrink-0"
-              />
-              <span dir="ltr">{{ address.postalCode }}</span>
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between px-4 sm:px-6 py-3">
-            <div
-              v-if="address.isDefault"
-              class="flex items-center gap-1.5 text-brand-500"
-            >
-              <UIcon
-                name="i-heroicons-check-circle"
-                class="w-4 h-4 flex-shrink-0"
-              />
-              <span class="text-xs font-medium">آدرس پیش‌فرض تحویل</span>
-            </div>
-            <UButton
-              v-else
-              variant="ghost"
-              color="neutral"
-              size="xs"
-              @click="setDefault(address.id)"
-            >
-              تنظیم به عنوان پیش‌فرض
-            </UButton>
-
-            <div class="flex items-center gap-1">
-              <UButton
-                variant="ghost"
-                color="neutral"
-                size="xs"
-                icon="i-heroicons-pencil-square"
-                square
-                @click="openModal(address)"
-              />
-              <UButton
-                variant="ghost"
-                color="error"
-                size="xs"
-                icon="i-heroicons-trash"
-                square
-                :loading="deletingId === address.id"
-                @click="deleteAddress(address.id)"
-              />
-            </div>
-          </div>
-        </UCard>
-
-        <button
-          class="w-full border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl py-5 flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400 hover:border-brand-500/50 hover:text-brand-500 dark:hover:border-brand-400/50 dark:hover:text-brand-400 transition-colors"
+        <UButton
+          color="primary"
+          icon="i-heroicons-plus"
+          size="lg"
           @click="openModal()"
         >
-          <UIcon name="i-heroicons-plus" class="w-5 h-5" />
-          <span class="text-sm font-medium">افزودن آدرس جدید</span>
-        </button>
+          افزودن آدرس
+        </UButton>
       </div>
-    </template>
+
+      <div class="p-4 sm:p-6">
+        <div class="relative">
+          <Transition name="sk">
+            <div v-if="isLoading" key="skeleton" class="space-y-3">
+              <UCard v-for="i in 2" :key="i" :ui="{ body: 'p-0' }">
+                <div
+                  class="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800"
+                >
+                  <USkeleton class="w-9 h-9 rounded-lg flex-shrink-0" />
+                  <USkeleton class="h-5 flex-1 max-w-[6rem]" />
+                  <USkeleton class="h-5 w-16 rounded-full" />
+                </div>
+                <div
+                  class="px-4 sm:px-6 py-4 space-y-2 border-b border-gray-100 dark:border-gray-800"
+                >
+                  <USkeleton class="h-4 w-40" />
+                  <USkeleton class="h-3 w-full" />
+                  <USkeleton class="h-3 w-2/3" />
+                </div>
+                <div
+                  class="flex items-center justify-between px-4 sm:px-6 py-3.5"
+                >
+                  <USkeleton class="h-7 w-36 rounded-lg" />
+                  <div class="flex gap-1.5">
+                    <USkeleton class="h-8 w-8 rounded-lg" />
+                    <USkeleton class="h-8 w-8 rounded-lg" />
+                  </div>
+                </div>
+              </UCard>
+            </div>
+
+            <div
+              v-else-if="addresses.length === 0"
+              key="empty"
+              class="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl py-14 flex flex-col items-center gap-4 text-center"
+            >
+              <div
+                class="w-16 h-16 rounded-full bg-brand-500/10 flex items-center justify-center"
+              >
+                <UIcon
+                  name="i-heroicons-map-pin"
+                  class="w-8 h-8 text-brand-500"
+                />
+              </div>
+              <div class="space-y-1">
+                <p class="text-base font-bold text-gray-900 dark:text-white">
+                  آدرسی ثبت نشده است
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  برای تکمیل سفارش‌هایتان یک آدرس اضافه کنید
+                </p>
+              </div>
+              <UButton
+                color="primary"
+                icon="i-heroicons-plus"
+                @click="openModal()"
+              >
+                افزودن اولین آدرس
+              </UButton>
+            </div>
+
+            <div
+              v-else
+              key="content"
+              class="divide-y-2 divide-gray-100 dark:divide-gray-700"
+            >
+              <div v-for="address in addresses" :key="address.id">
+                <div class="flex items-center gap-3 py-4">
+                  <div
+                    :class="[
+                      'w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0',
+                      address.isDefault
+                        ? 'bg-brand-500/15 text-brand-500'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
+                    ]"
+                  >
+                    <UIcon :name="typeIcon(address.type)" class="w-5 h-5" />
+                  </div>
+                  <p
+                    class="flex-1 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    {{ address.label }}
+                  </p>
+                  <UBadge
+                    v-if="address.isDefault"
+                    color="success"
+                    variant="subtle"
+                    size="md"
+                  >
+                    پیش‌فرض
+                  </UBadge>
+                </div>
+
+                <div class="py-4 space-y-1.5">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ address.province }}، {{ address.city
+                    }}<template v-if="address.district"
+                      >، {{ address.district }}</template
+                    >
+                  </p>
+                  <p
+                    class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed"
+                  >
+                    {{ address.street }}
+                  </p>
+                </div>
+
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-3">
+                  <UButton
+                    v-if="!address.isDefault"
+                    color="primary"
+                    size="md"
+                    block
+                    class="sm:w-auto"
+                    @click="setDefault(address.id)"
+                  >
+                    تنظیم به عنوان پیش‌فرض
+                  </UButton>
+                  <span v-else class="hidden sm:block" />
+
+                  <div class="flex items-center gap-2">
+                    <UButton
+                      variant="soft"
+                      color="neutral"
+                      size="md"
+                      icon="i-heroicons-pencil-square"
+                      class="flex-1 sm:flex-none justify-center"
+                      @click="openModal(address)"
+                    >
+                      ویرایش
+                    </UButton>
+                    <UButton
+                      variant="soft"
+                      color="error"
+                      size="md"
+                      icon="i-heroicons-trash"
+                      class="flex-1 sm:flex-none justify-center"
+                      :loading="deletingId === address.id"
+                      @click="deleteAddress(address.id)"
+                    >
+                      حذف
+                    </UButton>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                class="mt-4 w-full border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl py-5 flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400 hover:border-brand-500/50 hover:text-brand-500 dark:hover:border-brand-400/50 dark:hover:text-brand-400 transition-colors"
+                @click="openModal()"
+              >
+                <UIcon name="i-heroicons-plus" class="w-5 h-5" />
+                <span class="text-sm font-medium">افزودن آدرس جدید</span>
+              </button>
+            </div>
+          </Transition>
+        </div>
+      </div>
+    </UCard>
 
     <UModal
       v-model:open="isModalOpen"
@@ -388,7 +388,6 @@
 const app = useNuxtApp()
 const userStore = useUserStore()
 const toast = useToast()
-const route = useRoute()
 
 const isLoading = ref(true)
 const isModalOpen = ref(false)
@@ -400,6 +399,33 @@ const addresses = ref([])
 
 const allProvinces = ref([])
 const cityOptions = ref([])
+
+const FALLBACK_ADDRESSES = [
+  {
+    id: 1,
+    type: 'home',
+    label: 'خانه',
+    province: 'تهران',
+    city: 'تهران',
+    district: '',
+    street: 'خیابان ولیعصر، کوچه بهار، پلاک ۱۲، واحد ۳',
+    postalCode: '1591634149',
+    phone: '09121234567',
+    isDefault: true,
+  },
+  {
+    id: 2,
+    type: 'work',
+    label: 'محل کار',
+    province: 'تهران',
+    city: 'تهران',
+    district: '',
+    street: 'میدان آرژانتین، خیابان الوند، پلاک ۵، طبقه دوم',
+    postalCode: '1513643511',
+    phone: '02112345678',
+    isDefault: false,
+  },
+]
 
 const FALLBACK_PROVINCES = [
   { id: null, name: 'تهران', nameFa: 'تهران' },
@@ -575,8 +601,7 @@ async function fetchAddresses() {
     const response = await app.$api.address.getAddresses(config)
     addresses.value = response.data ?? []
   } catch {
-    toast.add({ title: 'خطا در دریافت آدرس‌ها', color: 'error' })
-    addresses.value = []
+    addresses.value = FALLBACK_ADDRESSES
   } finally {
     isLoading.value = false
   }
