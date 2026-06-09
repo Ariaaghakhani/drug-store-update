@@ -187,7 +187,7 @@
                 </div>
                 <div class="flex-shrink-0 flex flex-col items-end gap-1.5">
                   <p class="text-[11px] text-gray-400 dark:text-gray-500">{{ session.lastActive }}</p>
-                  <UButton v-if="!session.current" variant="soft" color="error" size="sm">لغو دسترسی</UButton>
+                  <UButton v-if="!session.current" variant="soft" color="error" size="sm" icon="i-heroicons-x-circle">لغو دسترسی</UButton>
                 </div>
               </div>
             </div>
@@ -317,9 +317,9 @@
                         <p class="text-xs text-gray-400 leading-relaxed">کد تأیید به شماره زیر ارسال می‌شود</p>
                       </div>
                       <UInput model-value="۰۹۱۲***۴۵۶" readonly dir="ltr" size="md" class="w-full" :ui="{ base: 'text-center' }" />
-                      <div class="flex gap-3">
-                        <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="requestCancel">انصراف</UButton>
-                        <UButton color="primary" class="flex-1 justify-center" @click="advanceStep">ارسال کد تأیید</UButton>
+                      <div class="flex flex-col gap-2">
+                        <UButton color="primary" size="lg" block @click="advanceStep">ارسال کد تأیید</UButton>
+                        <UButton variant="soft" color="neutral" size="lg" block @click="requestCancel">انصراف</UButton>
                       </div>
                     </template>
 
@@ -352,9 +352,9 @@
                           {{ resendCountdown > 0 ? `ارسال مجدد (${formattedCountdown})` : 'ارسال مجدد' }}
                         </button>
                       </p>
-                      <div class="flex gap-3">
-                        <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="retreatStep">بازگشت</UButton>
-                        <UButton color="primary" class="flex-1 justify-center" @click="advanceStep">تأیید کد</UButton>
+                      <div class="flex flex-col gap-2">
+                        <UButton color="primary" size="lg" block @click="advanceStep">تأیید کد</UButton>
+                        <UButton variant="soft" color="neutral" size="lg" block @click="retreatStep">بازگشت</UButton>
                       </div>
                     </template>
 
@@ -383,9 +383,9 @@
                         </Transition>
                         <UInput v-model="confirmPassword" type="password" placeholder="تکرار رمز عبور جدید" size="md" class="w-full" />
                       </div>
-                      <div class="flex gap-3">
-                        <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="retreatStep">بازگشت</UButton>
-                        <UButton color="primary" class="flex-1 justify-center" @click="advanceStep">ذخیره رمز عبور</UButton>
+                      <div class="flex flex-col gap-2">
+                        <UButton color="primary" size="lg" block @click="advanceStep">ذخیره رمز عبور</UButton>
+                        <UButton variant="soft" color="neutral" size="lg" block @click="retreatStep">بازگشت</UButton>
                       </div>
                     </template>
 
@@ -401,7 +401,7 @@
                           <h3 class="text-base font-semibold text-gray-900 dark:text-white">رمز عبور تغییر کرد</h3>
                           <p class="text-xs text-gray-400 leading-relaxed">از تمام دستگاه‌های دیگر خارج شدید</p>
                         </div>
-                        <UButton color="primary" block @click="closePasswordModal">متوجه شدم</UButton>
+                        <UButton color="primary" size="lg" block @click="closePasswordModal">متوجه شدم</UButton>
                       </div>
                     </template>
 
