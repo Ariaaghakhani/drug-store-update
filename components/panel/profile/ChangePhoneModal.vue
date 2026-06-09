@@ -67,7 +67,7 @@
                       <input
                         v-for="(_, idx) in oldOtp"
                         :key="idx"
-                        :ref="(el) => { oldOtpRefs[idx] = el as HTMLInputElement }"
+                        :ref="(el) => { oldOtpRefs[idx] = el }"
                         :value="oldOtp[idx]"
                         type="text"
                         inputmode="numeric"
@@ -116,7 +116,7 @@
                       <input
                         v-for="(_, idx) in newOtp"
                         :key="idx"
-                        :ref="(el) => { newOtpRefs[idx] = el as HTMLInputElement }"
+                        :ref="(el) => { newOtpRefs[idx] = el }"
                         :value="newOtp[idx]"
                         type="text"
                         inputmode="numeric"
@@ -166,12 +166,9 @@
   </UModal>
 </template>
 
-<script setup lang="ts">
-const props = defineProps<{ open: boolean }>()
-const emit = defineEmits<{
-  'update:open': [value: boolean]
-  saved: []
-}>()
+<script setup>
+const props = defineProps({ open: Boolean })
+const emit = defineEmits(['update:open', 'saved'])
 
 const isOpen = computed({
   get: () => props.open,
@@ -184,10 +181,10 @@ const showCancelConfirm = ref(false)
 const newPhone = ref('')
 const oldOtp = ref(['', '', '', '', ''])
 const newOtp = ref(['', '', '', '', ''])
-const oldOtpRefs: HTMLInputElement[] = []
-const newOtpRefs: HTMLInputElement[] = []
+const oldOtpRefs = []
+const newOtpRefs = []
 const resendCountdown = ref(0)
-let resendTimer: ReturnType<typeof setInterval> | null = null
+let resendTimer = null
 
 const startResend = () => {
   resendCountdown.value = 60
@@ -229,21 +226,21 @@ const close = () => {
   }, 300)
 }
 
-const handleOldOtpInput = (idx: number, event: Event) => {
-  const val = (event.target as HTMLInputElement).value.replace(/\D/g, '').slice(-1)
+const handleOldOtpInput = (idx, event) => {
+  const val = event.target.value.replace(/\D/g, '').slice(-1)
   oldOtp.value[idx] = val
   if (val && idx < 4) nextTick(() => oldOtpRefs[idx + 1]?.focus())
 }
-const handleOldOtpKeydown = (idx: number, event: KeyboardEvent) => {
+const handleOldOtpKeydown = (idx, event) => {
   if (event.key === 'Backspace' && !oldOtp.value[idx] && idx > 0)
     nextTick(() => oldOtpRefs[idx - 1]?.focus())
 }
-const handleNewOtpInput = (idx: number, event: Event) => {
-  const val = (event.target as HTMLInputElement).value.replace(/\D/g, '').slice(-1)
+const handleNewOtpInput = (idx, event) => {
+  const val = event.target.value.replace(/\D/g, '').slice(-1)
   newOtp.value[idx] = val
   if (val && idx < 4) nextTick(() => newOtpRefs[idx + 1]?.focus())
 }
-const handleNewOtpKeydown = (idx: number, event: KeyboardEvent) => {
+const handleNewOtpKeydown = (idx, event) => {
   if (event.key === 'Backspace' && !newOtp.value[idx] && idx > 0)
     nextTick(() => newOtpRefs[idx - 1]?.focus())
 }

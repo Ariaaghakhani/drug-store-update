@@ -41,21 +41,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
-export interface LoginEntry {
-  id: number
-  success: boolean
-  suspicious: boolean
-  action: string
-  device: string
-  ip: string
-  time: string
-}
-
-defineProps<{
-  loading?: boolean
-  history: LoginEntry[]
-}>()
+<script setup>
+defineProps({
+  loading: Boolean,
+  history: Array,
+})
 </script>
 
 <style scoped>

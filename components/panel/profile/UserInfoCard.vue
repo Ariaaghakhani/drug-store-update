@@ -79,21 +79,13 @@
   </div>
 </template>
 
-<script setup lang="ts">
-export interface ProfileForm {
-  firstName: string
-  lastName: string
-  nationalId: string
-  birthDate: string
-  gender: string
-}
+<script setup>
+const props = defineProps({
+  loading: Boolean,
+  form: Object,
+})
 
-const props = defineProps<{
-  loading?: boolean
-  form: ProfileForm
-}>()
-
-const emit = defineEmits<{ edit: [] }>()
+const emit = defineEmits(['edit'])
 
 const genderOptions = [
   { label: 'تعیین نشده', value: 'unspecified' },

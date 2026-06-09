@@ -46,26 +46,21 @@
   </UModal>
 </template>
 
-<script setup lang="ts">
-import type { ProfileForm } from './UserInfoCard.vue'
+<script setup>
+const props = defineProps({
+  open: Boolean,
+  form: Object,
+  loading: Boolean,
+})
 
-const props = defineProps<{
-  open: boolean
-  form: ProfileForm
-  loading?: boolean
-}>()
-
-const emit = defineEmits<{
-  'update:open': [value: boolean]
-  save: [form: ProfileForm]
-}>()
+const emit = defineEmits(['update:open', 'save'])
 
 const isOpen = computed({
   get: () => props.open,
   set: (v) => emit('update:open', v),
 })
 
-const localForm = ref<ProfileForm>({ ...props.form })
+const localForm = ref({ ...props.form })
 
 watch(
   () => props.open,
@@ -73,9 +68,7 @@ watch(
 )
 
 const hasChanges = computed(() =>
-  (Object.keys(localForm.value) as (keyof ProfileForm)[]).some(
-    (k) => localForm.value[k] !== props.form[k]
-  )
+  Object.keys(localForm.value).some((k) => localForm.value[k] !== props.form[k])
 )
 
 const handleSave = () => emit('save', { ...localForm.value })

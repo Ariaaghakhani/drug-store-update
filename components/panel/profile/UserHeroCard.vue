@@ -73,29 +73,21 @@
   </div>
 </template>
 
-<script setup lang="ts">
-interface Stats {
-  orders: number
-  addresses: number
-  prescriptions: number
-}
+<script setup>
+defineProps({
+  loading: Boolean,
+  fullName: String,
+  initials: String,
+  memberSince: String,
+  stats: Object,
+})
 
-defineProps<{
-  loading?: boolean
-  fullName: string
-  initials: string
-  memberSince: string
-  stats: Stats
-}>()
+const emit = defineEmits(['avatar-change'])
 
-const emit = defineEmits<{
-  'avatar-change': [file: File]
-}>()
+const fileInput = ref(null)
 
-const fileInput = ref<HTMLInputElement | null>(null)
-
-const onAvatarChange = (event: Event) => {
-  const file = (event.target as HTMLInputElement).files?.[0]
+const onAvatarChange = (event) => {
+  const file = event.target.files?.[0]
   if (file) emit('avatar-change', file)
 }
 </script>

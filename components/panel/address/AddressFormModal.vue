@@ -111,48 +111,16 @@
   </UModal>
 </template>
 
-<script setup lang="ts">
-import type { Address } from '@/components/panel/address/AddressCard.vue'
+<script setup>
+const props = defineProps({
+  open: Boolean,
+  address: Object,
+  provinces: Array,
+  cities: Array,
+  saving: Boolean,
+})
 
-export interface ProvinceOption {
-  id: number | null
-  name: string
-  nameFa: string
-  label: string
-}
-
-export interface CityOption {
-  id: number | null
-  name: string
-  nameFa: string
-  label: string
-}
-
-export interface AddressForm {
-  type: 'home' | 'work' | 'other'
-  label: string
-  province: string
-  city: string
-  district: string
-  street: string
-  postalCode: string
-  phone: string
-  isDefault: boolean
-}
-
-const props = defineProps<{
-  open: boolean
-  address: Address | null
-  provinces: ProvinceOption[]
-  cities: CityOption[]
-  saving?: boolean
-}>()
-
-const emit = defineEmits<{
-  'update:open': [value: boolean]
-  save: [form: AddressForm, id: number | null]
-  'province-change': [provinceObj: ProvinceOption]
-}>()
+const emit = defineEmits(['update:open', 'save', 'province-change'])
 
 const isOpen = computed({
   get: () => props.open,
@@ -160,14 +128,14 @@ const isOpen = computed({
 })
 
 const addressTypes = [
-  { value: 'home' as const, label: 'خانه', icon: 'i-heroicons-home' },
-  { value: 'work' as const, label: 'محل کار', icon: 'i-heroicons-building-office' },
-  { value: 'other' as const, label: 'سایر', icon: 'i-heroicons-map-pin' },
+  { value: 'home', label: 'خانه', icon: 'i-heroicons-home' },
+  { value: 'work', label: 'محل کار', icon: 'i-heroicons-building-office' },
+  { value: 'other', label: 'سایر', icon: 'i-heroicons-map-pin' },
 ]
 
-const TYPE_LABELS: Record<string, string> = { home: 'خانه', work: 'محل کار' }
+const TYPE_LABELS = { home: 'خانه', work: 'محل کار' }
 
-const defaultForm = (): AddressForm => ({
+const defaultForm = () => ({
   type: 'home',
   label: 'خانه',
   province: '',
@@ -179,28 +147,28 @@ const defaultForm = (): AddressForm => ({
   isDefault: false,
 })
 
-const form = ref<AddressForm>(defaultForm())
-const selectedProvinceObj = ref<ProvinceOption | null>(null)
-const selectedCityObj = ref<CityOption | null>(null)
+const form = ref(defaultForm())
+const selectedProvinceObj = ref(null)
+const selectedCityObj = ref(null)
 
 const formErrors = reactive({ label: '', province: '', city: '', street: '', postalCode: '' })
 const hasSubmitted = ref(false)
 
 const visibleErrors = computed(() => {
-  if (!hasSubmitted.value) return {} as typeof formErrors
+  if (!hasSubmitted.value) return {}
   return Object.fromEntries(
     Object.entries(formErrors).map(([k, v]) => [k, v || undefined])
-  ) as Partial<typeof formErrors>
+  )
 })
 
 const clearErrors = () => {
   hasSubmitted.value = false
-  Object.keys(formErrors).forEach((k) => ((formErrors as Record<string, string>)[k] = ''))
+  Object.keys(formErrors).forEach((k) => (formErrors[k] = ''))
 }
 
 const validate = () => {
   hasSubmitted.value = true
-  Object.keys(formErrors).forEach((k) => ((formErrors as Record<string, string>)[k] = ''))
+  Object.keys(formErrors).forEach((k) => (formErrors[k] = ''))
   let valid = true
   if (!form.value.label.trim()) { formErrors.label = 'عنوان آدرس الزامی است'; valid = false }
   if (!form.value.province) { formErrors.province = 'انتخاب استان الزامی است'; valid = false }
@@ -219,7 +187,7 @@ watch(
     clearErrors()
     if (props.address) {
       form.value = { ...props.address }
-      const provinceObj = props.provinces.find((p) => p.name === props.address!.province) ?? null
+      const provinceObj = props.provinces.find((p) => p.name === props.address.province) ?? null
       selectedProvinceObj.value = provinceObj
       selectedCityObj.value = null
       if (provinceObj) emit('province-change', provinceObj)
@@ -231,7 +199,6 @@ watch(
   }
 )
 
-// Set city after parent loads cities for edit mode
 watch(
   () => props.cities,
   (newCities) => {
@@ -241,19 +208,19 @@ watch(
   }
 )
 
-const onTypeSelect = (type: AddressForm['type']) => {
+const onTypeSelect = (type) => {
   form.value.type = type
   form.value.label = TYPE_LABELS[type] ?? ''
 }
 
-const onProvinceSelect = (provinceObj: ProvinceOption) => {
+const onProvinceSelect = (provinceObj) => {
   form.value.province = provinceObj?.name ?? ''
   form.value.city = ''
   selectedCityObj.value = null
   emit('province-change', provinceObj)
 }
 
-const onCitySelect = (cityObj: CityOption) => {
+const onCitySelect = (cityObj) => {
   form.value.city = cityObj?.name ?? ''
 }
 

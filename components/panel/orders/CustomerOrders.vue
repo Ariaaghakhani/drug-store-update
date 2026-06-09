@@ -90,17 +90,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
-
-interface Order {
-  id: string
-  status: OrderStatus
-  itemCount: number
-  total: number
-  date: string
-}
-
+<script setup>
 const statusOptions = [
   { label: 'همه سفارشات', value: 'all' },
   { label: 'در انتظار تایید', value: 'pending' },
@@ -112,7 +102,7 @@ const statusOptions = [
 
 const statusFilter = ref('all')
 
-const orders: Order[] = [
+const orders = [
   { id: '۱۰۰۴۵', status: 'delivered', itemCount: 3, total: 285000, date: '۱۴۰۳/۰۳/۱۲' },
   { id: '۱۰۰۳۸', status: 'shipped', itemCount: 1, total: 129000, date: '۱۴۰۳/۰۳/۰۵' },
   { id: '۱۰۰۲۱', status: 'cancelled', itemCount: 2, total: 98000, date: '۱۴۰۳/۰۲/۲۸' },
@@ -124,8 +114,8 @@ const filteredOrders = computed(() =>
     : orders.filter((o) => o.status === statusFilter.value)
 )
 
-const statusColor = (status: OrderStatus) => {
-  const map: Record<OrderStatus, 'warning' | 'info' | 'primary' | 'success' | 'error'> = {
+const statusColor = (status) => {
+  const map = {
     pending: 'warning',
     processing: 'info',
     shipped: 'primary',
@@ -135,8 +125,8 @@ const statusColor = (status: OrderStatus) => {
   return map[status]
 }
 
-const statusLabel = (status: OrderStatus) => {
-  const map: Record<OrderStatus, string> = {
+const statusLabel = (status) => {
+  const map = {
     pending: 'در انتظار تایید',
     processing: 'در حال پردازش',
     shipped: 'ارسال شده',

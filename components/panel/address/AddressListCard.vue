@@ -80,22 +80,16 @@
   </UCard>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import AddressCard from '@/components/panel/address/AddressCard.vue'
-import type { Address } from '@/components/panel/address/AddressCard.vue'
 
-defineProps<{
-  addresses: Address[]
-  loading: boolean
-  deletingId: number | null
-}>()
+defineProps({
+  addresses: Array,
+  loading: Boolean,
+  deletingId: Number,
+})
 
-const emit = defineEmits<{
-  add: []
-  edit: [address: Address]
-  delete: [id: number]
-  'set-default': [id: number]
-}>()
+const emit = defineEmits(['add', 'edit', 'delete', 'set-default'])
 </script>
 
 <style scoped>

@@ -67,7 +67,7 @@
                       <input
                         v-for="(_, idx) in otpDigits"
                         :key="idx"
-                        :ref="(el) => { otpRefs[idx] = el as HTMLInputElement }"
+                        :ref="(el) => { otpRefs[idx] = el }"
                         :value="otpDigits[idx]"
                         type="text"
                         inputmode="numeric"
@@ -147,12 +147,9 @@
   </UModal>
 </template>
 
-<script setup lang="ts">
-const props = defineProps<{ open: boolean }>()
-const emit = defineEmits<{
-  'update:open': [value: boolean]
-  saved: []
-}>()
+<script setup>
+const props = defineProps({ open: Boolean })
+const emit = defineEmits(['update:open', 'saved'])
 
 const isOpen = computed({
   get: () => props.open,
@@ -165,9 +162,9 @@ const showCancelConfirm = ref(false)
 const newPassword = ref('')
 const confirmPassword = ref('')
 const otpDigits = ref(['', '', '', '', ''])
-const otpRefs: HTMLInputElement[] = []
+const otpRefs = []
 const resendCountdown = ref(0)
-let resendTimer: ReturnType<typeof setInterval> | null = null
+let resendTimer = null
 
 const passwordStrength = computed(() => {
   const p = newPassword.value
@@ -225,13 +222,13 @@ const close = () => {
   }, 300)
 }
 
-const handleOtpInput = (idx: number, event: Event) => {
-  const val = (event.target as HTMLInputElement).value.replace(/\D/g, '').slice(-1)
+const handleOtpInput = (idx, event) => {
+  const val = event.target.value.replace(/\D/g, '').slice(-1)
   otpDigits.value[idx] = val
   if (val && idx < 4) nextTick(() => otpRefs[idx + 1]?.focus())
 }
 
-const handleOtpKeydown = (idx: number, event: KeyboardEvent) => {
+const handleOtpKeydown = (idx, event) => {
   if (event.key === 'Backspace' && !otpDigits.value[idx] && idx > 0)
     nextTick(() => otpRefs[idx - 1]?.focus())
 }

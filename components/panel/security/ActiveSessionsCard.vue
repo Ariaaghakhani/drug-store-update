@@ -66,27 +66,13 @@
   </div>
 </template>
 
-<script setup lang="ts">
-export interface Session {
-  id: number
-  current: boolean
-  icon: string
-  device: string
-  browser: string
-  location: string
-  ip: string
-  lastActive: string
-}
+<script setup>
+defineProps({
+  loading: Boolean,
+  sessions: Array,
+})
 
-defineProps<{
-  loading?: boolean
-  sessions: Session[]
-}>()
-
-const emit = defineEmits<{
-  revoke: [id: number]
-  'revoke-all': []
-}>()
+const emit = defineEmits(['revoke', 'revoke-all'])
 </script>
 
 <style scoped>

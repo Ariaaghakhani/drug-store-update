@@ -40,30 +40,13 @@
   </div>
 </template>
 
-<script setup lang="ts">
-export interface Address {
-  id: number
-  type: 'home' | 'work' | 'other'
-  label: string
-  province: string
-  city: string
-  district: string
-  street: string
-  postalCode: string
-  phone: string
-  isDefault: boolean
-}
+<script setup>
+const props = defineProps({
+  address: Object,
+  deleting: Boolean,
+})
 
-const props = defineProps<{
-  address: Address
-  deleting?: boolean
-}>()
-
-const emit = defineEmits<{
-  edit: []
-  delete: []
-  'set-default': []
-}>()
+const emit = defineEmits(['edit', 'delete', 'set-default'])
 
 const addressTypes = [
   { value: 'home', icon: 'i-heroicons-home' },

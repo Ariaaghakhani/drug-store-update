@@ -83,18 +83,14 @@
   </div>
 </template>
 
-<script setup lang="ts">
-defineProps<{
-  loading?: boolean
-  twoFAEnabled: boolean
-  smsEnabled: boolean
-}>()
+<script setup>
+defineProps({
+  loading: Boolean,
+  twoFAEnabled: Boolean,
+  smsEnabled: Boolean,
+})
 
-const emit = defineEmits<{
-  'change-password': []
-  'manage-2fa': []
-  'update:smsEnabled': [value: boolean]
-}>()
+const emit = defineEmits(['change-password', 'manage-2fa', 'update:smsEnabled'])
 
 const switchUi = {
   base: 'data-[state=checked]:bg-brand-500 dark:data-[state=checked]:bg-brand-400 data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-gray-600',

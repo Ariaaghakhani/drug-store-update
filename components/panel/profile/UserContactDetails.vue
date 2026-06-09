@@ -100,20 +100,16 @@
   </div>
 </template>
 
-<script setup lang="ts">
-defineProps<{
-  loading?: boolean
-  phone: string
-  email: string
-  emailVerified: boolean
-  smsNotifications: boolean
-}>()
+<script setup>
+defineProps({
+  loading: Boolean,
+  phone: String,
+  email: String,
+  emailVerified: Boolean,
+  smsNotifications: Boolean,
+})
 
-const emit = defineEmits<{
-  'change-phone': []
-  'change-email': []
-  'update:smsNotifications': [value: boolean]
-}>()
+const emit = defineEmits(['change-phone', 'change-email', 'update:smsNotifications'])
 </script>
 
 <style scoped>

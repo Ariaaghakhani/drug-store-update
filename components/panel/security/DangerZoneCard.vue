@@ -43,13 +43,10 @@
   </div>
 </template>
 
-<script setup lang="ts">
-defineProps<{ loading?: boolean }>()
+<script setup>
+defineProps({ loading: Boolean })
 
-const emit = defineEmits<{
-  'end-sessions': []
-  'delete-account': []
-}>()
+const emit = defineEmits(['end-sessions', 'delete-account'])
 </script>
 
 <style scoped>

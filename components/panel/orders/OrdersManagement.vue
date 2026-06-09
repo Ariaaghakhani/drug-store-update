@@ -117,22 +117,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
-type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
-
-interface Order {
-  id: string
-  status: OrderStatus
-  customerName: string
-  itemCount: number
-  total: number
-  date: string
-}
-
+<script setup>
 const search = ref('')
 const statusFilter = ref('all')
 
-const allOrders: Order[] = [
+const allOrders = [
   { id: '۱۰۰۴۵', status: 'pending', customerName: 'علی محمدی', itemCount: 2, total: 185000, date: '۱۴۰۳/۰۳/۱۴' },
   { id: '۱۰۰۴۴', status: 'processing', customerName: 'سارا رضایی', itemCount: 4, total: 620000, date: '۱۴۰۳/۰۳/۱۴' },
   { id: '۱۰۰۴۳', status: 'shipped', customerName: 'مهدی کریمی', itemCount: 1, total: 129000, date: '۱۴۰۳/۰۳/۱۳' },
@@ -142,21 +131,11 @@ const allOrders: Order[] = [
 
 const stats = computed(() => [
   { label: 'کل سفارشات', value: allOrders.length.toLocaleString('fa-IR') },
-  {
-    label: 'در انتظار',
-    value: allOrders.filter((o) => o.status === 'pending').length.toLocaleString('fa-IR'),
-  },
-  {
-    label: 'درحال پردازش',
-    value: allOrders.filter((o) => o.status === 'processing').length.toLocaleString('fa-IR'),
-  },
+  { label: 'در انتظار', value: allOrders.filter((o) => o.status === 'pending').length.toLocaleString('fa-IR') },
+  { label: 'درحال پردازش', value: allOrders.filter((o) => o.status === 'processing').length.toLocaleString('fa-IR') },
   {
     label: 'درآمد امروز',
-    value:
-      allOrders
-        .filter((o) => o.status !== 'cancelled')
-        .reduce((sum, o) => sum + o.total, 0)
-        .toLocaleString('fa-IR') + ' ت',
+    value: allOrders.filter((o) => o.status !== 'cancelled').reduce((sum, o) => sum + o.total, 0).toLocaleString('fa-IR') + ' ت',
   },
 ])
 
@@ -171,37 +150,21 @@ const statusOptions = computed(() => [
 
 const filteredOrders = computed(() => {
   let result = allOrders
-  if (statusFilter.value !== 'all') {
-    result = result.filter((o) => o.status === statusFilter.value)
-  }
+  if (statusFilter.value !== 'all') result = result.filter((o) => o.status === statusFilter.value)
   if (search.value.trim()) {
     const q = search.value.trim()
-    result = result.filter(
-      (o) => o.id.includes(q) || o.customerName.includes(q)
-    )
+    result = result.filter((o) => o.id.includes(q) || o.customerName.includes(q))
   }
   return result
 })
 
-const statusColor = (status: OrderStatus) => {
-  const map: Record<OrderStatus, 'warning' | 'info' | 'primary' | 'success' | 'error'> = {
-    pending: 'warning',
-    processing: 'info',
-    shipped: 'primary',
-    delivered: 'success',
-    cancelled: 'error',
-  }
+const statusColor = (status) => {
+  const map = { pending: 'warning', processing: 'info', shipped: 'primary', delivered: 'success', cancelled: 'error' }
   return map[status]
 }
 
-const statusLabel = (status: OrderStatus) => {
-  const map: Record<OrderStatus, string> = {
-    pending: 'در انتظار تایید',
-    processing: 'در حال پردازش',
-    shipped: 'ارسال شده',
-    delivered: 'تحویل شده',
-    cancelled: 'لغو شده',
-  }
+const statusLabel = (status) => {
+  const map = { pending: 'در انتظار تایید', processing: 'در حال پردازش', shipped: 'ارسال شده', delivered: 'تحویل شده', cancelled: 'لغو شده' }
   return map[status]
 }
 </script>

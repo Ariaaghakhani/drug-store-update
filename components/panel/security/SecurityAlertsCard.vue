@@ -41,22 +41,13 @@
   </div>
 </template>
 
-<script setup lang="ts">
-export interface SecurityNotification {
-  id: string
-  label: string
-  description: string
-  enabled: boolean
-}
+<script setup>
+defineProps({
+  loading: Boolean,
+  notifications: Array,
+})
 
-defineProps<{
-  loading?: boolean
-  notifications: SecurityNotification[]
-}>()
-
-const emit = defineEmits<{
-  toggle: [id: string, enabled: boolean]
-}>()
+const emit = defineEmits(['toggle'])
 
 const switchUi = {
   base: 'data-[state=checked]:bg-brand-500 dark:data-[state=checked]:bg-brand-400 data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-gray-600',

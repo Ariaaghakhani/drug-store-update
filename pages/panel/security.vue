@@ -39,14 +39,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import AuthMethodsCard from '@/components/panel/security/AuthMethodsCard.vue'
 import ActiveSessionsCard from '@/components/panel/security/ActiveSessionsCard.vue'
-import type { Session } from '@/components/panel/security/ActiveSessionsCard.vue'
 import LoginHistoryCard from '@/components/panel/security/LoginHistoryCard.vue'
-import type { LoginEntry } from '@/components/panel/security/LoginHistoryCard.vue'
 import SecurityAlertsCard from '@/components/panel/security/SecurityAlertsCard.vue'
-import type { SecurityNotification } from '@/components/panel/security/SecurityAlertsCard.vue'
 import DangerZoneCard from '@/components/panel/security/DangerZoneCard.vue'
 import ChangePasswordModal from '@/components/panel/security/ChangePasswordModal.vue'
 import TwoFAModal from '@/components/panel/security/TwoFAModal.vue'
@@ -59,26 +56,26 @@ const smsEnabled = ref(false)
 const showPasswordModal = ref(false)
 const show2FAModal = ref(false)
 
-const activeSessions = ref<Session[]>([
+const activeSessions = ref([
   { id: 1, current: true, icon: 'i-heroicons-computer-desktop', device: 'MacBook Pro', browser: 'Chrome 124 · macOS', location: 'تهران', ip: '185.xx.xx.42', lastActive: 'هم‌اکنون' },
   { id: 2, current: false, icon: 'i-heroicons-device-phone-mobile', device: 'Samsung Galaxy S23', browser: 'Samsung Browser · Android 14', location: 'اصفهان', ip: '94.xx.xx.17', lastActive: '۲ ساعت پیش' },
   { id: 3, current: false, icon: 'i-heroicons-computer-desktop', device: 'Windows PC', browser: 'Firefox 125 · Windows 11', location: 'مشهد', ip: '91.xx.xx.88', lastActive: 'دیروز، ۱۴:۳۰' },
 ])
 
-const loginHistory = ref<LoginEntry[]>([
+const loginHistory = ref([
   { id: 1, success: true, suspicious: false, action: 'ورود موفق', device: 'Chrome · MacBook Pro', ip: '185.xx.xx.42', time: 'امروز، ۱۰:۱۵' },
   { id: 2, success: true, suspicious: false, action: 'ورود موفق', device: 'Samsung Browser · Android', ip: '94.xx.xx.17', time: 'دیروز، ۱۸:۴۰' },
   { id: 3, success: false, suspicious: true, action: 'تلاش ناموفق برای ورود', device: 'Chrome · Windows', ip: '212.xx.xx.11', time: 'دیروز، ۰۳:۲۲' },
   { id: 4, success: true, suspicious: false, action: 'ورود موفق', device: 'Firefox · Windows PC', ip: '91.xx.xx.88', time: '۳ روز پیش، ۱۴:۳۰' },
 ])
 
-const securityNotifications = ref<SecurityNotification[]>([
+const securityNotifications = ref([
   { id: 'new-device', label: 'ورود از دستگاه جدید', description: 'هنگام ورود از یک دستگاه ناشناس اطلاع‌رسانی شوید', enabled: true },
   { id: 'failed-login', label: 'تلاش‌های ناموفق برای ورود', description: 'پس از ۳ تلاش ناموفق متوالی اطلاع‌رسانی شوید', enabled: true },
   { id: 'profile-change', label: 'تغییرات پروفایل', description: 'هنگام تغییر اطلاعات حساب یا رمز عبور اطلاع‌رسانی شوید', enabled: false },
 ])
 
-const revokeSession = (id: number) => {
+const revokeSession = (id) => {
   activeSessions.value = activeSessions.value.filter((s) => s.id !== id)
   toast.add({ title: 'دسترسی لغو شد', color: 'success' })
 }
@@ -88,7 +85,7 @@ const revokeAllSessions = () => {
   toast.add({ title: 'خروج از همه دستگاه‌ها', description: 'از تمام دستگاه‌های دیگر خارج شدید', color: 'primary' })
 }
 
-const onNotificationToggle = (id: string, enabled: boolean) => {
+const onNotificationToggle = (id, enabled) => {
   const notif = securityNotifications.value.find((n) => n.id === id)
   if (notif) notif.enabled = enabled
 }

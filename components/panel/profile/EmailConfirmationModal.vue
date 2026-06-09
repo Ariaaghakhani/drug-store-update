@@ -58,16 +58,13 @@
   </UModal>
 </template>
 
-<script setup lang="ts">
-const props = defineProps<{
-  open: boolean
-  email?: string
-}>()
+<script setup>
+const props = defineProps({
+  open: Boolean,
+  email: String,
+})
 
-const emit = defineEmits<{
-  'update:open': [value: boolean]
-  saved: [email: string]
-}>()
+const emit = defineEmits(['update:open', 'saved'])
 
 const isOpen = computed({
   get: () => props.open,

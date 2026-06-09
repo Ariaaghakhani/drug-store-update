@@ -23,11 +23,9 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import AddressListCard from '@/components/panel/address/AddressListCard.vue'
 import AddressFormModal from '@/components/panel/address/AddressFormModal.vue'
-import type { Address } from '@/components/panel/address/AddressCard.vue'
-import type { AddressForm, ProvinceOption, CityOption } from '@/components/panel/address/AddressFormModal.vue'
 
 const app = useNuxtApp()
 const userStore = useUserStore()
@@ -36,13 +34,13 @@ const toast = useToast()
 const isLoading = ref(true)
 const isModalOpen = ref(false)
 const isSaving = ref(false)
-const deletingId = ref<number | null>(null)
-const editingAddress = ref<Address | null>(null)
-const addresses = ref<Address[]>([])
-const allProvinces = ref<ProvinceOption[]>([])
-const cityOptions = ref<CityOption[]>([])
+const deletingId = ref(null)
+const editingAddress = ref(null)
+const addresses = ref([])
+const allProvinces = ref([])
+const cityOptions = ref([])
 
-const FALLBACK_ADDRESSES: Address[] = [
+const FALLBACK_ADDRESSES = [
   { id: 1, type: 'home', label: 'خانه', province: 'تهران', city: 'تهران', district: '', street: 'خیابان ولیعصر، کوچه بهار، پلاک ۱۲، واحد ۳', postalCode: '1591634149', phone: '09121234567', isDefault: true },
   { id: 2, type: 'work', label: 'محل کار', province: 'تهران', city: 'تهران', district: '', street: 'میدان آرژانتین، خیابان الوند، پلاک ۵، طبقه دوم', postalCode: '1513643511', phone: '02112345678', isDefault: false },
 ]
@@ -55,7 +53,7 @@ const FALLBACK_PROVINCES = [
   { id: null, name: 'آذربایجان شرقی', nameFa: 'آذربایجان شرقی', label: 'آذربایجان شرقی' },
 ]
 
-const FALLBACK_CITIES: Record<string, CityOption[]> = {
+const FALLBACK_CITIES = {
   تهران: [{ id: null, name: 'تهران', nameFa: 'تهران', label: 'تهران' }, { id: null, name: 'کرج', nameFa: 'کرج', label: 'کرج' }],
   اصفهان: [{ id: null, name: 'اصفهان', nameFa: 'اصفهان', label: 'اصفهان' }, { id: null, name: 'کاشان', nameFa: 'کاشان', label: 'کاشان' }],
   فارس: [{ id: null, name: 'شیراز', nameFa: 'شیراز', label: 'شیراز' }, { id: null, name: 'مرودشت', nameFa: 'مرودشت', label: 'مرودشت' }],
@@ -63,15 +61,15 @@ const FALLBACK_CITIES: Record<string, CityOption[]> = {
   'آذربایجان شرقی': [{ id: null, name: 'تبریز', nameFa: 'تبریز', label: 'تبریز' }, { id: null, name: 'مراغه', nameFa: 'مراغه', label: 'مراغه' }],
 }
 
-const provinceOptions = computed<ProvinceOption[]>(() => {
+const provinceOptions = computed(() => {
   const list = allProvinces.value.length ? allProvinces.value : FALLBACK_PROVINCES
   return [...list].sort((a, b) => a.name.localeCompare(b.name, 'fa-IR')).map((p) => ({ ...p, label: p.nameFa || p.name }))
 })
 
-const normalizeCities = (list: CityOption[]): CityOption[] =>
+const normalizeCities = (list) =>
   [...list].sort((a, b) => a.name.localeCompare(b.name, 'fa-IR')).map((c) => ({ ...c, label: c.nameFa || c.name }))
 
-const onProvinceChange = (provinceObj: ProvinceOption) => {
+const onProvinceChange = (provinceObj) => {
   cityOptions.value = []
   if (!provinceObj) return
   if (provinceObj.id) {
@@ -105,12 +103,12 @@ const fetchAddresses = async () => {
   }
 }
 
-const setDefault = (id: number) => {
+const setDefault = (id) => {
   addresses.value = addresses.value.map((a) => ({ ...a, isDefault: a.id === id }))
   toast.add({ title: 'آدرس پیش‌فرض تغییر کرد', color: 'success' })
 }
 
-const deleteAddress = async (id: number) => {
+const deleteAddress = async (id) => {
   deletingId.value = id
   try {
     addresses.value = addresses.value.filter((a) => a.id !== id)
@@ -122,7 +120,7 @@ const deleteAddress = async (id: number) => {
   }
 }
 
-const saveAddress = async (formData: AddressForm, id: number | null) => {
+const saveAddress = async (formData, id) => {
   isSaving.value = true
   try {
     if (id !== null) {
@@ -148,15 +146,15 @@ const saveAddress = async (formData: AddressForm, id: number | null) => {
     isModalOpen.value = false
     editingAddress.value = null
     cityOptions.value = []
-  } catch (err: unknown) {
-    const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'خطا در ذخیره آدرس'
+  } catch (err) {
+    const message = err?.response?.data?.message ?? 'خطا در ذخیره آدرس'
     toast.add({ title: message, color: 'error' })
   } finally {
     isSaving.value = false
   }
 }
 
-const openModal = (address: Address | null) => {
+const openModal = (address) => {
   cityOptions.value = []
   editingAddress.value = address
   isModalOpen.value = true

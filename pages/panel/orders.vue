@@ -6,7 +6,7 @@
   </UCard>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import CustomerOrders from '~/components/panel/orders/CustomerOrders.vue'
 import OrdersManagement from '~/components/panel/orders/OrdersManagement.vue'
 

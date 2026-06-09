@@ -38,10 +38,9 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import UserHeroCard from '@/components/panel/profile/UserHeroCard.vue'
 import UserInfoCard from '@/components/panel/profile/UserInfoCard.vue'
-import type { ProfileForm } from '@/components/panel/profile/UserInfoCard.vue'
 import UserContactDetails from '@/components/panel/profile/UserContactDetails.vue'
 import PersonalInfoEditModal from '@/components/panel/profile/PersonalInfoEditModal.vue'
 import ChangePhoneModal from '@/components/panel/profile/ChangePhoneModal.vue'
@@ -63,7 +62,7 @@ const maskedPhone = '0912•••6789'
 const memberSince = 'اردیبهشت ۱۴۰۳'
 const stats = { orders: 12, addresses: 3, prescriptions: 8 }
 
-const form = ref<ProfileForm>({
+const form = ref({
   firstName: '',
   lastName: '',
   nationalId: '',
@@ -96,7 +95,7 @@ const loadUserData = () => {
     : { firstName: 'آریا', lastName: 'آقاخانی', nationalId: '', birthDate: '', gender: 'unspecified' }
 }
 
-const saveProfile = async (newForm: ProfileForm) => {
+const saveProfile = async (newForm) => {
   isLoading.value = true
   try {
     await new Promise((r) => setTimeout(r, 800))
@@ -110,7 +109,7 @@ const saveProfile = async (newForm: ProfileForm) => {
   }
 }
 
-const handleAvatarChange = (_file: File) => {
+const handleAvatarChange = (_file) => {
   toast.add({ title: 'تصویر انتخاب شد', description: 'آپلود تصویر پروفایل به زودی فعال خواهد شد', color: 'primary' })
 }
 
