@@ -1,109 +1,26 @@
 <!-- pages/panel/profile.vue -->
 <template>
   <div class="font-dana" dir="rtl">
-    <div class="relative">
-      <Transition name="sk">
-        <!-- Skeleton -->
-        <div v-if="pending" key="sk" class="space-y-4">
-          <UCard>
-            <div class="flex items-center gap-5 pb-5 border-b border-gray-100 dark:border-gray-800">
-              <USkeleton class="w-[72px] h-[72px] rounded-full flex-shrink-0" />
-              <div class="space-y-2">
-                <USkeleton class="h-5 w-32" />
-                <USkeleton class="h-3 w-24" />
-                <div class="flex gap-1.5 mt-1">
-                  <USkeleton class="h-5 w-20 rounded-full" />
-                  <USkeleton class="h-5 w-24 rounded-full" />
-                </div>
-              </div>
-            </div>
-            <div class="grid grid-cols-3 pt-5">
-              <div class="text-center space-y-2">
-                <USkeleton class="h-7 w-8 mx-auto" />
-                <USkeleton class="h-3 w-12 mx-auto" />
-              </div>
-              <div class="text-center border-x border-gray-100 dark:border-gray-800 space-y-2">
-                <USkeleton class="h-7 w-8 mx-auto" />
-                <USkeleton class="h-3 w-20 mx-auto" />
-              </div>
-              <div class="text-center space-y-2">
-                <USkeleton class="h-7 w-8 mx-auto" />
-                <USkeleton class="h-3 w-20 mx-auto" />
-              </div>
-            </div>
-          </UCard>
-
-          <UCard :ui="{ body: 'p-0' }">
-            <div class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-              <div class="flex items-center gap-2">
-                <USkeleton class="w-4 h-4 rounded flex-shrink-0" />
-                <USkeleton class="h-4 w-20" />
-              </div>
-              <USkeleton class="h-7 w-16 rounded-lg" />
-            </div>
-            <div class="divide-y divide-gray-100 dark:divide-gray-800">
-              <div v-for="i in 4" :key="i" class="flex items-center gap-3 px-4 sm:px-6 py-4">
-                <USkeleton class="w-9 h-9 rounded-lg flex-shrink-0" />
-                <div class="flex-1 space-y-1.5">
-                  <USkeleton class="h-3 w-16" />
-                  <USkeleton class="h-3.5 w-28" />
-                </div>
-              </div>
-            </div>
-          </UCard>
-
-          <UCard :ui="{ body: 'p-0' }">
-            <div class="flex items-center gap-2 px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-              <USkeleton class="w-4 h-4 rounded flex-shrink-0" />
-              <USkeleton class="h-4 w-32" />
-            </div>
-            <div class="divide-y divide-gray-100 dark:divide-gray-800">
-              <div v-for="i in 2" :key="i" class="flex items-center gap-3 px-4 sm:px-6 py-4">
-                <USkeleton class="w-9 h-9 rounded-lg flex-shrink-0" />
-                <div class="flex-1 space-y-1.5">
-                  <USkeleton class="h-3.5 w-20" />
-                  <USkeleton class="h-3 w-28" />
-                </div>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                  <USkeleton class="h-5 w-16 rounded-full" />
-                  <USkeleton class="h-7 w-12 rounded-lg" />
-                </div>
-              </div>
-              <div class="flex items-center justify-between px-4 sm:px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <USkeleton class="w-9 h-9 rounded-lg flex-shrink-0" />
-                  <div class="space-y-1.5">
-                    <USkeleton class="h-3.5 w-28" />
-                    <USkeleton class="h-3 w-36" />
-                  </div>
-                </div>
-                <USkeleton class="h-6 w-11 rounded-full" />
-              </div>
-            </div>
-          </UCard>
-        </div>
-
-        <!-- Real content -->
-        <div v-else key="content" class="space-y-4">
-          <UserHeroCard
-            :full-name="userFullName"
-            :initials="userInitials"
-            :member-since="memberSince"
-            :stats="stats"
-            @avatar-change="handleAvatarChange"
-          />
-          <UserInfoCard :form="form" @edit="showProfileModal = true" />
-          <UserContactDetails
-            :phone="maskedPhone"
-            :email="emailAddress"
-            :email-verified="emailVerified"
-            :sms-notifications="smsNotifications"
-            @change-phone="showPhoneModal = true"
-            @change-email="showEmailModal = true"
-            @update:sms-notifications="smsNotifications = $event"
-          />
-        </div>
-      </Transition>
+    <div class="space-y-4">
+      <UserHeroCard
+        :loading="pending"
+        :full-name="userFullName"
+        :initials="userInitials"
+        :member-since="memberSince"
+        :stats="stats"
+        @avatar-change="handleAvatarChange"
+      />
+      <UserInfoCard :loading="pending" :form="form" @edit="showProfileModal = true" />
+      <UserContactDetails
+        :loading="pending"
+        :phone="maskedPhone"
+        :email="emailAddress"
+        :email-verified="emailVerified"
+        :sms-notifications="smsNotifications"
+        @change-phone="showPhoneModal = true"
+        @change-email="showEmailModal = true"
+        @update:sms-notifications="smsNotifications = $event"
+      />
     </div>
 
     <PersonalInfoEditModal
@@ -206,8 +123,3 @@ onMounted(async () => {
 useHead({ title: 'پروفایل | پنل کاربری' })
 </script>
 
-<style scoped>
-.sk-enter-active { transition: opacity 0.25s ease; }
-.sk-leave-active { transition: opacity 0.25s ease; position: absolute; inset: 0; }
-.sk-enter-from, .sk-leave-to { opacity: 0; }
-</style>
