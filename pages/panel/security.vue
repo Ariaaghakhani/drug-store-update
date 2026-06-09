@@ -119,7 +119,7 @@
                   <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">آخرین تغییر: ۵ روز پیش</p>
                 </div>
               </div>
-              <UButton variant="ghost" color="neutral" size="sm" @click="showPasswordModal = true">تغییر</UButton>
+              <UButton variant="soft" color="neutral" size="lg" icon="i-heroicons-lock-closed" @click="showPasswordModal = true">تغییر رمز عبور</UButton>
             </div>
 
             <!-- Row 2: Authenticator App -->
@@ -138,8 +138,8 @@
                   </p>
                 </div>
               </div>
-              <UButton v-if="twoFAEnabled" variant="ghost" color="primary" size="sm" @click="show2FAModal = true">مدیریت</UButton>
-              <UButton v-else color="primary" size="sm" @click="show2FAModal = true">فعال‌سازی</UButton>
+              <UButton v-if="twoFAEnabled" color="primary" size="lg" icon="i-heroicons-cog-6-tooth" @click="show2FAModal = true">مدیریت</UButton>
+              <UButton v-else color="primary" size="lg" icon="i-heroicons-shield-check" @click="show2FAModal = true">فعال‌سازی</UButton>
             </div>
 
             <!-- Row 3: SMS Toggle -->
@@ -164,7 +164,7 @@
                 <UIcon name="i-heroicons-computer-desktop" class="w-4 h-4 text-brand-500 flex-shrink-0" />
                 <h3 class="text-sm font-medium text-gray-900 dark:text-white">جلسات فعال</h3>
               </div>
-              <UButton variant="ghost" color="error" size="xs" icon="i-heroicons-arrow-right-on-rectangle" @click="revokeAllSessions">
+              <UButton variant="soft" color="error" size="sm" icon="i-heroicons-arrow-right-on-rectangle" @click="revokeAllSessions">
                 خروج از همه دستگاه‌ها
               </UButton>
             </div>
@@ -180,14 +180,14 @@
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2">
                     <p class="text-sm font-medium text-gray-900 dark:text-white">{{ session.device }}</p>
-                    <UBadge v-if="session.current" color="primary" variant="subtle" size="xs">فعلی</UBadge>
+                    <UBadge v-if="session.current" color="primary" variant="subtle" size="sm">فعلی</UBadge>
                   </div>
                   <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{{ session.browser }}</p>
                   <p class="text-[11px] text-gray-400 dark:text-gray-500">{{ session.location }} · {{ session.ip }}</p>
                 </div>
                 <div class="flex-shrink-0 flex flex-col items-end gap-1.5">
                   <p class="text-[11px] text-gray-400 dark:text-gray-500">{{ session.lastActive }}</p>
-                  <UButton v-if="!session.current" variant="ghost" color="error" size="xs">لغو دسترسی</UButton>
+                  <UButton v-if="!session.current" variant="soft" color="error" size="sm">لغو دسترسی</UButton>
                 </div>
               </div>
             </div>
@@ -205,7 +205,7 @@
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 flex-wrap">
                     <p class="text-sm font-medium text-gray-900 dark:text-white">{{ entry.action }}</p>
-                    <UBadge v-if="entry.suspicious" color="error" variant="subtle" size="xs">مشکوک</UBadge>
+                    <UBadge v-if="entry.suspicious" color="error" variant="subtle" size="sm">مشکوک</UBadge>
                   </div>
                   <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{{ entry.device }} · {{ entry.ip }}</p>
                 </div>
@@ -243,14 +243,14 @@
                   <p class="text-sm font-medium text-gray-900 dark:text-white">پایان همه جلسات فعال</p>
                   <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">از تمام دستگاه‌های متصل خارج خواهید شد</p>
                 </div>
-                <UButton variant="outline" color="error" size="sm">پایان جلسات</UButton>
+                <UButton variant="outline" color="error" size="lg">پایان جلسات</UButton>
               </div>
               <div class="flex items-center justify-between px-4 sm:px-6 py-4">
                 <div>
                   <p class="text-sm font-medium text-gray-900 dark:text-white">حذف حساب کاربری</p>
                   <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">این عملیات غیرقابل بازگشت است و تمام اطلاعات شما حذف خواهد شد</p>
                 </div>
-                <UButton variant="outline" color="error" size="sm">حذف حساب</UButton>
+                <UButton variant="outline" color="error" size="lg">حذف حساب</UButton>
               </div>
             </div>
           </UCard>
@@ -265,7 +265,7 @@
       :dismissible="false"
     >
       <template #content>
-        <div class="flex flex-col font-dana relative" dir="rtl">
+        <div class="flex flex-col font-dana" dir="rtl">
           <!-- Header -->
           <div class="flex items-center px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
             <button
@@ -276,136 +276,137 @@
             </button>
           </div>
 
-          <!-- Progress bar -->
-          <div class="flex gap-1.5 px-5 pt-5 pb-1">
-            <span
-              v-for="i in 4"
-              :key="i"
-              :class="['h-0.5 flex-1 rounded-full transition-colors duration-300', currentStep >= i ? 'bg-brand-500' : 'bg-gray-200 dark:bg-gray-700']"
-            />
-          </div>
-
-          <!-- Steps -->
-          <div class="relative overflow-hidden">
-            <Transition :name="stepTransition" mode="out-in">
-              <div :key="currentStep" class="px-5 py-6 flex flex-col gap-4">
-
-                <!-- Step 1: Phone Verification -->
-                <template v-if="currentStep === 1">
-                  <div class="w-12 h-12 rounded-full bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-500 mx-auto">
-                    <UIcon name="i-heroicons-device-phone-mobile" class="w-6 h-6" />
-                  </div>
-                  <div class="text-center space-y-1">
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white">تأیید شماره موبایل</h3>
-                    <p class="text-xs text-gray-400 leading-relaxed">کد تأیید به شماره زیر ارسال می‌شود</p>
-                  </div>
-                  <UInput model-value="۰۹۱۲***۴۵۶" readonly dir="ltr" size="md" class="w-full" :ui="{ base: 'text-center' }" />
-                  <div class="flex flex-col items-center gap-3">
-                    <UButton color="primary" block @click="advanceStep">ارسال کد تأیید</UButton>
-                    <UButton variant="ghost" color="neutral" @click="requestCancel">انصراف</UButton>
-                  </div>
-                </template>
-
-                <!-- Step 2: OTP -->
-                <template v-else-if="currentStep === 2">
-                  <div class="text-center space-y-1">
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white">کد تأیید</h3>
-                    <p class="text-xs text-gray-400 leading-relaxed">کد ارسال شده به ۰۹۱۲***۴۵۶ را وارد کنید</p>
-                  </div>
-                  <div class="flex justify-center gap-2" dir="ltr">
-                    <input
-                      v-for="(_, idx) in otpDigits"
-                      :key="idx"
-                      :ref="(el) => { otpRefs[idx] = el }"
-                      :value="otpDigits[idx]"
-                      type="text"
-                      inputmode="numeric"
-                      maxlength="1"
-                      class="w-12 h-14 text-center text-xl font-semibold border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-colors"
-                      @input="handleOtpInput(idx, $event)"
-                      @keydown="handleOtpKeydown(idx, $event)"
-                    />
-                  </div>
-                  <p class="text-center text-sm">
-                    <button
-                      :disabled="resendCountdown > 0"
-                      :class="['font-medium transition-colors', resendCountdown > 0 ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-brand-500 hover:text-brand-600 dark:hover:text-brand-400']"
-                      @click="resendCountdown === 0 && startResend()"
-                    >
-                      {{ resendCountdown > 0 ? `ارسال مجدد (${formattedCountdown})` : 'ارسال مجدد' }}
-                    </button>
-                  </p>
-                  <div class="flex flex-col items-center gap-3">
-                    <UButton color="primary" block @click="advanceStep">تأیید کد</UButton>
-                    <UButton variant="ghost" color="neutral" @click="retreatStep">بازگشت</UButton>
-                  </div>
-                </template>
-
-                <!-- Step 3: New Password -->
-                <template v-else-if="currentStep === 3">
-                  <div class="w-12 h-12 rounded-full bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-500 mx-auto">
-                    <UIcon name="i-heroicons-lock-closed" class="w-6 h-6" />
-                  </div>
-                  <div class="text-center space-y-1">
-                    <h3 class="text-base font-semibold text-gray-900 dark:text-white">رمز عبور جدید</h3>
-                    <p class="text-xs text-gray-400 leading-relaxed">رمز عبور جدید خود را وارد کنید</p>
-                  </div>
-                  <div class="space-y-2">
-                    <UInput v-model="newPassword" type="password" placeholder="رمز عبور جدید" size="md" class="w-full" />
-                    <Transition name="strength-bar">
-                      <div v-if="newPassword" class="space-y-1">
-                        <div class="flex gap-1">
-                          <div
-                            v-for="i in 4"
-                            :key="i"
-                            :class="['h-1 flex-1 rounded-full transition-all duration-300', i <= passwordStrength ? strengthColor : 'bg-gray-200 dark:bg-gray-700']"
-                          />
-                        </div>
-                        <p :class="['text-[11px] font-medium', strengthTextColor]">{{ strengthLabel }}</p>
-                      </div>
-                    </Transition>
-                    <UInput v-model="confirmPassword" type="password" placeholder="تکرار رمز عبور جدید" size="md" class="w-full" />
-                  </div>
-                  <div class="flex flex-col items-center gap-3">
-                    <UButton color="primary" block @click="advanceStep">ذخیره رمز عبور</UButton>
-                    <UButton variant="ghost" color="neutral" @click="retreatStep">بازگشت</UButton>
-                  </div>
-                </template>
-
-                <!-- Step 4: Success -->
-                <template v-else-if="currentStep === 4">
-                  <div class="text-center space-y-5 py-2">
-                    <div class="flex justify-center">
-                      <div class="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center pop-in">
-                        <UIcon name="i-heroicons-check" class="w-8 h-8 text-success" />
-                      </div>
-                    </div>
-                    <div class="space-y-1.5">
-                      <h3 class="text-base font-semibold text-gray-900 dark:text-white">رمز عبور تغییر کرد</h3>
-                      <p class="text-xs text-gray-400 leading-relaxed">از تمام دستگاه‌های دیگر خارج شدید</p>
-                    </div>
-                    <UButton color="primary" block @click="closePasswordModal">متوجه شدم</UButton>
-                  </div>
-                </template>
-
-              </div>
-            </Transition>
-          </div>
-
-          <!-- Cancel confirmation overlay -->
-          <Transition name="overlay-fade">
-            <div
-              v-if="showCancelConfirm"
-              class="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm"
-            >
-              <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center mb-4">
+          <Transition name="overlay-fade" mode="out-in">
+            <!-- Cancel confirmation -->
+            <div v-if="showCancelConfirm" key="cancel" class="px-6 py-8 flex flex-col items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
                 <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-warning" />
               </div>
-              <h3 class="text-base font-bold text-gray-900 dark:text-white mb-1">لغو تغییر رمز عبور؟</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">اگر الان خارج شوید، پیشرفت شما ذخیره نمی‌شود</p>
-              <div class="flex flex-col gap-2 w-full">
-                <UButton color="neutral" variant="outline" block @click="showCancelConfirm = false">ادامه تغییر</UButton>
-                <UButton color="error" variant="soft" block @click="closePasswordModal">لغو و بستن</UButton>
+              <div class="text-center space-y-1">
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">لغو تغییر رمز عبور؟</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">اگر الان خارج شوید، پیشرفت شما ذخیره نمی‌شود</p>
+              </div>
+              <div class="flex gap-3 w-full pt-1">
+                <UButton color="neutral" variant="soft" class="flex-1 justify-center" @click="showCancelConfirm = false">ادامه تغییر</UButton>
+                <UButton color="error" variant="soft" class="flex-1 justify-center" @click="closePasswordModal">لغو و بستن</UButton>
+              </div>
+            </div>
+
+            <!-- Steps -->
+            <div v-else key="steps">
+              <!-- Progress bar -->
+              <div class="flex gap-1.5 px-5 pt-5 pb-1">
+                <span
+                  v-for="i in 4"
+                  :key="i"
+                  :class="['h-0.5 flex-1 rounded-full transition-colors duration-300', currentStep >= i ? 'bg-brand-500' : 'bg-gray-200 dark:bg-gray-700']"
+                />
+              </div>
+
+              <div class="overflow-hidden">
+                <Transition :name="stepTransition" mode="out-in">
+                  <div :key="currentStep" class="px-5 py-6 flex flex-col gap-4">
+
+                    <!-- Step 1: Phone Verification -->
+                    <template v-if="currentStep === 1">
+                      <div class="w-12 h-12 rounded-full bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-500 mx-auto">
+                        <UIcon name="i-heroicons-device-phone-mobile" class="w-6 h-6" />
+                      </div>
+                      <div class="text-center space-y-1">
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">تأیید شماره موبایل</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">کد تأیید به شماره زیر ارسال می‌شود</p>
+                      </div>
+                      <UInput model-value="۰۹۱۲***۴۵۶" readonly dir="ltr" size="md" class="w-full" :ui="{ base: 'text-center' }" />
+                      <div class="flex gap-3">
+                        <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="requestCancel">انصراف</UButton>
+                        <UButton color="primary" class="flex-1 justify-center" @click="advanceStep">ارسال کد تأیید</UButton>
+                      </div>
+                    </template>
+
+                    <!-- Step 2: OTP -->
+                    <template v-else-if="currentStep === 2">
+                      <div class="text-center space-y-1">
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">کد تأیید</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">کد ارسال شده به ۰۹۱۲***۴۵۶ را وارد کنید</p>
+                      </div>
+                      <div class="flex justify-center gap-2" dir="ltr">
+                        <input
+                          v-for="(_, idx) in otpDigits"
+                          :key="idx"
+                          :ref="(el) => { otpRefs[idx] = el }"
+                          :value="otpDigits[idx]"
+                          type="text"
+                          inputmode="numeric"
+                          maxlength="1"
+                          class="w-12 h-14 text-center text-xl font-semibold border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-colors"
+                          @input="handleOtpInput(idx, $event)"
+                          @keydown="handleOtpKeydown(idx, $event)"
+                        />
+                      </div>
+                      <p class="text-center text-sm">
+                        <button
+                          :disabled="resendCountdown > 0"
+                          :class="['font-medium transition-colors', resendCountdown > 0 ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-brand-500 hover:text-brand-600 dark:hover:text-brand-400']"
+                          @click="resendCountdown === 0 && startResend()"
+                        >
+                          {{ resendCountdown > 0 ? `ارسال مجدد (${formattedCountdown})` : 'ارسال مجدد' }}
+                        </button>
+                      </p>
+                      <div class="flex gap-3">
+                        <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="retreatStep">بازگشت</UButton>
+                        <UButton color="primary" class="flex-1 justify-center" @click="advanceStep">تأیید کد</UButton>
+                      </div>
+                    </template>
+
+                    <!-- Step 3: New Password -->
+                    <template v-else-if="currentStep === 3">
+                      <div class="w-12 h-12 rounded-full bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-500 mx-auto">
+                        <UIcon name="i-heroicons-lock-closed" class="w-6 h-6" />
+                      </div>
+                      <div class="text-center space-y-1">
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">رمز عبور جدید</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">رمز عبور جدید خود را وارد کنید</p>
+                      </div>
+                      <div class="space-y-2">
+                        <UInput v-model="newPassword" type="password" placeholder="رمز عبور جدید" size="md" class="w-full" />
+                        <Transition name="strength-bar">
+                          <div v-if="newPassword" class="space-y-1">
+                            <div class="flex gap-1">
+                              <div
+                                v-for="i in 4"
+                                :key="i"
+                                :class="['h-1 flex-1 rounded-full transition-all duration-300', i <= passwordStrength ? strengthColor : 'bg-gray-200 dark:bg-gray-700']"
+                              />
+                            </div>
+                            <p :class="['text-[11px] font-medium', strengthTextColor]">{{ strengthLabel }}</p>
+                          </div>
+                        </Transition>
+                        <UInput v-model="confirmPassword" type="password" placeholder="تکرار رمز عبور جدید" size="md" class="w-full" />
+                      </div>
+                      <div class="flex gap-3">
+                        <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="retreatStep">بازگشت</UButton>
+                        <UButton color="primary" class="flex-1 justify-center" @click="advanceStep">ذخیره رمز عبور</UButton>
+                      </div>
+                    </template>
+
+                    <!-- Step 4: Success -->
+                    <template v-else-if="currentStep === 4">
+                      <div class="text-center space-y-5 py-2">
+                        <div class="flex justify-center">
+                          <div class="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center pop-in">
+                            <UIcon name="i-heroicons-check" class="w-8 h-8 text-success" />
+                          </div>
+                        </div>
+                        <div class="space-y-1.5">
+                          <h3 class="text-base font-semibold text-gray-900 dark:text-white">رمز عبور تغییر کرد</h3>
+                          <p class="text-xs text-gray-400 leading-relaxed">از تمام دستگاه‌های دیگر خارج شدید</p>
+                        </div>
+                        <UButton color="primary" block @click="closePasswordModal">متوجه شدم</UButton>
+                      </div>
+                    </template>
+
+                  </div>
+                </Transition>
               </div>
             </div>
           </Transition>
@@ -446,7 +447,7 @@
                 <p class="text-sm font-medium text-gray-900 dark:text-white">Google Authenticator</p>
                 <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">متصل شد — ۳ روز پیش</p>
               </div>
-              <UBadge color="success" variant="subtle" size="xs">فعال</UBadge>
+              <UBadge color="success" variant="subtle" size="sm">فعال</UBadge>
             </div>
             <div class="flex items-start gap-3 p-3.5 rounded-xl bg-warning/10 border border-warning/20">
               <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
@@ -454,9 +455,9 @@
                 غیرفعال کردن احراز هویت دو مرحله‌ای امنیت حساب شما را کاهش می‌دهد
               </p>
             </div>
-            <div class="flex items-center justify-between pt-1">
-              <UButton variant="outline" color="neutral" @click="close2FAModal">بستن</UButton>
-              <UButton variant="ghost" color="error" @click="deactivate2FA">غیرفعال کردن</UButton>
+            <div class="flex gap-3 pt-1">
+              <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="close2FAModal">بستن</UButton>
+              <UButton variant="soft" color="error" class="flex-1 justify-center" @click="deactivate2FA">غیرفعال کردن</UButton>
             </div>
           </div>
 
@@ -482,9 +483,9 @@
               class="w-full"
               :ui="{ base: 'text-center' }"
             />
-            <div class="flex flex-col items-center gap-3 pt-1">
-              <UButton color="primary" block @click="activate2FA">تأیید و فعال‌سازی</UButton>
-              <UButton variant="ghost" color="neutral" @click="close2FAModal">انصراف</UButton>
+            <div class="flex gap-3 pt-1">
+              <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="close2FAModal">انصراف</UButton>
+              <UButton color="primary" class="flex-1 justify-center" @click="activate2FA">تأیید و فعال‌سازی</UButton>
             </div>
           </div>
         </div>
