@@ -178,14 +178,26 @@ Only these strings are registered semantic tokens: `primary`, `secondary`, `succ
 **Never pass** `"red"`, `"green"`, `"gray"`, `"teal"`, `"blue"`, `"orange"`, `"purple"` to Nuxt UI components — they silently produce unstyled output.
 
 ### Buttons (`UButton`)
-- **Primary:** `color="primary"` (= brand). Default CTA. Sizes used: `size="xl"` for main actions, `size="lg"` panel header CTAs, `size="md"` list item actions, `size="sm"` inline.
-- **Outline/white:** `color="neutral" variant="outline"` for secondary actions.
-- **Soft:** `variant="soft"` (e.g. "پیگیری سفارش").
-- **Ghost:** `variant="ghost"` for icon-only and tertiary. Invisible at rest — avoid for actions that must always be visible; use `outline` or `soft` instead.
-- **Danger:** `color="error" variant="outline"` or `variant="soft"` for destructive actions.
-- **Square icon:** `square icon="…"` for +/- quantity, send, close.
-- **Block:** `block` for full-width (add-to-cart, checkout).
-- One primary per view. Disabled add-to-cart flips label to "اطلاع‌رسانی موجودی".
+
+**Variants**
+- **Primary:** `color="primary"` — one CTA per view/card.
+- **Secondary:** `color="neutral" variant="soft"` — secondary and cancel actions in panel pages. Prefer `soft` over `outline` or `ghost` for actions that must always be visible.
+- **Outline:** `color="neutral" variant="outline"` — reserved for modal confirmation dialogs (e.g. "ادامه تغییر").
+- **Ghost:** `variant="ghost"` — icon-only close/nav buttons only. Never use for labeled actions.
+- **Danger:** `color="error" variant="soft"` — destructive actions (delete, terminate session). Use `variant="outline"` in danger zone cards.
+
+**Sizes (panel pages)**
+- `size="lg"` — standard for all panel card row buttons (inline actions, edit, verify).
+- `size="md"` — modal footer buttons.
+- `size="sm"` — card header actions (e.g. small "ویرایش" next to a section title).
+
+**Layout patterns**
+- **Single full-width:** `block` for standalone CTAs (add-to-cart, checkout, modal single-action steps like success).
+- **Side-by-side equal:** `flex gap-3` container + `class="flex-1 justify-center"` on each button — used in modal step footers and two-action rows. Secondary button comes first in DOM (renders on the right in RTL = visually less prominent).
+- **Icon + text:** add `icon="i-heroicons-*"` prop for row actions (e.g. edit, send link).
+- **Icon-only close:** plain `<button>` with `w-8 h-8 rounded-lg` — not `UButton` — for modal header close targets.
+
+**One primary per view.** Disabled add-to-cart flips label to "اطلاع‌رسانی موجودی".
 
 ### Badges (`UBadge`) — color map from `ProductCard.vue`
 
