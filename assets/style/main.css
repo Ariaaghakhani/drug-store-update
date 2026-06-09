@@ -80,6 +80,18 @@ input, textarea, select {
 [dir='rtl'] .nuxt-loading-indicator {
   transform-origin: right !important;
 }
+/* Skeleton transition — leave goes absolute so entering content takes space */
+.sk-leave-active {
+  position: absolute;
+  inset: 0;
+}
+.sk-enter-active {
+  transition: opacity 0.2s ease;
+}
+.sk-enter-from {
+  opacity: 0;
+}
+
 .page-enter-active,
 .page-leave-active {
   transition: all 0.4s;
