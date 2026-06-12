@@ -20,88 +20,86 @@
 
 ## 2. Color tokens
 
-Defined in `assets/style/main.css` under `@theme static`. Available as Tailwind utilities (`bg-brand-500`, `text-brand-600`, etc.).
+Two layers: **primitive** tokens (raw named values) and **semantic** tokens (role-based aliases). All defined as CSS custom properties.
 
-### Brand (primary, with shades)
+### Brand / Teal (primary scale)
 
 | Token | Hex | Typical use |
 |---|---|---|
-| `--color-brand-50`  | `#e7f7f7` | tints, hover backgrounds (`bg-brand-50`) |
-| `--color-brand-100` | `#c3ebeb` | category circles, soft fills |
-| `--color-brand-200` | `#9edede` | |
-| `--color-brand-300` | `#79d2d2` | gradient stops, accent text on dark |
-| `--color-brand-400` | `#5cbcbc` | dark-mode accent text (`dark:text-brand-400`) |
-| `--color-brand-500` | `#2c7a7b` | **primary** — buttons, links, logo, icons |
-| `--color-brand-600` | `#256b6b` | hover state for primary |
-| `--color-brand-700` | `#1f5c5c` | active/pressed |
-| `--color-brand-800` | `#194d4d` | |
-| `--color-brand-900` | `#133e3e` | deepest brand |
+| `--teal-50`  | `#EBF6F3` | page tints, hover backgrounds |
+| `--teal-100` | `#D6EDE7` | soft fills, `--primary-soft` |
+| `--teal-200` | `#A8D8CE` | |
+| `--teal-300` | `#6FBFB1` | gradient stops, accent on dark |
+| `--teal-400` | `#3DA193` | dark-mode accent text |
+| `--teal-500` | `#1A8073` | |
+| `--teal-600` | `#0E6B5F` | **primary** — buttons, links, logo, icons |
+| `--teal-700` | `#0A574D` | hover state for primary |
+| `--teal-800` | `#08433C` | active/pressed |
+| `--teal-900` | `#062F2A` | deepest brand |
 
-PWA `theme_color` = `#2C7A7B` (= brand-500). In **dark mode the logo fill switches to `#14B8A6`** (Tailwind teal-500).
+PWA `theme_color` = `#0E6B5F` (= teal-600). Dark mode primary = `#5AC5B5`.
 
-### Semantic (single tone, no shades)
+### Semantic accent colors
 
-| Token | Light | Dark | Meaning |
+| Token | Value | Background tint | Meaning |
 |---|---|---|---|
-| `--color-success` | `#22c55e` | `#4ade80` | in-stock, confirmed, success toast |
-| `--color-info`    | `#3b82f6` | `#60a5fa` | informational notices (min-order qty) |
-| `--color-warning` | `#f59e0b` | `#fcd34d` | caution, near-expiry, prescription flag |
-| `--color-danger`  | `#ef4444` | `#fca5a5` | out-of-stock, destructive, discount badge |
-| `--color-secondary` | `#6b7280` | `#9ca3af` | muted/neutral UI |
+| `--leaf`   | `#3D8B4F` | `--leaf-bg: #D4EDDA`  | in-stock, success, confirmed (Nuxt UI: `success: 'green'`, use shade 700) |
+| `--sky`    | `#1F6FB8` | `--sky-bg: #DAEAF6`   | informational notices |
+| `--orange` | `#ea580c` | `--orange-bg: #ffedd5`| caution, warning, Rx flag, near-expiry (Nuxt UI: `warning: 'orange'`) |
+| `--rose`   | `#B83A4B` | `--rose-bg: #FBE7EA`  | out-of-stock, destructive, allergy |
 
-### Neutrals (backgrounds & text)
+Dark mode tint overrides: `--orange-bg: #2D1A0A` · `--rose-bg: #3A1820` · `--sky-bg: #0F2944` · `--leaf-bg: #10301A`
 
-`--color-neutral-50..900`: `#fafafa #f5f5f5 #e5e5e5 #d4d4d4 #a3a3a3 #737373 #525252 #404040 #262626 #171717`
+### Neutral / Ink scale
 
-> The app also uses Tailwind's stock `gray-*` for surfaces (e.g. `bg-gray-50`, `dark:bg-gray-900`, `dark:bg-gray-950`). Treat `gray-*` and `neutral-*` as interchangeable greys.
+`--ink-50..900`: `#F6F8F8 #EAEEEE #D7DEDE #B7C1C1 #8A9696 #5F6C6C #3F4B4B #2A3434 #1A2222 #0D1313`
 
-### Semantic surface roles (recommended additions)
+### Semantic surface roles
 
-These aren't yet in `main.css` but encode the patterns the components already follow — add them to keep usage consistent:
-
-| Role | Light | Dark |
+| Token | Light | Dark |
 |---|---|---|
-| `bg` (page) | `#fafafa` | `#0a0a0a` |
-| `surface` (card) | `#ffffff` | `#171717` |
-| `surface-2` (subtle) | `#f5f5f5` | `#262626` |
-| `border` | `#e5e5e5` | `#262626` |
-| `text` | `#171717` | `#fafafa` |
-| `text-muted` | `#525252` | `#a3a3a3` |
-| `primary` | `#2c7a7b` | `#14b8a6` |
+| `--bg` (page) | `#F4F8F7` | `#0B1716` |
+| `--surface` (card) | `#FFFFFF` | `#102322` |
+| `--surface-2` (subtle) | `#EBF6F3` | `#0E1E1D` |
+| `--surface-3` (inset) | `#F8FBFA` | `#152E2C` |
+| `--border` | `#E1EAE8` | `#1E3835` |
+| `--border-strong` | `#C9D6D3` | `#2B4D49` |
+| `--text` | `#0F1A1A` | `#E9F2F0` |
+| `--text-muted` | `#5F6C6C` | `#A7B8B5` |
+| `--text-faint` | `#8A9696` | `#728381` |
+| `--primary` | `#0E6B5F` (teal-600) | `#5AC5B5` |
+| `--primary-hover` | `#0A574D` (teal-700) | `#7DD2C5` |
+| `--primary-soft` | `#D6EDE7` (teal-100) | `#13332F` |
+| `--on-primary` | `#FFFFFF` | `#062F2A` |
 
 ---
 
 ## 3. Typography
 
-Font family **Dana**, self-hosted from `assets/fonts/` via `assets/style/fonts.css`. Utility class `.font-dana` (`font-family: 'Dana', sans-serif`). Applied globally on `<div class="font-dana" dir="rtl">` in `app.vue`.
+### Font stack
 
-### Weights available
-
-| Weight | File | Tailwind |
+| Token | Family | Use |
 |---|---|---|
-| 100 | Dana-Thin.ttf | `font-thin` |
-| 300 | Dana-Light.ttf | `font-light` |
-| 400 | Dana-Regular.ttf | `font-normal` |
-| 500 | Dana-Medium.ttf | `font-medium` |
-| 600 | Dana-DemiBold.ttf | `font-semibold` |
-| 700 | Dana-Bold.ttf | `font-bold` |
-| 800 | Dana-ExtraBold.ttf | `font-extrabold` |
-| 900 | Dana-Black.ttf | `font-black` |
+| `--font-fa` | `'Vazirmatn', system-ui, sans-serif` | All Persian UI and Latin shared text |
+| `--font-en` | `'Inter', system-ui, sans-serif` | Pharmacist panel with heavy English/technical content |
+| `--font-mono` | `'JetBrains Mono', ui-monospace, monospace` | IDs, codes, token labels |
 
-(Also shipped: Dana-Hairline, Dana-UltraLight for weights 100/200.)
+Loaded via Google Fonts (`Vazirmatn:wght@300;400;500;600;700;800`, `Inter:wght@400;500;600;700`, `JetBrains Mono:wght@400;500`). Dana (self-hosted) remains the production app font — map `--font-fa` to Dana when integrating into the Nuxt project.
 
-### Scale (as used in pages/components)
+### Type scale (CSS custom properties)
 
-| Role | Tailwind classes | Notes |
+| Token | Value | Role |
 |---|---|---|
-| Display / page H1 | `text-4xl lg:text-5xl xl:text-7xl font-black` | hero, page titles |
-| Section H2 | `text-3xl lg:text-4xl font-black` | "محصولات ویژه" etc. |
-| Card title H3 | `text-lg font-bold` | product name |
-| Body | `text-base` (16px) | inputs forced to 16px to avoid iOS zoom |
-| Small | `text-sm` | meta, captions |
-| Tiny | `text-xs` | brand/category row, timestamps |
+| `--t-display` | `64px` | Hero H1 (clamped: `clamp(40px, 5.2vw, 64px)`) |
+| `--t-h1` | `40px` | Page titles |
+| `--t-h2` | `28px` | Section headings |
+| `--t-h3` | `22px` | Card/tile headings |
+| `--t-h4` | `18px` | Sub-headings |
+| `--t-body` | `16px` | Body text; inputs forced to 16px to avoid iOS zoom |
+| `--t-sm` | `14px` | Captions, meta |
+| `--t-xs` | `12px` | Timestamps, badges, token labels |
 
-Headings frequently use a 2-tone treatment: black text with one word in `text-brand-500`, e.g. `محصولات <span class="text-brand-500">ویژه</span>`.
+Headings use a 2-tone treatment: dark text with one word in `--primary` / `text-brand-500`, e.g. `محصولات <span style="color:var(--primary)">ویژه</span>`.
 
 ### Numbers
 
@@ -109,15 +107,45 @@ Always format with `Intl.NumberFormat('fa-IR')` / `.toLocaleString('fa-IR')` for
 
 ---
 
-## 4. Spacing, radius, shadow
+## 4. Spacing, radius, shadow, motion
 
-Tailwind defaults (4px base). Observed conventions:
+### Spacing (4 px base)
 
-- **Container:** `UContainer` (Nuxt UI) for page width; section padding `py-12` / `py-16`.
-- **Card padding:** `UCard` default; inner stacks use `space-y-3` / `space-y-4`.
-- **Radius:** `rounded-lg` (controls, ~8px), `rounded-xl` (cards/images, ~12px), `rounded-2xl`/`rounded-3xl` (hero panels, chat window), `rounded-full` (badges, category circles, avatars, icon buttons).
-- **Shadow:** `shadow-lg` / `shadow-2xl` for floating elements (cart dropdown, chat, modals); cards lift on hover `hover:shadow-xl transition-all duration-300`.
-- **Icon hit targets:** header/action buttons are `w-10 h-10` (40px); mobile bottom-nav items ≥ 44px tall.
+`--s-1:4px` · `--s-2:8px` · `--s-3:12px` · `--s-4:16px` · `--s-5:20px` · `--s-6:24px` · `--s-7:32px` · `--s-8:40px` · `--s-9:48px` · `--s-10:64px` · `--s-11:80px` · `--s-12:96px`
+
+Conventions: page container max-width `1320px`, section padding `--s-9` / `--s-11`. Card inner stacks `--s-3` / `--s-4`.
+
+### Radii
+
+| Token | Value | Use |
+|---|---|---|
+| `--r-xs` | `6px` | small chips, inner elements |
+| `--r-sm` | `10px` | buttons, inputs, controls |
+| `--r-md` | `14px` | cards, modals |
+| `--r-lg` | `20px` | section panels, tiles |
+| `--r-xl` | `28px` | hero panels, chat window |
+| `--r-pill` | `999px` | badges, tags, category circles, avatars |
+
+### Shadows (teal-tinted, layered)
+
+| Token | Value |
+|---|---|
+| `--shadow-1` | `0 1px 2px rgba(8,67,60,.06), 0 1px 1px rgba(8,67,60,.04)` |
+| `--shadow-2` | `0 4px 12px rgba(8,67,60,.08), 0 1px 2px rgba(8,67,60,.04)` |
+| `--shadow-3` | `0 12px 28px rgba(8,67,60,.10), 0 2px 6px rgba(8,67,60,.05)` |
+| `--shadow-4` | `0 24px 48px rgba(8,67,60,.14), 0 4px 10px rgba(8,67,60,.06)` |
+| `--ring` | `0 0 0 3px color-mix(in oklab, var(--primary) 25%, transparent)` |
+
+Cards use `--shadow-1` at rest, lift to `--shadow-3` on `hover`. Floating elements (cart, modals, chat) use `--shadow-3` / `--shadow-4`.
+
+### Motion
+
+| Token | Value | Use |
+|---|---|---|
+| `--ease-out` | `cubic-bezier(.2,.7,.2,1)` | entrances, expanding |
+| `--ease-in-out` | `cubic-bezier(.65,0,.35,1)` | state transitions |
+
+**Icon hit targets:** header/action buttons `w-10 h-10` (40px); mobile bottom-nav items ≥ 44px tall.
 
 ---
 
@@ -214,6 +242,20 @@ const colorMap = {
 > ⚠ The color map above uses raw Tailwind color names (legacy). For new badges use valid tokens: `success`, `info`, `warning`, `error`, `primary`.
 - Discount badge: `color="error" variant="solid"` → `{n}٪ تخفیف`.
 - Prescription flag: `color="warning" variant="solid"` with `i-heroicons-document-text` → `نسخه‌دار`, positioned `absolute top-3 left-3` (LTR-left = visual left in RTL).
+
+#### Badge contrast rules (light mode, white backgrounds)
+
+Soft/outline variants use the `*-bg` tint tokens so the pill shape is visible on white. Borders use at least 50% color-mix opacity. Solid variants follow the table below — **warning (`--amber`) uses dark text**, not white, because amber is inherently light.
+
+| Semantic | Token | Solid bg | Solid text | Soft bg | Soft text |
+|---|---|---|---|---|---|
+| primary | `--primary` | `#0E6B5F` | `#FFFFFF` | `#D6EDE7` (`--teal-100`) | `#08433C` (`--teal-800`) |
+| success | `--leaf` | `#3D8B4F` | `#FFFFFF` | `#E2F1E4` (`--leaf-bg`) | `#0D1313` (`--ink-900`) |
+| warning | `--orange` | `#ea580c` | `#FFFFFF` | `#ffedd5` (`--orange-bg`) | `#7c2d12` (orange-900) |
+| error | `--rose` | `#B83A4B` | `#FFFFFF` | `#FBE7EA` (`--rose-bg`) | `#0D1313` (`--ink-900`) |
+| info | `--sky` | `#1F6FB8` | `#FFFFFF` | `#E3EEF8` (`--sky-bg`) | `#0D1313` (`--ink-900`) |
+
+> **Warning uses orange-600 (`#ea580c`)** — vivid and distinct, sufficient contrast with white text (~4.5:1). Nuxt UI config: `warning: 'orange'` in `app.config.ts`.
 
 ### Product card (`ProductCard.vue`)
 

@@ -79,25 +79,25 @@ const quickActions = [
   {
     label: 'مشاهده سفارشات',
     icon: 'i-heroicons-shopping-bag',
-    color: 'teal',
+    color: 'primary',
     to: '/panel/orders',
   },
   {
     label: 'ویرایش پروفایل',
     icon: 'i-heroicons-user',
-    color: 'blue',
+    color: 'info',
     to: '/panel/profile',
   },
   {
     label: 'مدیریت آدرس‌ها',
     icon: 'i-heroicons-map-pin',
-    color: 'purple',
+    color: 'neutral',
     to: '/panel/address',
   },
   {
     label: 'خرید محصولات',
     icon: 'i-heroicons-shopping-cart',
-    color: 'green',
+    color: 'success',
     to: '/medications',
   },
 ]
