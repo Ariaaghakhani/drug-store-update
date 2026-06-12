@@ -1,7 +1,7 @@
 <template>
   <div class="relative">
     <Transition name="sk">
-      <UCard v-if="loading" key="sk" :ui="{ body: 'p-0' }" class="ring-1 ring-[var(--color-danger)]/25 dark:ring-[var(--color-danger)]/20">
+      <UCard v-if="loading" key="sk" :ui="{ body: 'p-0' }" class="ring-1 ring-error/25 dark:ring-error/20">
         <div class="flex items-center gap-2 px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800">
           <USkeleton class="w-4 h-4 rounded flex-shrink-0" />
           <USkeleton class="h-4 w-20" />
@@ -17,10 +17,10 @@
         </div>
       </UCard>
 
-      <UCard v-else key="content" :ui="{ body: 'p-0' }" class="ring-1 ring-[var(--color-danger)]/25 dark:ring-[var(--color-danger)]/20">
+      <UCard v-else key="content" :ui="{ body: 'p-0' }" class="ring-1 ring-error/25 dark:ring-error/20">
         <div class="flex items-center gap-2 px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-          <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4 flex-shrink-0" style="color: var(--color-danger)" />
-          <h3 class="text-sm font-medium" style="color: var(--color-danger)">منطقه خطر</h3>
+          <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4 text-error flex-shrink-0" />
+          <h3 class="text-sm font-medium text-error">منطقه خطر</h3>
         </div>
         <div class="divide-y divide-gray-100 dark:divide-gray-800">
           <div class="flex items-center justify-between px-4 sm:px-6 py-4">
