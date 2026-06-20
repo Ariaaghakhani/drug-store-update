@@ -21,7 +21,7 @@ When you encounter a pattern not covered there:
 
 - **Nuxt 3** (latest)
 - **@nuxt/ui v3** — UButton, UCard, UInput, UBadge, UModal, USkeleton, UIcon, USwitch, UDropdownMenu, UPagination, UContainer
-- **Tailwind CSS v4** — use logical properties (`ms-`, `me-`, `ps-`, `pe-`) instead of `ml-`/`mr-`/`pl-`/`pr-` for RTL correctness
+- **Tailwind CSS v4** — use logical properties (`ms-`, `me-`, `ps-`, `pe-`) instead of `ml-`/`mr-`/`pl-`/`pr-` for RTL correctness. Every `--color-*` token defined in `@theme static` automatically becomes a first-class utility (`text-error`, `ring-error/25`, `bg-success`, etc.) — never use `[var(--color-*)]` when a named class exists.
 - **Pinia** for state management
 - **@vite-pwa/nuxt** for PWA
 
@@ -151,5 +151,6 @@ DESIGN_SYSTEM.md  ← visual source of truth ← always read before building UI
 - No `animate-pulse` on skeletons (shimmer is global)
 - No `ml-` / `mr-` / `pl-` / `pr-` — use logical equivalents
 - No inline styles for spacing/color — use Tailwind utilities
+- No arbitrary Tailwind values (`[...]`) when a named utility or scale step exists — check spacing (`p-4` not `p-[16px]`), sizing (`w-5` not `w-[20px]`), colors, radii, etc. before reaching for brackets
 - No hardcoded Latin digits in customer-facing text
 - No `color="teal"` on `USwitch` — use the `:ui` override pattern from `DESIGN_SYSTEM.md`

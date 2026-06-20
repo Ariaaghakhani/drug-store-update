@@ -11,10 +11,10 @@ export default defineAppConfig({
     colors: {
       primary: 'brand',
       secondary: 'secondary',
-      info: 'info',
-      warning: 'warning',
-      success: 'success',
-      danger: 'danger',
+      info: 'sky',
+      warning: 'orange',
+      success: 'green',
+      error: 'rose',
     },
     toast: {
       slots: {
@@ -48,9 +48,9 @@ export default defineAppConfig({
           root: 'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-warning)]',
           icon: 'text-[var(--color-warning)]',
         },
-        danger: {
-          root: 'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-danger)]',
-          icon: 'text-[var(--color-danger)]',
+        error: {
+          root: 'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-error)]',
+          icon: 'text-[var(--color-error)]',
         },
       },
     },
