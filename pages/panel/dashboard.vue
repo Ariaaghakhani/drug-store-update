@@ -1,5 +1,7 @@
 <template>
-  <component :is="dashboardComponent" />
+  <AdminDashboard v-if="role === 'admin'" />
+  <OwnerDashboard v-else-if="role === 'owner'" />
+  <CustomerDashboard v-else />
 </template>
 
 <script setup>
@@ -10,15 +12,7 @@ import { useUserPanelTabs } from '@/composables/useUserPanelTabs'
 
 const { getUserRole } = useUserPanelTabs()
 
-const componentMap = {
-  customer: CustomerDashboard,
-  admin: AdminDashboard,
-  owner: OwnerDashboard,
-}
-
-const dashboardComponent = computed(
-  () => componentMap[getUserRole()] ?? CustomerDashboard
-)
+const role = computed(() => getUserRole())
 
 useHead({ title: 'داشبورد | پنل کاربری' })
 </script>
