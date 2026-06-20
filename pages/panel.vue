@@ -51,7 +51,7 @@
                     <span>{{ item.label }}</span>
                     <UBadge
                       v-if="item.badge !== undefined"
-                      color="gray"
+                      color="neutral"
                       variant="subtle"
                       size="xs"
                       class="mr-auto"
@@ -118,8 +118,8 @@
             <!-- Main Content -->
             <main class="lg:col-span-3 space-y-6">
               <!-- Profile Banner -->
-              <UCard class="hidden md:flex flex-col">
-                <div class="flex items-center gap-4">
+              <UCard class="hidden md:block">
+                <div class="flex items-center gap-4 flex-wrap sm:flex-nowrap">
                   <div
                     class="w-14 h-14 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center shadow-md flex-shrink-0"
                   >
@@ -127,19 +127,27 @@
                       userInitials
                     }}</span>
                   </div>
-                  <div class="flex flex-wrap *:w-full gap-y-1 min-w-0">
+                  <div class="flex-1 min-w-0">
                     <h3
-                      class="text-base font-bold text-gray-900 dark:text-white"
+                      class="text-base font-black text-gray-900 dark:text-white"
                     >
-                      {{ userFullName }}
+                      سلام،
+                      <span class="text-brand-500 dark:text-brand-400">{{
+                        userFullName
+                      }}</span>
                     </h3>
                     <p
-                      class="text-sm text-gray-500 dark:text-gray-400 truncate"
+                      class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate"
                     >
-                      {{
-                        userStore.currentUser.username ||
-                        userStore.currentUser.person?.phoneNumber
-                      }}
+                      کد مشتری {{ customerId }}
+                    </p>
+                  </div>
+                  <div class="flex-shrink-0 text-end">
+                    <p class="text-xl font-black text-gray-900 dark:text-white leading-tight">
+                      {{ todayWeekday }}
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                      {{ todayDate }}
                     </p>
                   </div>
                 </div>
@@ -209,7 +217,7 @@
                 <span class="flex-1">{{ item.label }}</span>
                 <UBadge
                   v-if="item.badge !== undefined"
-                  color="gray"
+                  color="neutral"
                   variant="subtle"
                   size="xs"
                   >{{ item.badge }}</UBadge
@@ -327,8 +335,10 @@ const { getMenuItems, getUserRole } = useUserPanelTabs()
 // Computed
 const userFullName = computed(() => {
   const user = userStore.currentUser || app.$auth.user
-  if (!user?.person) return 'کاربر'
-  return `${user.person.firstName} ${user.person.lastName}`.trim() || 'کاربر'
+  if (!user?.person) return 'دوست عزیز'
+  return (
+    `${user.person.firstName} ${user.person.lastName}`.trim() || 'دوست عزیز'
+  )
 })
 
 const userInitials = computed(() => {
@@ -338,6 +348,20 @@ const userInitials = computed(() => {
   const last = user.person.lastName?.[0] || ''
   return (first + last).toUpperCase() || 'ک'
 })
+
+const customerId = computed(() => {
+  const user = userStore.currentUser || app.$auth.user
+  if (!user?.id) return '----'
+  return String(user.id).slice(-6)
+})
+
+const todayWeekday = computed(() =>
+  new Date().toLocaleDateString('fa-IR', { weekday: 'long' })
+)
+
+const todayDate = computed(() =>
+  new Date().toLocaleDateString('fa-IR', { day: 'numeric', month: 'long', year: 'numeric' })
+)
 
 const userRole = computed(() => getUserRole())
 
@@ -385,7 +409,7 @@ const handleLogout = async () => {
     toast.add({
       title: 'خروج موفق',
       description: 'شما با موفقیت از حساب کاربری خارج شدید',
-      color: 'green',
+      color: 'success',
     })
     await navigateTo('/')
   } catch (error) {
@@ -393,7 +417,7 @@ const handleLogout = async () => {
     toast.add({
       title: 'خطا',
       description: 'مشکلی در خروج از حساب پیش آمد',
-      color: 'red',
+      color: 'error',
     })
   }
 }
