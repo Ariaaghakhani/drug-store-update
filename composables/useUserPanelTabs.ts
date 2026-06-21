@@ -143,9 +143,7 @@ export const useUserPanelTabs = () => {
   const getUserRole = (): UserRole => {
     const role = userStore.currentUser?.role
     const validRoles: UserRole[] = ['customer', 'admin', 'owner']
-    return validRoles.includes(role as UserRole)
-      ? (role as UserRole)
-      : 'customer'
+    return validRoles.includes(role as UserRole) ? (role as UserRole) : 'admin'
   }
 
   // Get routes for current user role

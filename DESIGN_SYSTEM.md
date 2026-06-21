@@ -329,6 +329,15 @@ Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, cube placehol
 - Panel card structure: header strip (`flex items-center gap-2 px-4 sm:px-6 py-4 border-b`) with `w-4 h-4 text-brand-500` icon + `text-sm font-medium` title, then `divide-y divide-gray-100 dark:divide-gray-800` rows with `px-4 sm:px-6 py-4` each.
 - RTL column divider between grid columns: `md:border-e` on the first-in-DOM (right-rendered) cell.
 
+### Admin page header
+Icon container (`w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/20`) + `w-5 h-5 text-brand-500` icon, next to a two-tone title (`text-lg font-black` with one word in `text-brand-500`) and a muted `text-xs` subtitle. The single primary CTA (`UButton color="primary" size="lg"`) is flex-end of the same row. Row wraps on mobile with `flex-wrap gap-4`.
+
+### Admin data table
+Wrapped in `UCard :ui="{ body: 'p-0' }"` with `overflow-x-auto`. `<thead>` uses `bg-gray-50 dark:bg-gray-800/50 border-b` with `text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3 text-start`. `<tbody>` rows use `border-b border-gray-100 dark:divide-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors`. Expandable rows: sibling `<tr>` with colspan rendered immediately after the parent, background `bg-gray-50/50 dark:bg-gray-800/20`. Row actions via `UDropdownMenu` with ghost trigger button.
+
+### Metric card grid (admin)
+`grid grid-cols-2 lg:grid-cols-4 gap-4`. Each `UCard :ui="{ body: 'p-4' }"` holds `flex items-center gap-3`: icon container (`w-10 h-10 rounded-xl`) + div with `text-xs text-gray-500` label above `text-xl font-black` value formatted with `.toLocaleString('fa-IR')`.
+
 ### Empty / loading / error states
 - **Empty (cart/search):** centered large gray icon + bold heading + muted line + CTA.
 - **Loading grid:** `USkeleton` ×12, `h-80 w-full`, in the product grid columns.
