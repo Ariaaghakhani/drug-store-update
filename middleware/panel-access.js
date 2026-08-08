@@ -1,5 +1,7 @@
 // middleware/panel-access.js
 export default defineNuxtRouteMiddleware((to, from) => {
+  if (import.meta.dev) return
+
   // Only run on client side
   if (import.meta.server) return
 

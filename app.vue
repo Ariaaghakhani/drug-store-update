@@ -12,7 +12,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 const faLocale = defineLocale({
   name: 'Persian',
   code: 'fa',

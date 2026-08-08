@@ -14,4 +14,5 @@ export interface Product {
   isPrescriptionRequired?: boolean
   minOrderQuantity?: number
   expiryDate?: string
+  images?: string[]
 }

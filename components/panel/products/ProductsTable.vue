@@ -85,7 +85,7 @@
                   </td>
                   <td class="px-6 py-4" @click.stop>
                     <UDropdownMenu
-                      v-if="canUpdate || canDelete"
+                      v-if="hasActions"
                       :items="[rowActions(product)]"
                       :ui="{ content: 'font-dana w-44' }"
                     >
@@ -97,6 +97,15 @@
                         square
                       />
                     </UDropdownMenu>
+                    <UButton
+                      v-else
+                      variant="ghost"
+                      icon="i-heroicons-ellipsis-vertical"
+                      size="xs"
+                      color="neutral"
+                      square
+                      disabled
+                    />
                   </td>
                 </tr>
               </tbody>
@@ -128,6 +137,8 @@ const emit = defineEmits<{
   edit: [product: Product]
   delete: [product: Product]
 }>()
+
+const hasActions = computed(() => props.canUpdate || props.canDelete)
 
 const isNearExpiry = (expiryDate?: string): boolean => {
   if (!expiryDate) return false

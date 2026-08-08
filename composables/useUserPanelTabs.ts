@@ -160,7 +160,10 @@ export const useUserPanelTabs = () => {
   // Check if user has access to a route
   const hasAccessToRoute = (path: string): boolean => {
     const routes = getRoutesForRole()
-    return routes.some((item) => item.to === path)
+    // Match the exact route or any nested detail route (e.g. /panel/products/5)
+    return routes.some(
+      (item) => item.to === path || path.startsWith(`${item.to}/`)
+    )
   }
 
   // Get all accessible route paths for current user

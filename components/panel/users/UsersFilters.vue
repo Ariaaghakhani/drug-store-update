@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-wrap gap-3 py-4 border-b border-gray-100 dark:border-gray-800">
+  <div class="flex flex-wrap gap-3 px-6 py-4 border-b border-gray-100 dark:border-gray-800">
     <UInput
       :model-value="searchQuery"
       placeholder="جستجو نام یا شماره موبایل..."

@@ -1,36 +1,38 @@
 <template>
   <div class="space-y-5">
-    <div class="flex items-center justify-between gap-4 flex-wrap">
-      <div class="flex items-center gap-3">
-        <div
-          class="w-10 h-10 rounded-xl flex items-center justify-center bg-brand-100 dark:bg-brand-900/20 flex-shrink-0"
-        >
-          <UIcon
-            name="i-heroicons-users"
-            class="w-5 h-5 text-brand-500 dark:text-brand-400"
-          />
-        </div>
-        <div>
-          <h1 class="text-lg font-black text-gray-900 dark:text-white">
-            مدیریت <span class="text-brand-500">کاربران</span>
-          </h1>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            {{ totalCount.toLocaleString('fa-IR') }} کاربر در سیستم
-          </p>
-        </div>
-      </div>
-      <UButton
-        v-if="canCreate"
-        color="primary"
-        icon="i-heroicons-plus"
-        size="lg"
-        @click="showCreateModal = true"
-      >
-        افزودن کاربر
-      </UButton>
-    </div>
-
     <UCard :ui="{ body: 'p-0' }">
+      <div
+        class="flex items-center justify-between gap-4 flex-wrap px-6 py-4 border-b border-gray-100 dark:border-gray-800"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-xl flex items-center justify-center bg-brand-100 dark:bg-brand-900/20 flex-shrink-0"
+          >
+            <UIcon
+              name="i-heroicons-users"
+              class="w-5 h-5 text-brand-500 dark:text-brand-400"
+            />
+          </div>
+          <div>
+            <h1 class="text-lg font-black text-gray-900 dark:text-white">
+              مدیریت <span class="text-brand-500">کاربران</span>
+            </h1>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              {{ totalCount.toLocaleString('fa-IR') }} کاربر در سیستم
+            </p>
+          </div>
+        </div>
+        <UButton
+          v-if="canCreate"
+          color="primary"
+          icon="i-heroicons-plus"
+          size="lg"
+          @click="showCreateModal = true"
+        >
+          افزودن کاربر
+        </UButton>
+      </div>
+
       <UsersFilters
         v-model:search-query="searchQuery"
         v-model:role-filter="roleFilter"
@@ -70,6 +72,14 @@
       :role-select-items="roleSelectItems"
       @save="onSaveUser"
     />
+
+    <DeleteConfirmDialog
+      v-model:open="showDeleteModal"
+      title="حذف کاربر"
+      message="آیا از حذف این کاربر مطمئن هستید؟ این عملیات قابل بازگشت نیست."
+      :item-name="userToDelete?.fullName"
+      @confirm="confirmDelete"
+    />
   </div>
 </template>
 
@@ -80,6 +90,7 @@ import UsersFilters from '@/components/panel/users/UsersFilters.vue'
 import UsersTable from '@/components/panel/users/UsersTable.vue'
 import CreateUserModal from '@/components/panel/users/CreateUserModal.vue'
 import EditUserModal from '@/components/panel/users/EditUserModal.vue'
+import DeleteConfirmDialog from '@/components/panel/DeleteConfirmDialog.vue'
 
 definePageMeta({ layout: 'panel' })
 useHead({ title: 'مدیریت کاربران | پنل مدیریت' })
@@ -198,11 +209,13 @@ const searchQuery = ref('')
 const roleFilter = ref('all')
 const statusFilter = ref('all')
 const currentPage = ref(1)
-const pageSize = 5
+const pageSize = 10
 const pending = ref(false)
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
+const showDeleteModal = ref(false)
 const selectedUser = ref<PanelUser | null>(null)
+const userToDelete = ref<PanelUser | null>(null)
 
 const roleFilterItems = computed(() => [
   { label: 'همه نقش‌ها', value: 'all' },
@@ -261,7 +274,16 @@ const onDeactivate = (user: PanelUser) => {
 }
 
 const onDelete = (user: PanelUser) => {
-  allUsers.value = allUsers.value.filter((u) => u.id !== user.id)
+  userToDelete.value = user
+  showDeleteModal.value = true
+}
+
+const confirmDelete = () => {
+  if (userToDelete.value) {
+    allUsers.value = allUsers.value.filter((u) => u.id !== userToDelete.value!.id)
+  }
+  showDeleteModal.value = false
+  userToDelete.value = null
 }
 
 const onCreateUser = (form: CreateUserForm) => {

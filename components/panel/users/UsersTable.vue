@@ -75,7 +75,7 @@
                 </td>
                 <td class="px-6 py-4">
                   <UDropdownMenu
-                    v-if="rowActions(user).length > 0"
+                    v-if="hasActions"
                     :items="[rowActions(user)]"
                     :ui="{ content: 'font-dana w-44' }"
                   >
@@ -87,6 +87,15 @@
                       square
                     />
                   </UDropdownMenu>
+                  <UButton
+                    v-else
+                    variant="ghost"
+                    icon="i-heroicons-ellipsis-vertical"
+                    size="xs"
+                    color="neutral"
+                    square
+                    disabled
+                  />
                 </td>
               </tr>
             </tbody>
@@ -119,6 +128,8 @@ const emit = defineEmits<{
   deactivate: [user: PanelUser]
   delete: [user: PanelUser]
 }>()
+
+const hasActions = computed(() => props.canUpdate || props.canDelete)
 
 const roleBadgeColor: Record<string, 'warning' | 'info' | 'primary' | 'neutral' | 'success'> = {
   owner: 'warning',
