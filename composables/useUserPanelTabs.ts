@@ -143,9 +143,7 @@ export const useUserPanelTabs = () => {
   const getUserRole = (): UserRole => {
     const role = userStore.currentUser?.role
     const validRoles: UserRole[] = ['customer', 'admin', 'owner']
-    return validRoles.includes(role as UserRole)
-      ? (role as UserRole)
-      : 'customer'
+    return validRoles.includes(role as UserRole) ? (role as UserRole) : 'admin'
   }
 
   // Get routes for current user role
@@ -162,7 +160,10 @@ export const useUserPanelTabs = () => {
   // Check if user has access to a route
   const hasAccessToRoute = (path: string): boolean => {
     const routes = getRoutesForRole()
-    return routes.some((item) => item.to === path)
+    // Match the exact route or any nested detail route (e.g. /panel/products/5)
+    return routes.some(
+      (item) => item.to === path || path.startsWith(`${item.to}/`)
+    )
   }
 
   // Get all accessible route paths for current user

@@ -3,7 +3,7 @@
   <div class="min-h-screen bg-gray-50 dark:bg-gray-950">
     <UContainer class="lg:py-8 py-4 pb-28 lg:pb-8">
       <ClientOnly>
-        <div v-if="userStore.currentUser">
+        <div v-if="userStore.currentUser || isDev">
           <div class="grid lg:grid-cols-4 gap-6">
             <!-- Desktop Sidebar -->
             <aside
@@ -162,7 +162,7 @@
 
     <!-- Mobile Bottom Navigation -->
     <ClientOnly>
-      <div v-if="userStore.currentUser" class="lg:hidden">
+      <div v-if="userStore.currentUser || isDev" class="lg:hidden">
         <!-- Profile Slide-up Menu Backdrop -->
         <Transition name="fade">
           <div
@@ -196,8 +196,8 @@
                 </p>
                 <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
                   {{
-                    userStore.currentUser.username ||
-                    userStore.currentUser.person?.phoneNumber
+                    userStore.currentUser?.username ||
+                    userStore.currentUser?.person?.phoneNumber
                   }}
                 </p>
               </div>
@@ -305,16 +305,19 @@
 <script setup>
 const route = useRoute()
 const userStore = useUserStore()
+const isDev = import.meta.dev
 
 definePageMeta({
   layout: 'panel',
   middleware: (to) => {
+    if (import.meta.dev) return
+
     if (import.meta.client) {
       const token = localStorage.getItem('auth.local')
       if (!token) {
         return navigateTo('/login?next=panel')
       }
-
+      console.log(to)
       if (to.path === '/panel' || to.path === '/panel/') {
         return navigateTo('/panel/dashboard')
       }
@@ -364,15 +367,6 @@ const todayDate = computed(() =>
 )
 
 const userRole = computed(() => getUserRole())
-
-const roleLabel = computed(() => {
-  const labels = {
-    customer: 'مشتری',
-    admin: 'مدیر',
-    owner: 'مالک',
-  }
-  return labels[userRole.value] || 'کاربر'
-})
 
 const roleBadgeColor = computed(() => {
   const colors = {
