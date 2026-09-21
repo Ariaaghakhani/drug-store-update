@@ -7,6 +7,12 @@ export const tokenLocalStorageKey = 'auth.local'
 export const cachedToken = ref(null)
 
 export default defineNuxtPlugin(async (nuxtApp) => {
+  let resolveAuthReady
+  const authReady = new Promise((resolve) => {
+    resolveAuthReady = resolve
+  })
+  nuxtApp.provide('authReady', authReady)
+
   const _user = ref(null)
   const _loggedIn = ref(false)
   cachedToken.value = localStorage.getItem(tokenLocalStorageKey)
@@ -107,4 +113,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     }
     console.log('[Auth Plugin] Initialization complete')
   }
+
+  resolveAuthReady()
 })

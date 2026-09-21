@@ -7,4 +7,5 @@ export default defineNuxtPlugin((nuxtApp) => {
     fetchUser: () => {},
     reset: () => {},
   })
+  nuxtApp.provide('authReady', Promise.resolve())
 })

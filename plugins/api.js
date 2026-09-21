@@ -95,7 +95,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     onRequest({ request, options }) {
       // Set headers directly in options
       const headers = {
-        'ngrok-skip-browser-warning': '69420',
+        // 'ngrok-skip-browser-warning': '69420',
       }
 
       // Add token on client side

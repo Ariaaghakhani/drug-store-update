@@ -28,6 +28,9 @@ export default defineNuxtConfig({
     },
   },
   eslint: {},
+  routeRules: {
+    '/panel/**': { ssr: false },
+  },
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
@@ -73,8 +76,8 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      BACKEND_URL: 'https://lanelle-unbronzed-carpologically.ngrok-free.dev/',
-      // BACKEND_URL: 'http://172.20.10.2:8081',
+      // BACKEND_URL: 'https://lanelle-unbronzed-carpologically.ngrok-free.dev/',
+      BACKEND_URL: 'http://localhost:8081',
       CMS_URL: 'https://ancient-balance-34dc5d8db0.strapiapp.com',
     },
   },
