@@ -14,7 +14,7 @@
     <AddressFormModal
       v-model:open="isModalOpen"
       :address="editingAddress"
-      :provinces="provinceOptions"
+      :provinces="allProvinces"
       :cities="cityOptions"
       :saving="isSaving"
       @save="saveAddress"
@@ -40,71 +40,46 @@ const addresses = ref([])
 const allProvinces = ref([])
 const cityOptions = ref([])
 
-const FALLBACK_ADDRESSES = [
-  { id: 1, type: 'home', label: 'خانه', province: 'تهران', city: 'تهران', district: '', street: 'خیابان ولیعصر، کوچه بهار، پلاک ۱۲، واحد ۳', postalCode: '1591634149', phone: '09121234567', isDefault: true },
-  { id: 2, type: 'work', label: 'محل کار', province: 'تهران', city: 'تهران', district: '', street: 'میدان آرژانتین، خیابان الوند، پلاک ۵، طبقه دوم', postalCode: '1513643511', phone: '02112345678', isDefault: false },
-]
-
-const FALLBACK_PROVINCES = [
-  { id: null, name: 'تهران', nameFa: 'تهران', label: 'تهران' },
-  { id: null, name: 'اصفهان', nameFa: 'اصفهان', label: 'اصفهان' },
-  { id: null, name: 'فارس', nameFa: 'فارس', label: 'فارس' },
-  { id: null, name: 'خراسان رضوی', nameFa: 'خراسان رضوی', label: 'خراسان رضوی' },
-  { id: null, name: 'آذربایجان شرقی', nameFa: 'آذربایجان شرقی', label: 'آذربایجان شرقی' },
-]
-
-const FALLBACK_CITIES = {
-  تهران: [{ id: null, name: 'تهران', nameFa: 'تهران', label: 'تهران' }, { id: null, name: 'کرج', nameFa: 'کرج', label: 'کرج' }],
-  اصفهان: [{ id: null, name: 'اصفهان', nameFa: 'اصفهان', label: 'اصفهان' }, { id: null, name: 'کاشان', nameFa: 'کاشان', label: 'کاشان' }],
-  فارس: [{ id: null, name: 'شیراز', nameFa: 'شیراز', label: 'شیراز' }, { id: null, name: 'مرودشت', nameFa: 'مرودشت', label: 'مرودشت' }],
-  'خراسان رضوی': [{ id: null, name: 'مشهد', nameFa: 'مشهد', label: 'مشهد' }, { id: null, name: 'نیشابور', nameFa: 'نیشابور', label: 'نیشابور' }],
-  'آذربایجان شرقی': [{ id: null, name: 'تبریز', nameFa: 'تبریز', label: 'تبریز' }, { id: null, name: 'مراغه', nameFa: 'مراغه', label: 'مراغه' }],
-}
-
-const provinceOptions = computed(() => {
-  const list = allProvinces.value.length ? allProvinces.value : FALLBACK_PROVINCES
-  return [...list].sort((a, b) => a.name.localeCompare(b.name, 'fa-IR')).map((p) => ({ ...p, label: p.nameFa || p.name }))
-})
-
-const normalizeCities = (list) =>
-  [...list].sort((a, b) => a.name.localeCompare(b.name, 'fa-IR')).map((c) => ({ ...c, label: c.nameFa || c.name }))
-
-const onProvinceChange = (provinceObj) => {
+async function onProvinceChange(provinceObj) {
   cityOptions.value = []
   if (!provinceObj) return
-  if (provinceObj.id) {
-    try {
-      cityOptions.value = normalizeCities(app.$api.address.getCity(provinceObj.id))
-    } catch {
-      cityOptions.value = normalizeCities(FALLBACK_CITIES[provinceObj.name] ?? [])
-    }
-  } else {
-    cityOptions.value = normalizeCities(FALLBACK_CITIES[provinceObj.name] ?? [])
+  try {
+    const response = await app.$api.address.getCity(provinceObj)
+
+    cityOptions.value = response.data.data
+  } catch (error) {
+    console.log(error)
   }
 }
 
-const loadProvinces = () => {
+async function loadProvinces() {
   try {
-    allProvinces.value = app.$api.address.getState()
+    const response = await app.$api.address.getState()
+    allProvinces.value = response.data.data
   } catch {
     allProvinces.value = []
   }
 }
 
-const fetchAddresses = async () => {
+async function fetchAddresses() {
   isLoading.value = true
   try {
-    const response = await app.$api.address.getAddresses({ data: { personId: userStore.currentUser.person.id } })
-    addresses.value = response.data ?? []
-  } catch {
-    addresses.value = FALLBACK_ADDRESSES
+    const response = await app.$api.address.getAddresses({
+      data: { personId: userStore.currentUser.person.id },
+    })
+    addresses.value = response.data.data
+  } catch (error) {
+    console.log(error)
   } finally {
     isLoading.value = false
   }
 }
 
 const setDefault = (id) => {
-  addresses.value = addresses.value.map((a) => ({ ...a, isDefault: a.id === id }))
+  addresses.value = addresses.value.map((a) => ({
+    ...a,
+    isDefault: a.id === id,
+  }))
   toast.add({ title: 'آدرس پیش‌فرض تغییر کرد', color: 'success' })
 }
 
@@ -124,7 +99,9 @@ const saveAddress = async (formData, id) => {
   isSaving.value = true
   try {
     if (id !== null) {
-      addresses.value = addresses.value.map((a) => a.id === id ? { ...a, ...formData } : a)
+      addresses.value = addresses.value.map((a) =>
+        a.id === id ? { ...a, ...formData } : a
+      )
     } else {
       const config = {
         data: {
@@ -138,9 +115,15 @@ const saveAddress = async (formData, id) => {
       }
       const response = await app.$api.address.addAddress(config)
       if (formData.isDefault) {
-        addresses.value = addresses.value.map((a) => ({ ...a, isDefault: false }))
+        addresses.value = addresses.value.map((a) => ({
+          ...a,
+          isDefault: false,
+        }))
       }
-      addresses.value.push({ ...formData, id: response?.data?.id ?? Date.now() })
+      addresses.value.push({
+        ...formData,
+        id: response?.data?.id ?? Date.now(),
+      })
     }
     toast.add({ title: 'آدرس با موفقیت ذخیره شد', color: 'success' })
     isModalOpen.value = false

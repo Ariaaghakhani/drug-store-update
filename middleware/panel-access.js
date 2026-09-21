@@ -1,5 +1,5 @@
 // middleware/panel-access.js
-export default defineNuxtRouteMiddleware((to, from) => {
+export default defineNuxtRouteMiddleware(async (to, from) => {
   if (import.meta.dev) return
 
   // Only run on client side
@@ -14,14 +14,20 @@ export default defineNuxtRouteMiddleware((to, from) => {
     return navigateTo('/login?next=' + to.path)
   }
 
-  // If accessing /panel root, redirect to dashboard
+  const { $authReady } = useNuxtApp()
+  await $authReady
+
+  if (!userStore.currentUser?.person?.id) {
+    return navigateTo('/login?next=' + to.path)
+  }
+
   if (to.path === '/panel' || to.path === '/panel/') {
     return navigateTo('/panel/dashboard')
   }
 
-  // Check if user has access to this specific route
+  if (import.meta.dev) return
+
   if (!hasAccessToRoute(to.path)) {
-    // Log for debugging
     console.log('Access denied to:', to.path)
     console.log('Accessible paths:', getAccessiblePaths())
 

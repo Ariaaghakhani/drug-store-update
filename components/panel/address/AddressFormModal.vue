@@ -44,8 +44,7 @@
             <UFormField label="استان" name="province" :error="visibleErrors.province">
               <USelectMenu
                 v-model="selectedProvinceObj"
-                :items="provinces"
-                :label="selectedProvinceObj?.label"
+                :items="provinceItems"
                 placeholder="انتخاب استان"
                 class="w-full"
                 :search-input="{ placeholder: 'جستجو...', icon: 'i-lucide-search' }"
@@ -63,8 +62,7 @@
             <UFormField label="شهر" name="city" :error="visibleErrors.city">
               <USelectMenu
                 v-model="selectedCityObj"
-                :items="cities"
-                :label="selectedCityObj?.label"
+                :items="cityItems"
                 placeholder="انتخاب شهر"
                 class="w-full"
                 :disabled="!selectedProvinceObj"
@@ -151,6 +149,13 @@ const form = ref(defaultForm())
 const selectedProvinceObj = ref(null)
 const selectedCityObj = ref(null)
 
+const provinceItems = computed(() =>
+  props.provinces.map((p) => ({ ...p, label: p.nameFa || p.name }))
+)
+const cityItems = computed(() =>
+  props.cities.map((c) => ({ ...c, label: c.nameFa || c.name }))
+)
+
 const formErrors = reactive({ label: '', province: '', city: '', street: '', postalCode: '' })
 const hasSubmitted = ref(false)
 
@@ -187,7 +192,7 @@ watch(
     clearErrors()
     if (props.address) {
       form.value = { ...props.address }
-      const provinceObj = props.provinces.find((p) => p.name === props.address.province) ?? null
+      const provinceObj = provinceItems.value.find((p) => p.name === props.address.province) ?? null
       selectedProvinceObj.value = provinceObj
       selectedCityObj.value = null
       if (provinceObj) emit('province-change', provinceObj)
@@ -200,7 +205,7 @@ watch(
 )
 
 watch(
-  () => props.cities,
+  cityItems,
   (newCities) => {
     if (props.address && form.value.city && !selectedCityObj.value) {
       selectedCityObj.value = newCities.find((c) => c.name === form.value.city) ?? null
