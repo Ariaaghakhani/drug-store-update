@@ -83,9 +83,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import type { PanelUser, CreateUserForm } from '@/types/panel-users'
-import type { RolePermissions } from '@/stores/roles'
+<script setup>
 import UsersFilters from '@/components/panel/users/UsersFilters.vue'
 import UsersTable from '@/components/panel/users/UsersTable.vue'
 import CreateUserModal from '@/components/panel/users/CreateUserModal.vue'
@@ -106,7 +104,7 @@ const canCreate = computed(() => myPerms.value?.create ?? false)
 const canUpdate = computed(() => myPerms.value?.update ?? false)
 const canDelete = computed(() => myPerms.value?.delete ?? false)
 
-const getRolePermissions = (roleId: string): RolePermissions => {
+const getRolePermissions = (roleId) => {
   const role = rolesStore.roles.find((r) => r.id === roleId)
   if (!role) {
     return {
@@ -122,7 +120,7 @@ const getRolePermissions = (roleId: string): RolePermissions => {
   }
 }
 
-const allUsers = ref<PanelUser[]>([
+const allUsers = ref([
   {
     id: 1,
     fullName: 'رضا حسینی',
@@ -214,8 +212,8 @@ const pending = ref(false)
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const showDeleteModal = ref(false)
-const selectedUser = ref<PanelUser | null>(null)
-const userToDelete = ref<PanelUser | null>(null)
+const selectedUser = ref(null)
+const userToDelete = ref(null)
 
 const roleFilterItems = computed(() => [
   { label: 'همه نقش‌ها', value: 'all' },
@@ -258,35 +256,35 @@ watch([searchQuery, roleFilter, statusFilter], () => {
   currentPage.value = 1
 })
 
-const onEdit = (user: PanelUser) => {
+const onEdit = (user) => {
   selectedUser.value = user
   showEditModal.value = true
 }
 
-const onSaveUser = (updated: PanelUser) => {
+const onSaveUser = (updated) => {
   const idx = allUsers.value.findIndex((u) => u.id === updated.id)
   if (idx !== -1) allUsers.value[idx] = updated
 }
 
-const onDeactivate = (user: PanelUser) => {
+const onDeactivate = (user) => {
   const found = allUsers.value.find((u) => u.id === user.id)
   if (found) found.isActive = !found.isActive
 }
 
-const onDelete = (user: PanelUser) => {
+const onDelete = (user) => {
   userToDelete.value = user
   showDeleteModal.value = true
 }
 
 const confirmDelete = () => {
   if (userToDelete.value) {
-    allUsers.value = allUsers.value.filter((u) => u.id !== userToDelete.value!.id)
+    allUsers.value = allUsers.value.filter((u) => u.id !== userToDelete.value.id)
   }
   showDeleteModal.value = false
   userToDelete.value = null
 }
 
-const onCreateUser = (form: CreateUserForm) => {
+const onCreateUser = (form) => {
   const role = rolesStore.roles.find((r) => r.id === form.roleId)
   allUsers.value.unshift({
     id: Date.now(),

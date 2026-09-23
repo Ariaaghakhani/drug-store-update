@@ -209,7 +209,7 @@
   </UContainer>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent } from 'vue'
 
 export default defineComponent({
@@ -262,8 +262,8 @@ export default defineComponent({
   },
 
   methods: {
-    getStatusLabel(status: string): string {
-      const labels: Record<string, string> = {
+    getStatusLabel(status) {
+      const labels = {
         delivered: 'تحویل داده شده',
         processing: 'در حال پردازش',
         shipped: 'ارسال شده',

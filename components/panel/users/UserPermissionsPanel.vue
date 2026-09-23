@@ -19,7 +19,7 @@
             :ui="{
               base: 'data-[state=checked]:bg-brand-500 dark:data-[state=checked]:bg-brand-400 data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-gray-600',
             }"
-            @update:model-value="(val: boolean) => emit('change', domain.key, action.key, val)"
+            @update:model-value="(val) => emit('change', domain.key, action.key, val)"
           />
         </div>
       </div>
@@ -27,39 +27,21 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import type { RolePermissions, Permission } from '@/stores/roles'
+<script setup>
+defineProps({
+  permissions: { type: Object, required: true },
+  canUpdate: { type: Boolean, required: true },
+})
 
-type PermissionDomain = keyof RolePermissions
-type PermissionAction = keyof Permission
+const emit = defineEmits(['change'])
 
-interface DomainDef {
-  key: PermissionDomain
-  label: string
-  icon: string
-}
-
-interface ActionDef {
-  key: PermissionAction
-  label: string
-}
-
-defineProps<{
-  permissions: RolePermissions
-  canUpdate: boolean
-}>()
-
-const emit = defineEmits<{
-  change: [domain: PermissionDomain, action: PermissionAction, value: boolean]
-}>()
-
-const permissionDomains: DomainDef[] = [
+const permissionDomains = [
   { key: 'users', label: 'کاربران', icon: 'i-heroicons-users' },
   { key: 'products', label: 'محصولات', icon: 'i-heroicons-cube' },
   { key: 'orders', label: 'سفارش‌ها', icon: 'i-heroicons-banknotes' },
 ]
 
-const permissionActions: ActionDef[] = [
+const permissionActions = [
   { key: 'create', label: 'ایجاد' },
   { key: 'read', label: 'مشاهده' },
   { key: 'update', label: 'ویرایش' },

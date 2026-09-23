@@ -62,33 +62,20 @@
   </UModal>
 </template>
 
-<script setup lang="ts">
-import type { PanelUser } from '@/types/panel-users'
-import type { RolePermissions, Permission } from '@/stores/roles'
+<script setup>
 import UserPermissionsPanel from '@/components/panel/users/UserPermissionsPanel.vue'
 
-type PermissionDomain = keyof RolePermissions
-type PermissionAction = keyof Permission
+const props = defineProps({
+  open: { type: Boolean, required: true },
+  user: { type: Object, default: null },
+  roleSelectItems: { type: Array, required: true },
+})
 
-interface SelectItem {
-  label: string
-  value: string
-}
-
-const props = defineProps<{
-  open: boolean
-  user: PanelUser | null
-  roleSelectItems: SelectItem[]
-}>()
-
-const emit = defineEmits<{
-  'update:open': [value: boolean]
-  save: [user: PanelUser]
-}>()
+const emit = defineEmits(['update:open', 'save'])
 
 const rolesStore = useRolesStore()
 
-const draft = ref<PanelUser>({
+const draft = ref({
   id: 0,
   fullName: '',
   phone: '',
@@ -120,14 +107,14 @@ watch(
   { immediate: true },
 )
 
-const onRoleChange = (roleId: string) => {
+const onRoleChange = (roleId) => {
   const role = rolesStore.roles.find((r) => r.id === roleId)
   if (role) {
     draft.value.roleFa = role.labelFa
   }
 }
 
-const onPermissionChange = (domain: PermissionDomain, action: PermissionAction, value: boolean) => {
+const onPermissionChange = (domain, action, value) => {
   draft.value.permissions[domain][action] = value
 }
 

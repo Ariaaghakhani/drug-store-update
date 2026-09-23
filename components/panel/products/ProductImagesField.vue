@@ -39,22 +39,22 @@
   </div>
 </template>
 
-<script setup lang="ts">
-const props = defineProps<{ modelValue: string[] }>()
-const emit = defineEmits<{ 'update:modelValue': [value: string[]] }>()
+<script setup>
+const props = defineProps({ modelValue: { type: Array, required: true } })
+const emit = defineEmits(['update:modelValue'])
 
-const fileInput = ref<HTMLInputElement | null>(null)
+const fileInput = ref(null)
 
-const readAsDataUrl = (file: File): Promise<string> =>
+const readAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
+    reader.onload = () => resolve(reader.result)
     reader.onerror = reject
     reader.readAsDataURL(file)
   })
 
-const onFilesChange = async (event: Event) => {
-  const input = event.target as HTMLInputElement
+const onFilesChange = async (event) => {
+  const input = event.target
   const files = Array.from(input.files ?? []).filter((f) => f.type.startsWith('image/'))
   if (files.length) {
     const urls = await Promise.all(files.map(readAsDataUrl))
@@ -63,7 +63,7 @@ const onFilesChange = async (event: Event) => {
   input.value = ''
 }
 
-const removeAt = (index: number) => {
+const removeAt = (index) => {
   emit('update:modelValue', props.modelValue.filter((_, i) => i !== index))
 }
 </script>

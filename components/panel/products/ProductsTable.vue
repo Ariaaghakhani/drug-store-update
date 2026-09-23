@@ -122,32 +122,27 @@
     </div>
 </template>
 
-<script setup lang="ts">
-import type { Product } from '@/types/panel-products'
+<script setup>
+const props = defineProps({
+  products: { type: Array, required: true },
+  pending: { type: Boolean, required: true },
+  pageSize: { type: Number, required: true },
+  canUpdate: { type: Boolean, required: true },
+  canDelete: { type: Boolean, required: true },
+})
 
-const props = defineProps<{
-  products: Product[]
-  pending: boolean
-  pageSize: number
-  canUpdate: boolean
-  canDelete: boolean
-}>()
-
-const emit = defineEmits<{
-  edit: [product: Product]
-  delete: [product: Product]
-}>()
+const emit = defineEmits(['edit', 'delete'])
 
 const hasActions = computed(() => props.canUpdate || props.canDelete)
 
-const isNearExpiry = (expiryDate?: string): boolean => {
+const isNearExpiry = (expiryDate) => {
   if (!expiryDate) return false
   const diff = new Date(expiryDate).getTime() - Date.now()
   return diff > 0 && diff <= 90 * 24 * 60 * 60 * 1000
 }
 
-const rowActions = (product: Product) => {
-  const items: { label: string; icon: string; color?: string; onSelect: () => void }[] = []
+const rowActions = (product) => {
+  const items = []
   if (props.canUpdate) {
     items.push({
       label: 'ویرایش',

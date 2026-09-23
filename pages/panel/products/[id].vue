@@ -98,8 +98,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import type { Product } from '@/types/panel-products'
+<script setup>
 import ProductImagesField from '@/components/panel/products/ProductImagesField.vue'
 
 definePageMeta({ layout: 'panel' })
@@ -120,8 +119,8 @@ if (!canUpdate.value) {
   await navigateTo('/panel/products')
 }
 
-const product = computed<Product | undefined>(() =>
-  productsStore.getById(route.params.id as string)
+const product = computed(() =>
+  productsStore.getById(route.params.id)
 )
 
 // Categories that can be assigned (exclude the "all" filter option)
@@ -138,7 +137,7 @@ const form = reactive({
   expiryDate: '',
   isPrescriptionRequired: false,
   inStock: true,
-  images: [] as string[],
+  images: [],
 })
 
 watchEffect(() => {

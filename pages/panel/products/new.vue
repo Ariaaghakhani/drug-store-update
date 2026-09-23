@@ -89,7 +89,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import ProductImagesField from '@/components/panel/products/ProductImagesField.vue'
 
 definePageMeta({ layout: 'panel' })
@@ -123,7 +123,7 @@ const form = reactive({
   expiryDate: '',
   isPrescriptionRequired: false,
   inStock: true,
-  images: [] as string[],
+  images: [],
 })
 
 const toast = useToast()

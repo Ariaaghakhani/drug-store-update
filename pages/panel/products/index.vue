@@ -58,8 +58,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import type { Product } from '@/types/panel-products'
+<script setup>
 import ProductMetrics from '@/components/panel/products/ProductMetrics.vue'
 import ProductsFilters from '@/components/panel/products/ProductsFilters.vue'
 import ProductsTable from '@/components/panel/products/ProductsTable.vue'
@@ -79,14 +78,14 @@ const canCreate = computed(() => myPerms.value?.create ?? false)
 const canUpdate = computed(() => myPerms.value?.update ?? false)
 const canDelete = computed(() => myPerms.value?.delete ?? false)
 
-const isNearExpiry = (expiryDate?: string): boolean => {
+const isNearExpiry = (expiryDate) => {
   if (!expiryDate) return false
   const diff = new Date(expiryDate).getTime() - Date.now()
   return diff > 0 && diff <= 90 * 24 * 60 * 60 * 1000
 }
 
 const productsStore = useProductsStore()
-const allProducts = computed<Product[]>(() => productsStore.products)
+const allProducts = computed(() => productsStore.products)
 const categoryItems = productsStore.categoryItems
 
 const searchQuery = ref('')
@@ -95,7 +94,7 @@ const currentPage = ref(1)
 const pageSize = 10
 const pending = ref(false)
 const showDeleteModal = ref(false)
-const productToDelete = ref<Product | null>(null)
+const productToDelete = ref(null)
 
 const metrics = computed(() => [
   {
@@ -151,11 +150,11 @@ watch([searchQuery, categoryFilter], () => {
   currentPage.value = 1
 })
 
-const onEdit = (product: Product) => {
+const onEdit = (product) => {
   navigateTo(`/panel/products/${product.id}`)
 }
 
-const onDelete = (product: Product) => {
+const onDelete = (product) => {
   productToDelete.value = product
   showDeleteModal.value = true
 }

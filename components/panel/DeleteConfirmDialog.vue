@@ -37,25 +37,14 @@
   </UModal>
 </template>
 
-<script setup lang="ts">
-withDefaults(
-  defineProps<{
-    open: boolean
-    title?: string
-    message?: string
-    itemName?: string
-    confirmLabel?: string
-  }>(),
-  {
-    title: 'تأیید حذف',
-    message: 'آیا از حذف این مورد مطمئن هستید؟ این عملیات قابل بازگشت نیست.',
-    itemName: '',
-    confirmLabel: 'حذف',
-  }
-)
+<script setup>
+defineProps({
+  open: { type: Boolean, required: true },
+  title: { type: String, default: 'تأیید حذف' },
+  message: { type: String, default: 'آیا از حذف این مورد مطمئن هستید؟ این عملیات قابل بازگشت نیست.' },
+  itemName: { type: String, default: '' },
+  confirmLabel: { type: String, default: 'حذف' },
+})
 
-const emit = defineEmits<{
-  'update:open': [value: boolean]
-  confirm: []
-}>()
+const emit = defineEmits(['update:open', 'confirm'])
 </script>
