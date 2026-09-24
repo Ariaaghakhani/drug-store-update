@@ -24,11 +24,11 @@
               <UInput v-model="localForm.lastName" placeholder="نام خانوادگی" class="w-full" />
             </UFormField>
           </div>
-          <UFormField label="کد ملی" name="nationalId">
-            <UInput v-model="localForm.nationalId" dir="ltr" placeholder="0000000000" maxlength="10" class="w-full" />
+          <UFormField label="کد ملی" name="nationalCode">
+            <UInput v-model="localForm.nationalCode" dir="ltr" placeholder="0000000000" maxlength="10" class="w-full" />
           </UFormField>
-          <UFormField label="تاریخ تولد" name="birthDate">
-            <UInput v-model="localForm.birthDate" dir="ltr" placeholder="1370/01/01" class="w-full" />
+          <UFormField label="تاریخ تولد (شمسی)" name="birthDate">
+            <UInput v-model="localForm.birthDate" dir="ltr" placeholder="1371/03/31" maxlength="10" class="w-full" />
           </UFormField>
           <UFormField label="جنسیت" name="gender" class="*:font-dana">
             <USelect v-model="localForm.gender" :items="genderOptions" class="w-full *:font-dana" />

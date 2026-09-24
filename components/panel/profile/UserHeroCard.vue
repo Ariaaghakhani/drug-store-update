@@ -32,8 +32,9 @@
       <UCard v-else key="content">
         <div class="flex items-center gap-5 pb-5 border-b border-gray-100 dark:border-gray-800">
           <div class="relative flex-shrink-0">
-            <div class="w-[72px] h-[72px] rounded-full bg-brand-500/15 border-2 border-brand-500/30 flex items-center justify-center">
-              <span class="text-2xl font-semibold text-brand-500">{{ initials }}</span>
+            <div class="w-[72px] h-[72px] rounded-full bg-brand-500/15 border-2 border-brand-500/30 flex items-center justify-center overflow-hidden">
+              <img v-if="avatarUrl" :src="avatarUrl" alt="" class="w-full h-full object-cover" />
+              <span v-else class="text-2xl font-semibold text-brand-500">{{ initials }}</span>
             </div>
             <button
               class="absolute bottom-0 end-0 w-[22px] h-[22px] rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center shadow-sm hover:border-brand-500 dark:hover:border-brand-400 group transition-colors"
@@ -78,6 +79,7 @@ defineProps({
   loading: Boolean,
   fullName: String,
   initials: String,
+  avatarUrl: String,
   memberSince: String,
   stats: Object,
 })

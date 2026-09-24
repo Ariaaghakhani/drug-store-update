@@ -67,15 +67,8 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     async fetchUser({ fetchFromRead = true } = {}) {
       try {
         const response = await nuxtApp.$api.auth.fetchUser({ fetchFromRead })
-        console.log('[Auth Plugin] fetchUser response:', response.data)
-        this.setUser(response.data)
-        console.log('[Auth Plugin] User set in auth:', _user.value)
-        console.log(
-          '[Auth Plugin] User set in userStore:',
-          userStore.currentUser
-        )
+        this.setUser(response.data?.data?.user)
       } catch (error) {
-        console.error('[Auth Plugin] fetchUser error:', error)
         const responseCode = error?.response?.status
         if ([401, 403].includes(responseCode)) {
           logoutAndResetAuthentication(nuxtApp, {
@@ -99,19 +92,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   )
   if (token) {
     initializeAuthorizedSession(token)
-
-    // TEMPORARY: Check if user is already in userStore from localStorage
-    if (userStore.currentUser) {
-      console.log(
-        '[Auth Plugin] User loaded from localStorage (temporary until API endpoint is ready)'
-      )
-      _user.value = userStore.currentUser
-    } else {
-      // Try to fetch from API (will be available tomorrow)
-      console.log('[Auth Plugin] Fetching user data...')
-      // await auth.fetchUser()
-    }
-    console.log('[Auth Plugin] Initialization complete')
   }
 
   resolveAuthReady()

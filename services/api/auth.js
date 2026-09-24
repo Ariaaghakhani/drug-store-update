@@ -31,6 +31,30 @@ export default (apiCaller) => ({
     return apiCaller.post('api/auth/logout', config)
   },
   fetchUser(config) {
-    return apiCaller.get('api/auth/me', config)
+    return apiCaller.get('api/auth/me/profile', config)
+  },
+
+  // ========== PASSWORD (authenticated) ==========
+  changePassword(config) {
+    return apiCaller.post('api/auth/change-password', config)
+  },
+
+  // ========== CHANGE PHONE (authenticated) ==========
+  sendChangePhoneOtp(config) {
+    return apiCaller.post('api/auth/change-phone/send-otp', config)
+  },
+  verifyChangePhoneOtp(config) {
+    return apiCaller.post('api/auth/change-phone/verify-otp', config)
+  },
+  sendChangePhoneNewOtp(config) {
+    return apiCaller.post('api/auth/change-phone/send-new-otp', config)
+  },
+  confirmChangePhone(config) {
+    return apiCaller.post('api/auth/change-phone/confirm', config)
+  },
+
+  // ========== EMAIL VERIFICATION (authenticated) ==========
+  sendEmailVerification(config) {
+    return apiCaller.post('api/auth/email/send-verification', config)
   },
 })

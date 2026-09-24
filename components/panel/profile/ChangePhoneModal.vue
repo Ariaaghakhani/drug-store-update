@@ -51,17 +51,17 @@
                       <h3 class="text-base font-semibold text-gray-900 dark:text-white">تأیید شماره فعلی</h3>
                       <p class="text-xs text-gray-400 leading-relaxed">کد تأیید به شماره فعلی شما ارسال می‌شود</p>
                     </div>
-                    <UInput model-value="۰۹۱۲***۶۷۸۹" readonly dir="ltr" size="md" class="w-full" :ui="{ base: 'text-center' }" />
+                    <UInput :model-value="maskedCurrentPhone" readonly dir="ltr" size="md" class="w-full" :ui="{ base: 'text-center' }" />
                     <div class="flex gap-3">
                       <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="requestCancel">انصراف</UButton>
-                      <UButton color="primary" class="flex-1 justify-center" @click="advance">ارسال کد تأیید</UButton>
+                      <UButton color="primary" class="flex-1 justify-center" :loading="isSending" @click="sendCurrentOtp()">ارسال کد تأیید</UButton>
                     </div>
                   </template>
 
                   <template v-else-if="step === 2">
                     <div class="text-center space-y-1">
                       <h3 class="text-base font-semibold text-gray-900 dark:text-white">کد تأیید</h3>
-                      <p class="text-xs text-gray-400 leading-relaxed">کد ارسال شده به ۰۹۱۲***۶۷۸۹ را وارد کنید</p>
+                      <p class="text-xs text-gray-400 leading-relaxed">کد ارسال شده به {{ maskedCurrentPhone }} را وارد کنید</p>
                     </div>
                     <div class="flex justify-center gap-2" dir="ltr">
                       <input
@@ -77,18 +77,19 @@
                         @keydown="handleOldOtpKeydown(idx, $event)"
                       />
                     </div>
+                    <p v-if="errorMessage" class="text-center text-xs text-error">{{ errorMessage }}</p>
                     <p class="text-center text-sm">
                       <button
                         :disabled="resendCountdown > 0"
                         :class="['font-medium transition-colors', resendCountdown > 0 ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-brand-500 hover:text-brand-600 dark:hover:text-brand-400']"
-                        @click="resendCountdown === 0 && startResend()"
+                        @click="resendCountdown === 0 && sendCurrentOtp(true)"
                       >
                         {{ resendCountdown > 0 ? `ارسال مجدد (${resendCountdown.toLocaleString('fa-IR')})` : 'ارسال مجدد' }}
                       </button>
                     </p>
                     <div class="flex gap-3">
                       <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="retreat">بازگشت</UButton>
-                      <UButton color="primary" class="flex-1 justify-center" @click="advance">تأیید و ادامه</UButton>
+                      <UButton color="primary" class="flex-1 justify-center" :loading="isSending" :disabled="oldOtp.join('').length < 5" @click="verifyCurrentOtp">تأیید و ادامه</UButton>
                     </div>
                   </template>
 
@@ -103,7 +104,7 @@
                     <UInput v-model="newPhone" dir="ltr" placeholder="09xxxxxxxxx" maxlength="11" size="md" class="w-full" :ui="{ base: 'text-center' }" />
                     <div class="flex gap-3">
                       <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="retreat">بازگشت</UButton>
-                      <UButton color="primary" class="flex-1 justify-center" :disabled="newPhone.length < 11" @click="advance">ارسال کد تأیید</UButton>
+                      <UButton color="primary" class="flex-1 justify-center" :loading="isSending" :disabled="!isValidPhoneNumber(newPhone)" @click="sendNewOtp()">ارسال کد تأیید</UButton>
                     </div>
                   </template>
 
@@ -126,18 +127,19 @@
                         @keydown="handleNewOtpKeydown(idx, $event)"
                       />
                     </div>
+                    <p v-if="errorMessage" class="text-center text-xs text-error">{{ errorMessage }}</p>
                     <p class="text-center text-sm">
                       <button
                         :disabled="resendCountdown > 0"
                         :class="['font-medium transition-colors', resendCountdown > 0 ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-brand-500 hover:text-brand-600 dark:hover:text-brand-400']"
-                        @click="resendCountdown === 0 && startResend()"
+                        @click="resendCountdown === 0 && sendNewOtp(true)"
                       >
                         {{ resendCountdown > 0 ? `ارسال مجدد (${resendCountdown.toLocaleString('fa-IR')})` : 'ارسال مجدد' }}
                       </button>
                     </p>
                     <div class="flex gap-3">
                       <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="retreat">بازگشت</UButton>
-                      <UButton color="primary" class="flex-1 justify-center" @click="advance">تأیید و ذخیره</UButton>
+                      <UButton color="primary" class="flex-1 justify-center" :loading="isSending" :disabled="newOtp.join('').length < 5" @click="confirmNewOtp">تأیید و ذخیره</UButton>
                     </div>
                   </template>
 
@@ -167,12 +169,23 @@
 </template>
 
 <script setup>
-const props = defineProps({ open: Boolean })
+import { isValidPhoneNumber } from '@/utils/validations.js'
+
+const props = defineProps({ open: Boolean, currentPhone: { type: String, default: '' } })
 const emit = defineEmits(['update:open', 'saved'])
+
+const app = useNuxtApp()
+const toast = useToast()
 
 const isOpen = computed({
   get: () => props.open,
   set: (v) => emit('update:open', v),
+})
+
+const maskedCurrentPhone = computed(() => {
+  const phone = props.currentPhone
+  if (!phone || phone.length < 11) return phone || '—'
+  return `${phone.slice(0, 4)}***${phone.slice(7)}`
 })
 
 const step = ref(1)
@@ -184,6 +197,8 @@ const newOtp = ref(['', '', '', '', ''])
 const oldOtpRefs = []
 const newOtpRefs = []
 const resendCountdown = ref(0)
+const isSending = ref(false)
+const errorMessage = ref('')
 let resendTimer = null
 
 const startResend = () => {
@@ -204,7 +219,68 @@ const advance = () => {
 
 const retreat = () => {
   stepTransition.value = 'step-backward'
+  errorMessage.value = ''
   step.value--
+}
+
+const sendCurrentOtp = async (isResend = false) => {
+  isSending.value = true
+  errorMessage.value = ''
+  try {
+    await app.$api.auth.sendChangePhoneOtp({ data: {} })
+    if (isResend) startResend()
+    else advance()
+  } catch (error) {
+    const message = error?.response?.data?.message ?? 'خطا در ارسال کد تأیید'
+    toast.add({ title: message, color: 'error' })
+  } finally {
+    isSending.value = false
+  }
+}
+
+const verifyCurrentOtp = async () => {
+  isSending.value = true
+  errorMessage.value = ''
+  try {
+    await app.$api.auth.verifyChangePhoneOtp({ data: { otpCode: oldOtp.value.join('') } })
+    advance()
+  } catch (error) {
+    errorMessage.value = error?.response?.data?.message ?? 'کد تأیید نادرست است'
+  } finally {
+    isSending.value = false
+  }
+}
+
+const sendNewOtp = async (isResend = false) => {
+  if (!isValidPhoneNumber(newPhone.value)) return
+  isSending.value = true
+  errorMessage.value = ''
+  try {
+    await app.$api.auth.sendChangePhoneNewOtp({ data: { newPhone: newPhone.value } })
+    if (isResend) startResend()
+    else advance()
+  } catch (error) {
+    const message = error?.response?.data?.message ?? 'خطا در ارسال کد به شماره جدید'
+    toast.add({ title: message, color: 'error' })
+  } finally {
+    isSending.value = false
+  }
+}
+
+const confirmNewOtp = async () => {
+  isSending.value = true
+  errorMessage.value = ''
+  try {
+    await app.$api.auth.confirmChangePhone({
+      data: { newPhone: newPhone.value, otpCode: newOtp.value.join('') },
+    })
+    emit('saved', newPhone.value)
+    advance()
+  } catch (error) {
+    errorMessage.value = error?.response?.data?.message ?? 'کد تأیید نادرست است'
+  } finally {
+    isSending.value = false
+  }
 }
 
 const requestCancel = () => {
@@ -221,6 +297,7 @@ const close = () => {
     newPhone.value = ''
     oldOtp.value = ['', '', '', '', '']
     newOtp.value = ['', '', '', '', '']
+    errorMessage.value = ''
     if (resendTimer) clearInterval(resendTimer)
     resendCountdown.value = 0
   }, 300)

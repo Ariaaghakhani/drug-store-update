@@ -9,7 +9,7 @@ export default (apiCaller) => ({
   },
 
   getUser(config) {
-    return apiCaller.post('api/persons/get', config)
+    return apiCaller.post('api/persons/get-by-id', config)
   },
 
   createUser(config) {

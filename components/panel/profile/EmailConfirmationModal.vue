@@ -66,6 +66,9 @@ const props = defineProps({
 
 const emit = defineEmits(['update:open', 'saved'])
 
+const app = useNuxtApp()
+const toast = useToast()
+
 const isOpen = computed({
   get: () => props.open,
   set: (v) => emit('update:open', v),
@@ -87,9 +90,15 @@ watch(
 
 const sendLink = async () => {
   sending.value = true
-  await new Promise((r) => setTimeout(r, 800))
-  sending.value = false
-  linkSent.value = true
+  try {
+    await app.$api.auth.sendEmailVerification({ data: { email: localEmail.value } })
+    linkSent.value = true
+  } catch (error) {
+    const message = error?.response?.data?.message ?? 'خطا در ارسال لینک تأیید'
+    toast.add({ title: message, color: 'error' })
+  } finally {
+    sending.value = false
+  }
 }
 
 const close = () => {

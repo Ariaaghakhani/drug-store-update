@@ -2,17 +2,17 @@
 
 ## Project overview
 
-Online pharmacy storefront + pharmacist panel built with **Nuxt 3**, **@nuxt/ui v3**, **Tailwind CSS v4**, **Pinia**, and **@vite-pwa/nuxt**. Always follow `DESIGN_SYSTEM.md` for visual rules. This file covers code behavior and conventions.
+Online pharmacy storefront + pharmacist panel built with **Nuxt 3**, **@nuxt/ui v3**, **Tailwind CSS v4**, **Pinia**, and **@vite-pwa/nuxt**. Always follow `docs/DESIGN_SYSTEM.md` for visual rules. This file covers code behavior and conventions.
 
 ---
 
 ## Design system
 
-**Always read `DESIGN_SYSTEM.md` before implementing any UI.**
+**Always read `docs/DESIGN_SYSTEM.md` before implementing any UI.**
 
 When you encounter a pattern not covered there:
 1. Implement it using the closest matching existing rule
-2. Add the new rule to `DESIGN_SYSTEM.md` under the relevant section
+2. Add the new rule to `docs/DESIGN_SYSTEM.md` under the relevant section
 3. Mention what you added at the end of your response
 
 ---
@@ -138,7 +138,10 @@ server/
 app.vue           ← root: font-dana + dir="rtl" wrapper
 app.config.ts     ← Nuxt UI overrides (toast RTL, modal slots, input min-h)
 nuxt.config.ts    ← runtimeConfig, PWA, i18n
-DESIGN_SYSTEM.md  ← visual source of truth ← always read before building UI
+docs/
+  DESIGN_SYSTEM.md          ← visual source of truth ← always read before building UI
+  BACKEND_INTEGRATION.md    ← backend integration guide
+  API_ENDPOINTS_SUMMARY.md  ← API endpoints reference
 ```
 
 ---
@@ -153,4 +156,4 @@ DESIGN_SYSTEM.md  ← visual source of truth ← always read before building UI
 - No inline styles for spacing/color — use Tailwind utilities
 - No arbitrary Tailwind values (`[...]`) when a named utility or scale step exists — check spacing (`p-4` not `p-[16px]`), sizing (`w-5` not `w-[20px]`), colors, radii, etc. before reaching for brackets
 - No hardcoded Latin digits in customer-facing text
-- No `color="teal"` on `USwitch` — use the `:ui` override pattern from `DESIGN_SYSTEM.md`
+- No `color="teal"` on `USwitch` — use the `:ui` override pattern from `docs/DESIGN_SYSTEM.md`

@@ -45,12 +45,12 @@
           </div>
 
           <div class="flex items-center gap-3 px-4 sm:px-6 py-4">
-            <div :class="['w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0', form.nationalId ? 'bg-brand-500/15' : 'bg-warning/10']">
-              <UIcon name="i-heroicons-identification" :class="['w-5 h-5', form.nationalId ? 'text-brand-500' : 'text-warning']" />
+            <div :class="['w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0', form.nationalCode ? 'bg-brand-500/15' : 'bg-warning/10']">
+              <UIcon name="i-heroicons-identification" :class="['w-5 h-5', form.nationalCode ? 'text-brand-500' : 'text-warning']" />
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-[11px] text-gray-400 dark:text-gray-500">کد ملی</p>
-              <p class="text-sm font-medium text-gray-900 dark:text-white mt-0.5">{{ form.nationalId || 'تعیین نشده' }}</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white mt-0.5">{{ form.nationalCode || 'تعیین نشده' }}</p>
             </div>
           </div>
 
