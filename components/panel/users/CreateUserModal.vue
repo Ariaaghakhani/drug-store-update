@@ -56,25 +56,15 @@
   </UModal>
 </template>
 
-<script setup lang="ts">
-import type { CreateUserForm } from '@/types/panel-users'
+<script setup>
+defineProps({
+  open: { type: Boolean, required: true },
+  roleSelectItems: { type: Array, required: true },
+})
 
-interface SelectItem {
-  label: string
-  value: string
-}
+const emit = defineEmits(['update:open', 'create'])
 
-defineProps<{
-  open: boolean
-  roleSelectItems: SelectItem[]
-}>()
-
-const emit = defineEmits<{
-  'update:open': [value: boolean]
-  create: [form: CreateUserForm]
-}>()
-
-const form = reactive<CreateUserForm>({
+const form = reactive({
   fullName: '',
   phone: '',
   roleId: 'customer',

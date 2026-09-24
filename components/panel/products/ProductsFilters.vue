@@ -5,31 +5,23 @@
       placeholder="جستجو نام یا برند..."
       icon="i-heroicons-magnifying-glass"
       class="flex-1 min-w-52"
-      @update:model-value="(v: string) => emit('update:searchQuery', v)"
+      @update:model-value="(v) => emit('update:searchQuery', v)"
     />
     <USelect
       :model-value="categoryFilter"
       :items="categoryItems"
       class="w-48"
-      @update:model-value="(v: string) => emit('update:categoryFilter', v)"
+      @update:model-value="(v) => emit('update:categoryFilter', v)"
     />
   </div>
 </template>
 
-<script setup lang="ts">
-interface SelectItem {
-  label: string
-  value: string
-}
+<script setup>
+defineProps({
+  searchQuery: { type: String, required: true },
+  categoryFilter: { type: String, required: true },
+  categoryItems: { type: Array, required: true },
+})
 
-defineProps<{
-  searchQuery: string
-  categoryFilter: string
-  categoryItems: SelectItem[]
-}>()
-
-const emit = defineEmits<{
-  'update:searchQuery': [value: string]
-  'update:categoryFilter': [value: string]
-}>()
+const emit = defineEmits(['update:searchQuery', 'update:categoryFilter'])
 </script>

@@ -84,23 +84,13 @@
   </UModal>
 </template>
 
-<script setup lang="ts">
-import type { Product } from '@/types/panel-products'
+<script setup>
+defineProps({
+  open: { type: Boolean, required: true },
+  categoryItems: { type: Array, required: true },
+})
 
-interface SelectItem {
-  label: string
-  value: string
-}
-
-defineProps<{
-  open: boolean
-  categoryItems: SelectItem[]
-}>()
-
-const emit = defineEmits<{
-  'update:open': [value: boolean]
-  create: [product: Omit<Product, 'id'>]
-}>()
+const emit = defineEmits(['update:open', 'create'])
 
 const form = reactive({
   nameFa: '',

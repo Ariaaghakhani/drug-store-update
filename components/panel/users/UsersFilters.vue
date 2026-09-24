@@ -5,40 +5,31 @@
       placeholder="جستجو نام یا شماره موبایل..."
       icon="i-heroicons-magnifying-glass"
       class="flex-1 min-w-52"
-      @update:model-value="(v: string) => emit('update:searchQuery', v)"
+      @update:model-value="(v) => emit('update:searchQuery', v)"
     />
     <USelect
       :model-value="roleFilter"
       :items="roleFilterItems"
       class="w-40"
-      @update:model-value="(v: string) => emit('update:roleFilter', v)"
+      @update:model-value="(v) => emit('update:roleFilter', v)"
     />
     <USelect
       :model-value="statusFilter"
       :items="statusFilterItems"
       class="w-40"
-      @update:model-value="(v: string) => emit('update:statusFilter', v)"
+      @update:model-value="(v) => emit('update:statusFilter', v)"
     />
   </div>
 </template>
 
-<script setup lang="ts">
-interface SelectItem {
-  label: string
-  value: string
-}
+<script setup>
+defineProps({
+  searchQuery: { type: String, required: true },
+  roleFilter: { type: String, required: true },
+  statusFilter: { type: String, required: true },
+  roleFilterItems: { type: Array, required: true },
+  statusFilterItems: { type: Array, required: true },
+})
 
-defineProps<{
-  searchQuery: string
-  roleFilter: string
-  statusFilter: string
-  roleFilterItems: SelectItem[]
-  statusFilterItems: SelectItem[]
-}>()
-
-const emit = defineEmits<{
-  'update:searchQuery': [value: string]
-  'update:roleFilter': [value: string]
-  'update:statusFilter': [value: string]
-}>()
+const emit = defineEmits(['update:searchQuery', 'update:roleFilter', 'update:statusFilter'])
 </script>

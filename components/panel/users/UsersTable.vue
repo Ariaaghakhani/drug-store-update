@@ -112,26 +112,20 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import type { PanelUser } from '@/types/panel-users'
+<script setup>
+const props = defineProps({
+  users: { type: Array, required: true },
+  pending: { type: Boolean, required: true },
+  pageSize: { type: Number, required: true },
+  canUpdate: { type: Boolean, required: true },
+  canDelete: { type: Boolean, required: true },
+})
 
-const props = defineProps<{
-  users: PanelUser[]
-  pending: boolean
-  pageSize: number
-  canUpdate: boolean
-  canDelete: boolean
-}>()
-
-const emit = defineEmits<{
-  edit: [user: PanelUser]
-  deactivate: [user: PanelUser]
-  delete: [user: PanelUser]
-}>()
+const emit = defineEmits(['edit', 'deactivate', 'delete'])
 
 const hasActions = computed(() => props.canUpdate || props.canDelete)
 
-const roleBadgeColor: Record<string, 'warning' | 'info' | 'primary' | 'neutral' | 'success'> = {
+const roleBadgeColor = {
   owner: 'warning',
   admin: 'info',
   pharmacist: 'primary',
@@ -139,8 +133,8 @@ const roleBadgeColor: Record<string, 'warning' | 'info' | 'primary' | 'neutral' 
   customer: 'success',
 }
 
-const rowActions = (user: PanelUser) => {
-  const items: { label: string; icon: string; color?: string; onSelect: () => void }[] = []
+const rowActions = (user) => {
+  const items = []
   if (props.canUpdate) {
     items.push({
       label: 'ویرایش',

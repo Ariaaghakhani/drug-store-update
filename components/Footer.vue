@@ -221,6 +221,6 @@
   </footer>
 </template>
 
-<script setup lang="ts">
+<script setup>
 // No logic needed for footer
 </script>

@@ -100,22 +100,15 @@
   </section>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent } from 'vue'
-
-interface Category {
-  id: number
-  name: string
-  icon: string
-  slug: string
-}
 
 export default defineComponent({
   name: 'CategoriesCarousel',
 
   data() {
     return {
-      selectedCategory: null as Category | null,
+      selectedCategory: null,
       canScrollPrev: false,
       canScrollNext: true,
       currentDot: 0,
@@ -193,12 +186,12 @@ export default defineComponent({
           icon: 'i-heroicons-eye',
           slug: 'eye-care',
         },
-      ] as Category[],
+      ],
     }
   },
 
   computed: {
-    totalDots(): number {
+    totalDots() {
       // Use reactive containerWidth to ensure re-computation on resize
       const width = this.containerWidth || 1
       const itemsPerView = Math.floor(width / 152) // 144px width + 16px gap
@@ -221,7 +214,7 @@ export default defineComponent({
 
   methods: {
     scrollPrev() {
-      const container = this.$refs.carouselContainer as HTMLElement
+      const container = this.$refs.carouselContainer
       if (container) {
         const scrollAmount = container.clientWidth
         // In RTL, scrolling right (prev) means positive scrollLeft
@@ -234,7 +227,7 @@ export default defineComponent({
     },
 
     scrollNext() {
-      const container = this.$refs.carouselContainer as HTMLElement
+      const container = this.$refs.carouselContainer
       if (container) {
         const scrollAmount = container.clientWidth
         // In RTL, scrolling left (next) means negative scrollLeft
@@ -247,7 +240,7 @@ export default defineComponent({
     },
 
     handleScroll() {
-      const container = this.$refs.carouselContainer as HTMLElement
+      const container = this.$refs.carouselContainer
       if (container) {
         // In RTL, scrollLeft is 0 at the start (right) and negative when scrolling left
         const scrollLeft = Math.abs(container.scrollLeft)
@@ -269,7 +262,7 @@ export default defineComponent({
     },
 
     updateContainerWidth() {
-      const container = this.$refs.carouselContainer as HTMLElement
+      const container = this.$refs.carouselContainer
       if (container) {
         this.containerWidth = container.clientWidth
       }
@@ -280,7 +273,7 @@ export default defineComponent({
       this.handleScroll()
     },
 
-    selectCategory(category: Category) {
+    selectCategory(category) {
       this.selectedCategory = category
       // Navigate to medications page with category filter
       this.$router.push(`/medications?category=${category.slug}`)

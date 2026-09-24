@@ -19,16 +19,8 @@
   </div>
 </template>
 
-<script setup lang="ts">
-interface Metric {
-  label: string
-  value: number
-  icon: string
-  bgClass: string
-  iconClass: string
-}
-
-defineProps<{
-  metrics: Metric[]
-}>()
+<script setup>
+defineProps({
+  metrics: { type: Array, required: true },
+})
 </script>
