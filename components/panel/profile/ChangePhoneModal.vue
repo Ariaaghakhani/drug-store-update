@@ -53,8 +53,8 @@
                     </div>
                     <UInput model-value="۰۹۱۲***۶۷۸۹" readonly dir="ltr" size="md" class="w-full" :ui="{ base: 'text-center' }" />
                     <div class="flex gap-3">
-                      <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="requestCancel">انصراف</UButton>
-                      <UButton color="primary" class="flex-1 justify-center" @click="advance">ارسال کد تأیید</UButton>
+                      <UButton variant="soft" color="neutral" class="flex-1 justify-center" :disabled="loadingStep1" @click="requestCancel">انصراف</UButton>
+                      <UButton color="primary" class="flex-1 justify-center" :loading="loadingStep1" @click="handleSendCurrentOtp">ارسال کد تأیید</UButton>
                     </div>
                   </template>
 
@@ -79,16 +79,16 @@
                     </div>
                     <p class="text-center text-sm">
                       <button
-                        :disabled="resendCountdown > 0"
-                        :class="['font-medium transition-colors', resendCountdown > 0 ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-brand-500 hover:text-brand-600 dark:hover:text-brand-400']"
-                        @click="resendCountdown === 0 && startResend()"
+                        :disabled="resendCountdown > 0 || resendingOld"
+                        :class="['font-medium transition-colors', resendCountdown > 0 || resendingOld ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-brand-500 hover:text-brand-600 dark:hover:text-brand-400']"
+                        @click="resendCountdown === 0 && handleResendOld()"
                       >
                         {{ resendCountdown > 0 ? `ارسال مجدد (${resendCountdown.toLocaleString('fa-IR')})` : 'ارسال مجدد' }}
                       </button>
                     </p>
                     <div class="flex gap-3">
-                      <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="retreat">بازگشت</UButton>
-                      <UButton color="primary" class="flex-1 justify-center" @click="advance">تأیید و ادامه</UButton>
+                      <UButton variant="soft" color="neutral" class="flex-1 justify-center" :disabled="loadingStep2" @click="retreat">بازگشت</UButton>
+                      <UButton color="primary" class="flex-1 justify-center" :loading="loadingStep2" @click="handleVerifyCurrentOtp">تأیید و ادامه</UButton>
                     </div>
                   </template>
 
@@ -102,8 +102,8 @@
                     </div>
                     <UInput v-model="newPhone" dir="ltr" placeholder="09xxxxxxxxx" maxlength="11" size="md" class="w-full" :ui="{ base: 'text-center' }" />
                     <div class="flex gap-3">
-                      <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="retreat">بازگشت</UButton>
-                      <UButton color="primary" class="flex-1 justify-center" :disabled="newPhone.length < 11" @click="advance">ارسال کد تأیید</UButton>
+                      <UButton variant="soft" color="neutral" class="flex-1 justify-center" :disabled="loadingStep3" @click="retreat">بازگشت</UButton>
+                      <UButton color="primary" class="flex-1 justify-center" :loading="loadingStep3" :disabled="newPhone.length < 11" @click="handleSendNewOtp">ارسال کد تأیید</UButton>
                     </div>
                   </template>
 
@@ -128,16 +128,16 @@
                     </div>
                     <p class="text-center text-sm">
                       <button
-                        :disabled="resendCountdown > 0"
-                        :class="['font-medium transition-colors', resendCountdown > 0 ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-brand-500 hover:text-brand-600 dark:hover:text-brand-400']"
-                        @click="resendCountdown === 0 && startResend()"
+                        :disabled="resendCountdown > 0 || resendingNew"
+                        :class="['font-medium transition-colors', resendCountdown > 0 || resendingNew ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-brand-500 hover:text-brand-600 dark:hover:text-brand-400']"
+                        @click="resendCountdown === 0 && handleResendNew()"
                       >
                         {{ resendCountdown > 0 ? `ارسال مجدد (${resendCountdown.toLocaleString('fa-IR')})` : 'ارسال مجدد' }}
                       </button>
                     </p>
                     <div class="flex gap-3">
-                      <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="retreat">بازگشت</UButton>
-                      <UButton color="primary" class="flex-1 justify-center" @click="advance">تأیید و ذخیره</UButton>
+                      <UButton variant="soft" color="neutral" class="flex-1 justify-center" :disabled="loadingStep4" @click="retreat">بازگشت</UButton>
+                      <UButton color="primary" class="flex-1 justify-center" :loading="loadingStep4" @click="handleVerifyNewOtp">تأیید و ذخیره</UButton>
                     </div>
                   </template>
 
@@ -170,6 +170,9 @@
 const props = defineProps({ open: Boolean })
 const emit = defineEmits(['update:open', 'saved'])
 
+const app = useNuxtApp()
+const toast = useAppToast()
+
 const isOpen = computed({
   get: () => props.open,
   set: (v) => emit('update:open', v),
@@ -185,6 +188,13 @@ const oldOtpRefs = []
 const newOtpRefs = []
 const resendCountdown = ref(0)
 let resendTimer = null
+
+const loadingStep1 = ref(false)
+const loadingStep2 = ref(false)
+const loadingStep3 = ref(false)
+const loadingStep4 = ref(false)
+const resendingOld = ref(false)
+const resendingNew = ref(false)
 
 const startResend = () => {
   resendCountdown.value = 60
@@ -205,6 +215,88 @@ const advance = () => {
 const retreat = () => {
   stepTransition.value = 'step-backward'
   step.value--
+}
+
+const extractErrorMessage = (error, fallback) =>
+  error?.response?.data?.message ?? fallback
+
+const handleSendCurrentOtp = async () => {
+  loadingStep1.value = true
+  try {
+    await app.$api.auth.sendCurrentPhoneOtp()
+    advance()
+  } catch (error) {
+    toast.error(extractErrorMessage(error, 'خطا در ارسال کد تأیید'))
+  } finally {
+    loadingStep1.value = false
+  }
+}
+
+const handleResendOld = async () => {
+  resendingOld.value = true
+  try {
+    await app.$api.auth.sendCurrentPhoneOtp()
+    startResend()
+  } catch (error) {
+    toast.error(extractErrorMessage(error, 'خطا در ارسال مجدد کد تأیید'))
+  } finally {
+    resendingOld.value = false
+  }
+}
+
+const handleVerifyCurrentOtp = async () => {
+  loadingStep2.value = true
+  try {
+    await app.$api.auth.verifyCurrentPhoneOtp({
+      data: { otpCode: oldOtp.value.join('') },
+    })
+    advance()
+  } catch (error) {
+    toast.error(extractErrorMessage(error, 'کد تأیید نادرست است'))
+  } finally {
+    loadingStep2.value = false
+  }
+}
+
+const handleSendNewOtp = async () => {
+  loadingStep3.value = true
+  try {
+    await app.$api.auth.sendNewPhoneOtp({ data: { phone: newPhone.value } })
+    advance()
+  } catch (error) {
+    toast.error(extractErrorMessage(error, 'خطا در ارسال کد تأیید'))
+  } finally {
+    loadingStep3.value = false
+  }
+}
+
+const handleResendNew = async () => {
+  resendingNew.value = true
+  try {
+    await app.$api.auth.sendNewPhoneOtp({ data: { phone: newPhone.value } })
+    startResend()
+  } catch (error) {
+    toast.error(extractErrorMessage(error, 'خطا در ارسال مجدد کد تأیید'))
+  } finally {
+    resendingNew.value = false
+  }
+}
+
+const handleVerifyNewOtp = async () => {
+  loadingStep4.value = true
+  try {
+    const response = await app.$api.auth.verifyNewPhoneOtp({
+      data: { phone: newPhone.value, otpCode: newOtp.value.join('') },
+    })
+    const result = response.data.data
+    app.$auth.setToken(result.accessToken)
+    app.$auth.setUser(result.user)
+    advance()
+  } catch (error) {
+    toast.error(extractErrorMessage(error, 'کد تأیید نادرست است'))
+  } finally {
+    loadingStep4.value = false
+  }
 }
 
 const requestCancel = () => {
