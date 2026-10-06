@@ -29,14 +29,14 @@ State root: `.claude/integration/`. This file is the only one kept in context; s
 | id | section | branch | status | PR | gaps |
 |----|---------|--------|--------|----|------|
 | 1 | address-management | feat/api-1-address-management | in-progress | — | none — pure wiring + bug fixes |
-| 2 | product-detail-page | feat/api-2-product-detail-page | todo | — | possible stock-field question (not a hard gap) |
-| 3 | panel-products-admin | feat/api-3-panel-products-admin | todo | — | same stock-field question as task 2 |
+| 2 | product-detail-page | feat/api-2-product-detail-page | in-progress | — | possible stock-field question (not a hard gap) |
+| 3 | panel-products-admin | feat/api-3-panel-products-admin | in-progress | — | same stock-field question as task 2 |
 | 4 | panel-orders | feat/api-4-panel-orders | todo | — | no order stats/aggregate endpoint; status-axis decision needed first |
 | 5 | panel-users-roles | feat/api-5-panel-users-roles | todo | — | **blocked**: needs UI redesign decision before implementation (see Decisions to review) |
-| 6 | panel-dashboard | feat/api-6-panel-dashboard | todo | — | owner dashboard revenue/sales/top-products/staff-activity; customer dashboard has no backend equivalent at all |
-| 7 | profile-phone-change | feat/api-7-profile-phone-change | todo | — | none — full parity |
-| 8 | security-password | feat/api-8-security-password | todo | — | sessions/2FA/login-history/alerts are backend gaps (4 TODO entries) |
-| 9 | cart-checkout-payment | feat/api-9-cart-checkout-payment | todo | — | none — `payments.js` needs rewriting, not new backend work |
+| 6 | panel-dashboard | feat/api-6-panel-dashboard | in-progress | — | owner dashboard revenue/sales/top-products/staff-activity; customer dashboard has no backend equivalent at all |
+| 7 | profile-phone-change | feat/api-7-profile-phone-change | in-progress | — | none — full parity |
+| 8 | security-password | feat/api-8-security-password | in-progress | — | sessions/2FA/login-history/alerts are backend gaps (4 TODO entries) |
+| 9 | cart-checkout-payment | feat/api-9-cart-checkout-payment | in-progress | — | none — `payments.js` needs rewriting, not new backend work |
 
 ## Decisions to review
 - Pre-existing `API_ENDPOINTS_SUMMARY.md` and `BACKEND_INTEGRATION.md` already exist at repo root (committed in `a5c0a70`, predates this run). ~~Phase 2 should read these first~~ — done: they turned out to be an aspirational/planned API surface written 2026-09-18/21, not verified against BACK source. Cross-checking against the real BACK controllers (Phase 2, this run) found they're significantly wrong in places (e.g. almost the entire `user.js`/`analytics.js`/`payments.js` path sets are guessed). Treat both root docs as historical context only, not ground truth — `services/api/CLAUDE.md` and the `sections/*.md` files now carry the verified contract.
