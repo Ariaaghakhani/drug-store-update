@@ -34,7 +34,7 @@ State root: `.claude/integration/`. This file is the only one kept in context; s
 | 4 | panel-orders | feat/api-4-panel-orders | todo | — | no order stats/aggregate endpoint; status-axis decision needed first |
 | 5 | panel-users-roles | feat/api-5-panel-users-roles | todo | — | **blocked**: needs UI redesign decision before implementation (see Decisions to review) |
 | 6 | panel-dashboard | feat/api-6-panel-dashboard | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/47 | owner dashboard revenue/sales/top-products/staff-activity; customer dashboard has no backend equivalent at all (both filed in FRONTEND_API_TODO.md) |
-| 7 | profile-phone-change | feat/api-7-profile-phone-change | in-progress | — | none — full parity |
+| 7 | profile-phone-change | feat/api-7-profile-phone-change | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/48 | none — full parity |
 | 8 | security-password | feat/api-8-security-password | in-progress | — | sessions/2FA/login-history/alerts are backend gaps (4 TODO entries) |
 | 9 | cart-checkout-payment | feat/api-9-cart-checkout-payment | in-progress | — | none — `payments.js` needs rewriting, not new backend work |
 
