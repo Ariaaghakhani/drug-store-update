@@ -30,3 +30,34 @@ BACK files to read for contract detail: `location/controller/{AddressController,
 
 ## Known gaps
 None — BACK fully supports this feature; it's a pure wiring + bug-fix task, no backend gap.
+
+## Runtime tests (for Aria)
+
+Run these against a live backend (with a logged-in customer session so `userStore.currentUser.person.id` is populated) to verify each operation end to end.
+
+1. **List provinces/cities (GET, public)**
+   - `GET {BACKEND_URL}/api/locations/provinces` — expect `200`, `data` = array of `{id, code, nameFa, nameEn, slug}`.
+   - `GET {BACKEND_URL}/api/locations/provinces/{provinceId}/cities` (use a real `id` from the previous response) — expect `200`, `data` = array of `{id, code, nameFa, nameEn, slug, provinceId}`.
+   - In the app: open `/panel/address`, click "افزودن آدرس", confirm the province dropdown populates, pick one, confirm the city dropdown populates and is no longer disabled.
+
+2. **Create**
+   - In the modal, fill title/province/city/street, optionally postal code + phone, save.
+   - Confirm network tab shows `POST /api/addresses/create` with body `{title, fullAddress, postalCode, recipientPhoneNumber, cityId, isDefault}` and a real numeric `cityId` (not null).
+   - Confirm success toast, new card appears in the list, and reloading `/panel/address` still shows it (i.e. it persisted server-side, not just pushed into the local array).
+
+3. **Edit (update)**
+   - Click "ویرایش" on an existing address, change the street text or title, save.
+   - Confirm `POST /api/addresses/update` fires with the full address body including `id`.
+   - Confirm the card updates and the change survives a page reload.
+
+4. **Set default**
+   - Click "تنظیم به عنوان پیش‌فرض" on a non-default address.
+   - Confirm `POST /api/addresses/update` fires with `isDefault: true` (and the rest of that address's fields) — button should show a loading spinner while in flight.
+   - Confirm the "پیش‌فرض" badge moves to the new address and `getAddresses` (reload the page) returns it default-first.
+
+5. **Delete**
+   - Click "حذف" on an address.
+   - Confirm `POST /api/addresses/delete` fires with `{id}`, the button shows its loading state during the call, the card disappears on success, and a reload confirms it's gone.
+
+6. **Error path**
+   - Temporarily stop the backend (or force a 400, e.g. submit a `postalCode` that fails the 10-digit pattern directly via curl/Postman against `/api/addresses/create`) and confirm the app surfaces `error.response.data.message` in the error toast rather than a generic/blank message, for create, edit, delete, and set-default.

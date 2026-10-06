@@ -28,7 +28,7 @@ State root: `.claude/integration/`. This file is the only one kept in context; s
 ## Task table (Phase 2/3 — populated during Phase 2)
 | id | section | branch | status | PR | gaps |
 |----|---------|--------|--------|----|------|
-| 1 | address-management | feat/api-1-address-management | in-progress | — | none — pure wiring + bug fixes |
+| 1 | address-management | feat/api-1-address-management | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/45 | none — pure wiring + bug fixes |
 | 2 | product-detail-page | feat/api-2-product-detail-page | in-progress | — | possible stock-field question (not a hard gap) |
 | 3 | panel-products-admin | feat/api-3-panel-products-admin | in-progress | — | same stock-field question as task 2 |
 | 4 | panel-orders | feat/api-4-panel-orders | todo | — | no order stats/aggregate endpoint; status-axis decision needed first |
