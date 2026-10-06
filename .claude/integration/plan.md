@@ -29,7 +29,7 @@ State root: `.claude/integration/`. This file is the only one kept in context; s
 | id | section | branch | status | PR | gaps |
 |----|---------|--------|--------|----|------|
 | 1 | address-management | feat/api-1-address-management | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/45 | none — pure wiring + bug fixes |
-| 2 | product-detail-page | feat/api-2-product-detail-page | in-progress | — | possible stock-field question (not a hard gap) |
+| 2 | product-detail-page | feat/api-2-product-detail-page | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/49 | stock-field gap filed in FRONTEND_API_TODO.md |
 | 3 | panel-products-admin | feat/api-3-panel-products-admin | in-progress | — | same stock-field question as task 2 |
 | 4 | panel-orders | feat/api-4-panel-orders | todo | — | no order stats/aggregate endpoint; status-axis decision needed first |
 | 5 | panel-users-roles | feat/api-5-panel-users-roles | todo | — | **blocked**: needs UI redesign decision before implementation (see Decisions to review) |
