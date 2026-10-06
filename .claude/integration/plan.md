@@ -5,7 +5,7 @@ State root: `.claude/integration/`. This file is the only one kept in context; s
 ## Phase checklist
 - [x] Phase 1: LLM docs (started: 2026-10-06T00:00Z, PR #44)
 - [x] Phase 2: Integration discovery (started: 2026-10-06T01:00Z, finished: 2026-10-06T02:00Z) — 9 tasks scoped, STOPPED HERE for plan approval per Aria's request. Do not start Phase 3 without explicit go-ahead.
-- [~] Phase 3: Integration loop (started: 2026-10-06T03:00Z — Aria approved task 1 only, not the full loop; dispatching tasks one at a time with explicit go-ahead)
+- [~] Phase 3: Integration loop (started: 2026-10-06T03:00Z) — 6 of 8 unblocked tasks have open PRs (#45, #47, #48, #49, #50, #51, #52 — task 1 plus 2/3/6/7/8/9). Tasks 4 and 5 remain blocked on Aria's decisions; nothing else to do until she answers.
 
 ## Docs checklist (Phase 1 — one line per FRONT module)
 - [x] root `CLAUDE.md` (updated index with all 11 module links + Docs rule; fixed stale TypeScript-era conventions to reflect the TS→JS revert)
@@ -30,7 +30,7 @@ State root: `.claude/integration/`. This file is the only one kept in context; s
 |----|---------|--------|--------|----|------|
 | 1 | address-management | feat/api-1-address-management | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/45 | none — pure wiring + bug fixes |
 | 2 | product-detail-page | feat/api-2-product-detail-page | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/49 | stock-field gap filed in FRONTEND_API_TODO.md |
-| 3 | panel-products-admin | feat/api-3-panel-products-admin | in-progress | — | same stock-field question as task 2 |
+| 3 | panel-products-admin | feat/api-3-panel-products-admin | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/52 | stock field, image upload, brand picker, CategoryScope update/delete -- 4 FRONTEND_API_TODO entries |
 | 4 | panel-orders | feat/api-4-panel-orders | todo | — | no order stats/aggregate endpoint; status-axis decision needed first |
 | 5 | panel-users-roles | feat/api-5-panel-users-roles | todo | — | **blocked**: needs UI redesign decision before implementation (see Decisions to review) |
 | 6 | panel-dashboard | feat/api-6-panel-dashboard | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/47 | owner dashboard revenue/sales/top-products/staff-activity; customer dashboard has no backend equivalent at all (both filed in FRONTEND_API_TODO.md) |
