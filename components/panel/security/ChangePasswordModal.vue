@@ -33,74 +33,36 @@
           <div v-else key="steps">
             <div class="flex gap-1.5 px-5 pt-5 pb-1">
               <span
-                v-for="i in 4"
+                v-for="i in 2"
                 :key="i"
                 :class="['h-0.5 flex-1 rounded-full transition-colors duration-300', step >= i ? 'bg-brand-500' : 'bg-gray-200 dark:bg-gray-700']"
               />
             </div>
 
             <div class="overflow-hidden">
-              <Transition :name="stepTransition" mode="out-in">
+              <Transition name="step-forward" mode="out-in">
                 <div :key="step" class="px-5 py-6 flex flex-col gap-4">
 
                   <template v-if="step === 1">
                     <div class="w-12 h-12 rounded-full bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-500 mx-auto">
-                      <UIcon name="i-heroicons-device-phone-mobile" class="w-6 h-6" />
-                    </div>
-                    <div class="text-center space-y-1">
-                      <h3 class="text-base font-semibold text-gray-900 dark:text-white">تأیید شماره موبایل</h3>
-                      <p class="text-xs text-gray-400 leading-relaxed">کد تأیید به شماره زیر ارسال می‌شود</p>
-                    </div>
-                    <UInput model-value="۰۹۱۲***۴۵۶" readonly dir="ltr" size="md" class="w-full" :ui="{ base: 'text-center' }" />
-                    <div class="flex flex-col gap-2">
-                      <UButton color="primary" size="lg" block @click="advance">ارسال کد تأیید</UButton>
-                      <UButton variant="soft" color="neutral" size="lg" block @click="requestCancel">انصراف</UButton>
-                    </div>
-                  </template>
-
-                  <template v-else-if="step === 2">
-                    <div class="text-center space-y-1">
-                      <h3 class="text-base font-semibold text-gray-900 dark:text-white">کد تأیید</h3>
-                      <p class="text-xs text-gray-400 leading-relaxed">کد ارسال شده به ۰۹۱۲***۴۵۶ را وارد کنید</p>
-                    </div>
-                    <div class="flex justify-center gap-2" dir="ltr">
-                      <input
-                        v-for="(_, idx) in otpDigits"
-                        :key="idx"
-                        :ref="(el) => { otpRefs[idx] = el }"
-                        :value="otpDigits[idx]"
-                        type="text"
-                        inputmode="numeric"
-                        maxlength="1"
-                        class="w-12 h-14 text-center text-xl font-semibold border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-colors"
-                        @input="handleOtpInput(idx, $event)"
-                        @keydown="handleOtpKeydown(idx, $event)"
-                      />
-                    </div>
-                    <p class="text-center text-sm">
-                      <button
-                        :disabled="resendCountdown > 0"
-                        :class="['font-medium transition-colors', resendCountdown > 0 ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-brand-500 hover:text-brand-600 dark:hover:text-brand-400']"
-                        @click="resendCountdown === 0 && startResend()"
-                      >
-                        {{ resendCountdown > 0 ? `ارسال مجدد (${resendCountdown.toLocaleString('fa-IR')})` : 'ارسال مجدد' }}
-                      </button>
-                    </p>
-                    <div class="flex flex-col gap-2">
-                      <UButton color="primary" size="lg" block @click="advance">تأیید کد</UButton>
-                      <UButton variant="soft" color="neutral" size="lg" block @click="retreat">بازگشت</UButton>
-                    </div>
-                  </template>
-
-                  <template v-else-if="step === 3">
-                    <div class="w-12 h-12 rounded-full bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-500 mx-auto">
                       <UIcon name="i-heroicons-lock-closed" class="w-6 h-6" />
                     </div>
                     <div class="text-center space-y-1">
-                      <h3 class="text-base font-semibold text-gray-900 dark:text-white">رمز عبور جدید</h3>
-                      <p class="text-xs text-gray-400 leading-relaxed">رمز عبور جدید خود را وارد کنید</p>
+                      <h3 class="text-base font-semibold text-gray-900 dark:text-white">تغییر رمز عبور</h3>
+                      <p class="text-xs text-gray-400 leading-relaxed">رمز عبور فعلی و رمز عبور جدید خود را وارد کنید</p>
                     </div>
                     <div class="space-y-2">
+                      <div class="space-y-1">
+                        <UInput
+                          v-model="currentPassword"
+                          type="password"
+                          placeholder="رمز عبور فعلی"
+                          size="md"
+                          class="w-full"
+                          :color="currentPasswordError ? 'error' : 'neutral'"
+                        />
+                        <p v-if="currentPasswordError" class="text-[11px] font-medium text-error">{{ currentPasswordError }}</p>
+                      </div>
                       <UInput v-model="newPassword" type="password" placeholder="رمز عبور جدید" size="md" class="w-full" />
                       <Transition name="strength-bar">
                         <div v-if="newPassword" class="space-y-1">
@@ -115,14 +77,15 @@
                         </div>
                       </Transition>
                       <UInput v-model="confirmPassword" type="password" placeholder="تکرار رمز عبور جدید" size="md" class="w-full" />
+                      <p v-if="formError" class="text-[11px] font-medium text-error">{{ formError }}</p>
                     </div>
                     <div class="flex flex-col gap-2">
-                      <UButton color="primary" size="lg" block @click="advance">ذخیره رمز عبور</UButton>
-                      <UButton variant="soft" color="neutral" size="lg" block @click="retreat">بازگشت</UButton>
+                      <UButton color="primary" size="lg" block :loading="isSubmitting" :disabled="!canSubmit" @click="submitPassword">ذخیره رمز عبور</UButton>
+                      <UButton variant="soft" color="neutral" size="lg" block @click="requestCancel">انصراف</UButton>
                     </div>
                   </template>
 
-                  <template v-else-if="step === 4">
+                  <template v-else-if="step === 2">
                     <div class="text-center space-y-5 py-2">
                       <div class="flex justify-center">
                         <div class="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center pop-in">
@@ -151,20 +114,21 @@
 const props = defineProps({ open: Boolean })
 const emit = defineEmits(['update:open', 'saved'])
 
+const app = useNuxtApp()
+
 const isOpen = computed({
   get: () => props.open,
   set: (v) => emit('update:open', v),
 })
 
 const step = ref(1)
-const stepTransition = ref('step-forward')
 const showCancelConfirm = ref(false)
+const currentPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
-const otpDigits = ref(['', '', '', '', ''])
-const otpRefs = []
-const resendCountdown = ref(0)
-let resendTimer = null
+const isSubmitting = ref(false)
+const currentPasswordError = ref('')
+const formError = ref('')
 
 const passwordStrength = computed(() => {
   const p = newPassword.value
@@ -181,59 +145,62 @@ const strengthLabel = computed(() => ['', 'ضعیف', 'متوسط', 'خوب', '�
 const strengthColor = computed(() => ['', 'bg-red-500', 'bg-orange-400', 'bg-yellow-400', 'bg-green-500'][passwordStrength.value])
 const strengthTextColor = computed(() => ['', 'text-red-500', 'text-orange-400', 'text-yellow-500', 'text-green-500'][passwordStrength.value])
 
-const startResend = () => {
-  resendCountdown.value = 60
-  if (resendTimer) clearInterval(resendTimer)
-  resendTimer = setInterval(() => {
-    if (resendCountdown.value > 0) resendCountdown.value--
-    else if (resendTimer) clearInterval(resendTimer)
-  }, 1000)
-}
+const canSubmit = computed(() =>
+  Boolean(currentPassword.value && newPassword.value && confirmPassword.value) && !isSubmitting.value
+)
 
-const advance = () => {
-  stepTransition.value = 'step-forward'
-  const next = step.value + 1
-  if (next === 2) startResend()
-  step.value = next
-}
+const submitPassword = async () => {
+  currentPasswordError.value = ''
+  formError.value = ''
 
-const retreat = () => {
-  stepTransition.value = 'step-backward'
-  step.value--
+  if (newPassword.value !== confirmPassword.value) {
+    formError.value = 'رمز عبور جدید و تکرار آن یکسان نیستند'
+    return
+  }
+
+  isSubmitting.value = true
+  try {
+    const response = await app.$api.auth.changePassword({
+      data: {
+        currentPassword: currentPassword.value,
+        newPassword: newPassword.value,
+      },
+    })
+    const data = response.data.data
+    app.$auth.setToken(data.accessToken)
+    app.$auth.setUser(data.user)
+    step.value = 2
+  } catch (error) {
+    const errorCode = error?.response?.data?.errorCode
+    const message = error?.response?.data?.message
+    if (errorCode === 'password.current.wrong') {
+      currentPasswordError.value = message || 'رمز عبور فعلی اشتباه است'
+    } else {
+      formError.value = message || 'خطا در تغییر رمز عبور. لطفا دوباره تلاش کنید'
+    }
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 const requestCancel = () => {
-  if (step.value === 4) close()
+  if (step.value === 2) close()
   else showCancelConfirm.value = true
 }
 
 const close = () => {
-  if (step.value === 4) emit('saved')
+  if (step.value === 2) emit('saved')
   isOpen.value = false
   showCancelConfirm.value = false
   setTimeout(() => {
     step.value = 1
-    stepTransition.value = 'step-forward'
+    currentPassword.value = ''
     newPassword.value = ''
     confirmPassword.value = ''
-    otpDigits.value = ['', '', '', '', '']
-    if (resendTimer) clearInterval(resendTimer)
-    resendCountdown.value = 0
+    currentPasswordError.value = ''
+    formError.value = ''
   }, 300)
 }
-
-const handleOtpInput = (idx, event) => {
-  const val = event.target.value.replace(/\D/g, '').slice(-1)
-  otpDigits.value[idx] = val
-  if (val && idx < 4) nextTick(() => otpRefs[idx + 1]?.focus())
-}
-
-const handleOtpKeydown = (idx, event) => {
-  if (event.key === 'Backspace' && !otpDigits.value[idx] && idx > 0)
-    nextTick(() => otpRefs[idx - 1]?.focus())
-}
-
-onUnmounted(() => { if (resendTimer) clearInterval(resendTimer) })
 </script>
 
 <style scoped>
@@ -241,11 +208,6 @@ onUnmounted(() => { if (resendTimer) clearInterval(resendTimer) })
 .step-forward-leave-active { transition: opacity 0.15s ease, transform 0.15s ease; }
 .step-forward-enter-from { opacity: 0; transform: translateX(20px); }
 .step-forward-leave-to   { opacity: 0; transform: translateX(-20px); }
-
-.step-backward-enter-active { transition: opacity 0.2s ease, transform 0.2s ease; }
-.step-backward-leave-active { transition: opacity 0.15s ease, transform 0.15s ease; }
-.step-backward-enter-from { opacity: 0; transform: translateX(-20px); }
-.step-backward-leave-to   { opacity: 0; transform: translateX(20px); }
 
 .overlay-fade-enter-active,
 .overlay-fade-leave-active { transition: opacity 0.2s ease; }
