@@ -31,8 +31,8 @@ State root: `.claude/integration/`. This file is the only one kept in context; s
 | 1 | address-management | feat/api-1-address-management | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/45 | none — pure wiring + bug fixes |
 | 2 | product-detail-page | feat/api-2-product-detail-page | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/49 | stock-field gap filed in FRONTEND_API_TODO.md |
 | 3 | panel-products-admin | feat/api-3-panel-products-admin | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/52 | stock field, image upload, brand picker, CategoryScope update/delete -- 4 FRONTEND_API_TODO entries |
-| 4 | panel-orders | feat/api-4-panel-orders | todo | — | no order stats/aggregate endpoint; status-axis decision needed first |
-| 5 | panel-users-roles | feat/api-5-panel-users-roles | todo | — | **blocked**: needs UI redesign decision before implementation (see Decisions to review) |
+| 4 | panel-orders | feat/api-4-panel-orders | in-progress | — | Aria decided 2026-10-06: show both status axes; file anything missing to FRONTEND_API_TODO.md |
+| 5 | panel-users-roles | feat/api-5-panel-users-roles | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/53 | deferred by Aria 2026-10-06 — documented, not implemented |
 | 6 | panel-dashboard | feat/api-6-panel-dashboard | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/47 | owner dashboard revenue/sales/top-products/staff-activity; customer dashboard has no backend equivalent at all (both filed in FRONTEND_API_TODO.md) |
 | 7 | profile-phone-change | feat/api-7-profile-phone-change | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/48 | none — full parity |
 | 8 | security-password | feat/api-8-security-password | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/50 | sessions/2FA/login-history/alerts filed as 4 FRONTEND_API_TODO.md entries |
