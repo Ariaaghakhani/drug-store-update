@@ -65,8 +65,14 @@
                     </span>
                   </td>
                   <td class="px-6 py-4">
-                    <UBadge :color="product.inStock ? 'success' : 'error'" variant="subtle" size="sm">
-                      {{ product.inStock ? 'موجود' : 'ناموجود' }}
+                    <UBadge v-if="product.inStock === true" color="success" variant="subtle" size="sm">
+                      موجود
+                    </UBadge>
+                    <UBadge v-else-if="product.inStock === false" color="error" variant="subtle" size="sm">
+                      ناموجود
+                    </UBadge>
+                    <UBadge v-else color="neutral" variant="subtle" size="sm">
+                      نامشخص
                     </UBadge>
                   </td>
                   <td class="px-6 py-4">
