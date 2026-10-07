@@ -324,6 +324,11 @@ Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, cube placehol
   ```
 - Always use `size="lg"` for panel toggle rows.
 
+### USelectMenu (multi-select)
+- For multi-value pickers (e.g. product categories/tags against admin API lookups), bind `v-model` directly to an array of primitive ids and use `:items="[{ label, value }]"` with `multiple` + `value-key="value"` — keeps the model a plain `string[]`/`number[]` instead of an array of full item objects.
+- Pattern: `<USelectMenu v-model="form.categoryIds" :items="categoryMenuItems" multiple value-key="value" placeholder="..." class="w-full" />`.
+- Populate `items` from the corresponding list endpoint on mount; fall back to an empty array on fetch failure rather than blocking the form.
+
 ### UCard (panel pattern)
 - Default body padding: `p-4 sm:p-6`. Remove for edge-to-edge rows: `:ui="{ body: 'p-0' }"`.
 - Panel card structure: header strip (`flex items-center gap-2 px-4 sm:px-6 py-4 border-b`) with `w-4 h-4 text-brand-500` icon + `text-sm font-medium` title, then `divide-y divide-gray-100 dark:divide-gray-800` rows with `px-4 sm:px-6 py-4` each.

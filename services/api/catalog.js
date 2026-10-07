@@ -30,7 +30,7 @@ export default (apiCaller) => ({
 
   // ========== CATEGORIES ==========
   listCategories(config) {
-    return apiCaller.post('api/categories/list', config)
+    return apiCaller.get('api/categories', config)
   },
 
   getCategory(config) {
@@ -38,7 +38,7 @@ export default (apiCaller) => ({
   },
 
   createCategory(config) {
-    return apiCaller.post('api/categories/create', config)
+    return apiCaller.post('api/categories', config)
   },
 
   updateCategory(config) {
@@ -49,9 +49,13 @@ export default (apiCaller) => ({
     return apiCaller.post('api/categories/delete', config)
   },
 
+  getCategoryChildren(config) {
+    return apiCaller.post('api/categories/children', config)
+  },
+
   // ========== CATEGORY SCOPES (Hierarchy) ==========
   listCategoryScopes(config) {
-    return apiCaller.post('api/category-scopes/list', config)
+    return apiCaller.get('api/category-scopes', config)
   },
 
   getCategoryScope(config) {

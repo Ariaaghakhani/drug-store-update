@@ -1,3 +1,4 @@
+<!-- Mocked: BACK has no security-alerts/notification-preferences endpoint yet. See FRONTEND_API_TODO.md: "Security alerts / notification preferences". -->
 <template>
   <div class="relative">
     <Transition name="sk">

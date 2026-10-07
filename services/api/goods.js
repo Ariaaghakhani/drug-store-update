@@ -36,11 +36,15 @@ export default (apiCaller) => ({
 
   // ========== TAGS ==========
   getTags(config) {
-    return apiCaller.post('api/tags/list', config)
+    return apiCaller.get('api/tags', config)
+  },
+
+  getTagById(config) {
+    return apiCaller.post('api/tags/get-by-id', config)
   },
 
   createTag(config) {
-    return apiCaller.post('api/tags/create', config)
+    return apiCaller.post('api/tags', config)
   },
 
   updateTag(config) {
@@ -53,15 +57,27 @@ export default (apiCaller) => ({
 
   // ========== PRODUCT BATCHES ==========
   getProductBatches(config) {
-    return apiCaller.post('api/product-batches/list', config)
+    return apiCaller.get('api/product-batches', config)
+  },
+
+  getProductBatch(config) {
+    return apiCaller.post('api/product-batches/get', config)
+  },
+
+  getProductBatchesByGoods(config) {
+    return apiCaller.post('api/product-batches/by-goods', config)
+  },
+
+  getProductBatchesBySupplier(config) {
+    return apiCaller.post('api/product-batches/by-supplier', config)
   },
 
   createProductBatch(config) {
-    return apiCaller.post('api/product-batches/create', config)
+    return apiCaller.post('api/product-batches', config)
   },
 
   updateProductBatch(config) {
-    return apiCaller.post('api/product-batches/update', config)
+    return apiCaller.put('api/product-batches', config)
   },
 
   deleteProductBatch(config) {

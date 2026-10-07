@@ -1,3 +1,4 @@
+<!-- manage-2fa is still mocked: BACK has no 2FA setup/verify endpoint yet. See FRONTEND_API_TODO.md: "2FA setup/verify". -->
 <template>
   <div class="relative">
     <Transition name="sk">
