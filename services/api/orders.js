@@ -1,9 +1,4 @@
-/**
- * Orders Service
- * Complete order management endpoints
- */
 export default (apiCaller) => ({
-  // ========== ORDERS ==========
   listOrders(config) {
     return apiCaller.post('api/orders/list', config)
   },
@@ -16,15 +11,34 @@ export default (apiCaller) => ({
     return apiCaller.post('api/orders/create', config)
   },
 
-  updateOrder(config) {
-    return apiCaller.post('api/orders/update', config)
-  },
-
   deleteOrder(config) {
     return apiCaller.post('api/orders/delete', config)
   },
 
-  // ========== ORDER ITEMS ==========
+  byPerson(config) {
+    return apiCaller.post('api/orders/by-person', config)
+  },
+
+  byUser(config) {
+    return apiCaller.post('api/orders/by-user', config)
+  },
+
+  byStatus(config) {
+    return apiCaller.post('api/orders/by-status', config)
+  },
+
+  byDate(config) {
+    return apiCaller.post('api/orders/by-date', config)
+  },
+
+  searchOrders(config) {
+    return apiCaller.post('api/search/orders', config)
+  },
+
+  searchOrdersByStatus(status, config) {
+    return apiCaller.post(`api/search/orders/status/${status}`, config)
+  },
+
   listOrderItems(config) {
     return apiCaller.post('api/order-items/list', config)
   },
@@ -37,15 +51,10 @@ export default (apiCaller) => ({
     return apiCaller.post('api/order-items/create', config)
   },
 
-  updateOrderItem(config) {
-    return apiCaller.post('api/order-items/update', config)
-  },
-
   deleteOrderItem(config) {
     return apiCaller.post('api/order-items/delete', config)
   },
 
-  // ========== INVOICES ==========
   listInvoices(config) {
     return apiCaller.post('api/invoices/list', config)
   },
@@ -58,15 +67,14 @@ export default (apiCaller) => ({
     return apiCaller.post('api/invoices/create', config)
   },
 
-  updateInvoice(config) {
-    return apiCaller.post('api/invoices/update', config)
+  byOrder(config) {
+    return apiCaller.post('api/invoices/by-order', config)
   },
 
   deleteInvoice(config) {
     return apiCaller.post('api/invoices/delete', config)
   },
 
-  // ========== PURCHASE ORDERS (Supplier) ==========
   listPurchaseOrders(config) {
     return apiCaller.post('api/purchase-orders/list', config)
   },
@@ -87,7 +95,6 @@ export default (apiCaller) => ({
     return apiCaller.post('api/purchase-orders/delete', config)
   },
 
-  // ========== PURCHASE ORDER ITEMS ==========
   listPurchaseOrderItems(config) {
     return apiCaller.post('api/purchase-order-items/list', config)
   },

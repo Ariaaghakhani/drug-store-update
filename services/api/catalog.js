@@ -24,6 +24,10 @@ export default (apiCaller) => ({
     return apiCaller.post('api/catalog/delete', config)
   },
 
+  getCatalogsByType(config) {
+    return apiCaller.post('api/catalogs/by-type', config)
+  },
+
   // ========== CATEGORIES ==========
   listCategories(config) {
     return apiCaller.post('api/categories/list', config)
