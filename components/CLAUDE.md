@@ -17,7 +17,8 @@ Global presentational and feature components for the public storefront shell (he
 - `ChatbotWidget.vue` — floating AI chat widget driven by [`stores/chat`](../stores/CLAUDE.md) and `stores/cart`.
 - `AuthModal.vue` — standalone **legacy** login/register modal with simulated (`setTimeout`) calls; still mounted only from `pages/cart.vue`.
 - `auth/PhoneStep.vue`, `PasswordStep.vue`, `OtpStep.vue`, `RegisterStep.vue`, `ResetPasswordStep.vue`, `AuthHero.vue` — the real, current login flow steps, driven entirely by `pages/login.vue`.
-- `dashboard/admin/AdminDashboard.vue`, `dashboard/owner/OwnerDashboard.vue` — static "TODO" placeholders, no props/logic.
+- `dashboard/admin/AdminDashboard.vue` — renders real data from [`composables/useAdminDashboard`](../composables/CLAUDE.md) (store summary, low-stock, expiring goods); order-queue/prescription-review-queue sections remain TODO placeholders (no BACK endpoint).
+- `dashboard/owner/OwnerDashboard.vue` — renders real data from [`composables/useOwnerDashboard`](../composables/CLAUDE.md) (user-activity bar chart, goods-by-category pie chart only); revenue/sales-trend/top-products/staff-activity sections remain TODO placeholders (no BACK endpoint — see `FRONTEND_API_TODO.md`).
 - `dashboard/customer/CustomerDashboard.vue` — orchestrates the customer dashboard via [`composables/useCustomerDashboard`](../composables/CLAUDE.md).
 - `dashboard/customer/{DashboardStats,OrderTracking,PrescriptionsList,RefillReminders,ReorderGrid}.vue` — presentational cards, props-in/emits-out, with `loading` skeleton states.
 
@@ -30,7 +31,7 @@ Global presentational and feature components for the public storefront shell (he
 - `auth/RegisterStep` / `ResetPasswordStep` — prop `form: Object` (required, must contain an `errors` sub-object the component mutates directly), `loading`; emit `update:form`, `submit`, `goBack`.
 - `auth/AuthHero` — no props, decorative only, hidden below `md:`.
 - `dashboard/customer/*` — accept `loading: Boolean` + data props, emit `track`/`shop`/`viewAll`/`upload`/`order`/`add`.
-- `AdminDashboard`/`OwnerDashboard` — no props/emits, placeholders.
+- `AdminDashboard`/`OwnerDashboard` — no props/emits; read their composables directly (see Key files).
 - Composables read: `useCustomerDashboard`, `useFormat` (`DashboardStats`/`ReorderGrid`), `useUserPanelTabs` (used by `pages/panel/dashboard.vue`, not the components themselves).
 - Stores read: `useCartStore` (`Header`, `FeaturedProducts`, `ChatbotWidget`, `CustomerDashboard`); `useChatStore` (`ChatbotWidget`, `HeroSection`).
 - Services/API: only `pages/login.vue` calls real endpoints via `$api.auth.*` (see [`services/api/CLAUDE.md`](../services/api/CLAUDE.md)); no `components/auth/*`/`dashboard/*` component calls the API directly. `AuthModal.vue` and `useCustomerDashboard.js` only simulate network calls.
@@ -48,7 +49,7 @@ Global presentational and feature components for the public storefront shell (he
 - **RTL-specific scroll math**: `CategoriesCarousel`/`HeroCarousel` invert normal LTR scroll-direction logic because the app is RTL — don't "fix" these to look like standard LTR code.
 - `RegisterStep`/`ResetPasswordStep` mutate `form.errors` in place via a two-way computed over the `form` prop — passing an object without an `errors` key throws.
 - `OtpStep`'s `context` prop drives conditional UI; an unlisted value fails the prop validator (dev warning only, doesn't throw).
-- Dashboard data is entirely mocked — don't assume any of it reflects real backend shape yet.
+- Admin/owner dashboard data is now real (store-wide aggregates only — no per-user scoping on BACK). Customer dashboard (`useCustomerDashboard`) is still entirely mocked — no backend equivalent exists.
 - Role gating is coarse (`admin | owner | else→customer`) and lives in the page, not the dashboard components.
 - `ProductCard` emits `addToCart` (camelCase) while the app otherwise uses kebab-case event names — check casing when adding listeners.
 - `Header`'s cart dropdown position is computed manually in JS, not CSS/popper.
