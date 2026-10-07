@@ -59,6 +59,7 @@
               :key="address.id"
               :address="address"
               :deleting="deletingId === address.id"
+              :setting-default="settingDefaultId === address.id"
               @edit="emit('edit', address)"
               @delete="emit('delete', address.id)"
               @set-default="emit('set-default', address.id)"
@@ -87,6 +88,7 @@ defineProps({
   addresses: Array,
   loading: Boolean,
   deletingId: Number,
+  settingDefaultId: Number,
 })
 
 const emit = defineEmits(['add', 'edit', 'delete', 'set-default'])

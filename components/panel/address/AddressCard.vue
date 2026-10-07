@@ -38,6 +38,8 @@
         size="md"
         block
         class="sm:w-auto"
+        :loading="settingDefault"
+        :disabled="settingDefault"
         @click="emit('set-default')"
       >
         تنظیم به عنوان پیش‌فرض
@@ -75,6 +77,7 @@
 const props = defineProps({
   address: Object,
   deleting: Boolean,
+  settingDefault: Boolean,
 })
 
 const emit = defineEmits(['edit', 'delete', 'set-default'])

@@ -5,27 +5,23 @@
 export default (apiCaller) => ({
   // ========== DASHBOARD ==========
   getDashboardSummary(config) {
-    return apiCaller.post('api/dashboard/summary', config)
+    return apiCaller.get('api/dashboard/admin/summary', config)
   },
 
-  getDashboardKpi(config) {
-    return apiCaller.post('api/dashboard/kpi', config)
-  },
-
-  getSalesChart(config) {
-    return apiCaller.post('api/dashboard/sales-chart', config)
-  },
-
-  getRevenueChart(config) {
-    return apiCaller.post('api/dashboard/revenue-chart', config)
-  },
-
-  getCategoryChart(config) {
-    return apiCaller.post('api/dashboard/category-chart', config)
+  getLowStock(config) {
+    return apiCaller.get('api/dashboard/admin/low-stock', config)
   },
 
   getExpiringGoods(config) {
-    return apiCaller.post('api/dashboard/expiring-goods', config)
+    return apiCaller.post('api/dashboard/admin/expiring-goods', config)
+  },
+
+  getUserActivityChart(config) {
+    return apiCaller.post('api/dashboard/admin/users-bar-chart-filtered', config)
+  },
+
+  getCategoryChart(config) {
+    return apiCaller.post('api/dashboard/admin/goods-category-pie-filtered', config)
   },
 
   // ========== REPORTS ==========
