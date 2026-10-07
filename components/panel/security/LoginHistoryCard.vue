@@ -1,3 +1,4 @@
+<!-- Mocked: BACK has no login-history endpoint yet. See FRONTEND_API_TODO.md: "Login history". -->
 <template>
   <div class="relative">
     <Transition name="sk">

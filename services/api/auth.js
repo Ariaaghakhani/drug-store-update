@@ -30,7 +30,22 @@ export default (apiCaller) => ({
   logout(config) {
     return apiCaller.post('api/auth/logout', config)
   },
+  changePassword(config) {
+    return apiCaller.post('api/auth/me/password', config)
+  },
   fetchUser(config) {
     return apiCaller.get('api/auth/me', config)
+  },
+  sendCurrentPhoneOtp(config) {
+    return apiCaller.post('api/auth/me/phone/current/send-otp', config)
+  },
+  verifyCurrentPhoneOtp(config) {
+    return apiCaller.post('api/auth/me/phone/current/verify-otp', config)
+  },
+  sendNewPhoneOtp(config) {
+    return apiCaller.post('api/auth/me/phone/new/send-otp', config)
+  },
+  verifyNewPhoneOtp(config) {
+    return apiCaller.post('api/auth/me/phone/new/verify-otp', config)
   },
 })

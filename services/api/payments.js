@@ -1,37 +1,25 @@
 /**
  * Payments Service
- * Payment processing and verification
+ * Checkout, order payment and payment-request endpoints
  */
 export default (apiCaller) => ({
   // ========== CHECKOUT ==========
-  initiateCheckout(config) {
-    return apiCaller.post('api/checkout/init', config)
+  checkout(config) {
+    return apiCaller.post('api/checkout', config)
   },
 
-  // ========== PAYMENT VERIFICATION ==========
-  verifyPayment(config) {
-    return apiCaller.post('api/payments/verify', config)
+  quote(config) {
+    return apiCaller.post('api/checkout/quote', config)
   },
 
-  getPaymentStatus(config) {
-    return apiCaller.post('api/payments/status', config)
+  // ========== PAYMENT ==========
+  payOrder(orderId, gateway) {
+    return apiCaller.post(`api/payment/order/${orderId}`, {
+      params: { gateway },
+    })
   },
 
-  // ========== PAYMENT HISTORY ==========
-  listPayments(config) {
-    return apiCaller.post('api/payments/list', config)
-  },
-
-  getPayment(config) {
-    return apiCaller.post('api/payments/get', config)
-  },
-
-  // ========== MOCK BANK (Testing) ==========
-  mockBankCallback(config) {
-    return apiCaller.post('api/mock-bank/callback', config)
-  },
-
-  initiateMockPayment(config) {
-    return apiCaller.post('api/mock-bank/initiate', config)
+  requestPayment(config) {
+    return apiCaller.post('api/payment/request', config)
   },
 })

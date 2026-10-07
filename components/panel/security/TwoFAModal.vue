@@ -1,3 +1,4 @@
+<!-- Mocked: BACK has no 2FA setup/verify endpoint yet. See FRONTEND_API_TODO.md: "2FA setup/verify". -->
 <template>
   <UModal v-model:open="isOpen" :ui="{ content: 'sm:max-w-md p-0 gap-0 overflow-hidden' }">
     <template #content>
