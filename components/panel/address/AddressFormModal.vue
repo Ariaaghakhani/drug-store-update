@@ -87,8 +87,8 @@
             <UFormField label="کد پستی" name="postalCode" :error="visibleErrors.postalCode">
               <UInput v-model="form.postalCode" dir="ltr" placeholder="0000000000" maxlength="10" class="w-full" />
             </UFormField>
-            <UFormField label="شماره تماس تحویل" name="phone">
-              <UInput v-model="form.phone" dir="ltr" placeholder="09xxxxxxxxx" maxlength="11" class="w-full" />
+            <UFormField label="شماره تماس تحویل" name="recipientPhoneNumber">
+              <UInput v-model="form.recipientPhoneNumber" dir="ltr" placeholder="09xxxxxxxxx" maxlength="11" class="w-full" />
             </UFormField>
           </div>
 
@@ -138,22 +138,39 @@ const defaultForm = () => ({
   label: 'خانه',
   province: '',
   city: '',
+  cityId: null,
   district: '',
   street: '',
   postalCode: '',
-  phone: '',
+  recipientPhoneNumber: '',
   isDefault: false,
 })
+
+const toFormState = (address) => {
+  if (!address) return defaultForm()
+  return {
+    type: 'home',
+    label: address.title ?? '',
+    province: address.provinceName ?? '',
+    city: address.cityName ?? '',
+    cityId: address.cityId ?? null,
+    district: '',
+    street: address.fullAddress ?? '',
+    postalCode: address.postalCode ?? '',
+    recipientPhoneNumber: address.recipientPhoneNumber ?? '',
+    isDefault: !!address.isDefault,
+  }
+}
 
 const form = ref(defaultForm())
 const selectedProvinceObj = ref(null)
 const selectedCityObj = ref(null)
 
 const provinceItems = computed(() =>
-  props.provinces.map((p) => ({ ...p, label: p.nameFa || p.name }))
+  props.provinces.map((p) => ({ ...p, label: p.nameFa || p.nameEn }))
 )
 const cityItems = computed(() =>
-  props.cities.map((c) => ({ ...c, label: c.nameFa || c.name }))
+  props.cities.map((c) => ({ ...c, label: c.nameFa || c.nameEn }))
 )
 
 const formErrors = reactive({ label: '', province: '', city: '', street: '', postalCode: '' })
@@ -177,7 +194,7 @@ const validate = () => {
   let valid = true
   if (!form.value.label.trim()) { formErrors.label = 'عنوان آدرس الزامی است'; valid = false }
   if (!form.value.province) { formErrors.province = 'انتخاب استان الزامی است'; valid = false }
-  if (!form.value.city) { formErrors.city = 'انتخاب شهر الزامی است'; valid = false }
+  if (!form.value.cityId) { formErrors.city = 'انتخاب شهر الزامی است'; valid = false }
   if (!form.value.street.trim()) { formErrors.street = 'آدرس کامل الزامی است'; valid = false }
   if (form.value.postalCode && !/^\d{10}$/.test(form.value.postalCode)) {
     formErrors.postalCode = 'کد پستی باید ۱۰ رقم باشد'; valid = false
@@ -191,8 +208,8 @@ watch(
     if (!val) return
     clearErrors()
     if (props.address) {
-      form.value = { ...props.address }
-      const provinceObj = provinceItems.value.find((p) => p.name === props.address.province) ?? null
+      form.value = toFormState(props.address)
+      const provinceObj = provinceItems.value.find((p) => p.id === props.address.provinceId) ?? null
       selectedProvinceObj.value = provinceObj
       selectedCityObj.value = null
       if (provinceObj) emit('province-change', provinceObj)
@@ -207,8 +224,8 @@ watch(
 watch(
   cityItems,
   (newCities) => {
-    if (props.address && form.value.city && !selectedCityObj.value) {
-      selectedCityObj.value = newCities.find((c) => c.name === form.value.city) ?? null
+    if (props.address && form.value.cityId && !selectedCityObj.value) {
+      selectedCityObj.value = newCities.find((c) => c.id === form.value.cityId) ?? null
     }
   }
 )
@@ -219,14 +236,16 @@ const onTypeSelect = (type) => {
 }
 
 const onProvinceSelect = (provinceObj) => {
-  form.value.province = provinceObj?.name ?? ''
+  form.value.province = provinceObj?.nameFa || provinceObj?.nameEn || ''
   form.value.city = ''
+  form.value.cityId = null
   selectedCityObj.value = null
   emit('province-change', provinceObj)
 }
 
 const onCitySelect = (cityObj) => {
-  form.value.city = cityObj?.name ?? ''
+  form.value.city = cityObj?.nameFa || cityObj?.nameEn || ''
+  form.value.cityId = cityObj?.id ?? null
 }
 
 const handleSave = () => {
