@@ -5,7 +5,7 @@ State root: `.claude/integration/`. This file is the only one kept in context; s
 ## Phase checklist
 - [x] Phase 1: LLM docs (started: 2026-10-06T00:00Z, PR #44)
 - [x] Phase 2: Integration discovery (started: 2026-10-06T01:00Z, finished: 2026-10-06T02:00Z) — 9 tasks scoped, STOPPED HERE for plan approval per Aria's request. Do not start Phase 3 without explicit go-ahead.
-- [~] Phase 3: Integration loop (started: 2026-10-06T03:00Z) — 6 of 8 unblocked tasks have open PRs (#45, #47, #48, #49, #50, #51, #52 — task 1 plus 2/3/6/7/8/9). Tasks 4 and 5 remain blocked on Aria's decisions; nothing else to do until she answers.
+- [x] Phase 3: Integration loop (started: 2026-10-06T03:00Z, finished: 2026-10-07T00:30Z) — all 9 tasks have outcomes: 8 have open implementation PRs (#45, #47, #48, #49, #50, #51, #52, #54), task 5 deferred/documented only (#53). Aria is merging #44-53 (except #46) herself, PR by PR, checking mergeability between each.
 
 ## Docs checklist (Phase 1 — one line per FRONT module)
 - [x] root `CLAUDE.md` (updated index with all 11 module links + Docs rule; fixed stale TypeScript-era conventions to reflect the TS→JS revert)
@@ -31,7 +31,7 @@ State root: `.claude/integration/`. This file is the only one kept in context; s
 | 1 | address-management | feat/api-1-address-management | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/45 | none — pure wiring + bug fixes |
 | 2 | product-detail-page | feat/api-2-product-detail-page | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/49 | stock-field gap filed in FRONTEND_API_TODO.md |
 | 3 | panel-products-admin | feat/api-3-panel-products-admin | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/52 | stock field, image upload, brand picker, CategoryScope update/delete -- 4 FRONTEND_API_TODO entries |
-| 4 | panel-orders | feat/api-4-panel-orders | in-progress | — | Aria decided 2026-10-06: show both status axes; file anything missing to FRONTEND_API_TODO.md |
+| 4 | panel-orders | feat/api-4-panel-orders | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/54 | OrderDocument missing fulfillmentStatus; no aggregate endpoint; no update endpoints -- 3 FRONTEND_API_TODO entries |
 | 5 | panel-users-roles | feat/api-5-panel-users-roles | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/53 | deferred by Aria 2026-10-06 — documented, not implemented |
 | 6 | panel-dashboard | feat/api-6-panel-dashboard | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/47 | owner dashboard revenue/sales/top-products/staff-activity; customer dashboard has no backend equivalent at all (both filed in FRONTEND_API_TODO.md) |
 | 7 | profile-phone-change | feat/api-7-profile-phone-change | pr-open | https://github.com/Ariaaghakhani/drug-store-update/pull/48 | none — full parity |
@@ -45,10 +45,17 @@ State root: `.claude/integration/`. This file is the only one kept in context; s
 - **`panel-orders` (task 4) needs a status-axis decision**: BACK models order status as a per-tenant `Catalog` FK (no fixed enum, no human-readable string on the DTO) plus a separate `fulfillmentStatus` enum (`SHIPPED`/`READY_FOR_PICKUP`/`DELIVERED`/null) — two independent axes, neither matching FRONT's hardcoded `pending/processing/shipped/delivered/cancelled`. Needs a decision on which axis (or both) the UI should filter/display before implementation.
 
 ## Needs Aria
-1. **Task 5 (panel-users-roles) redesign direction** — see Decisions to review. Options roughly: (a) rebuild `UserPermissionsPanel` as a module-grouped endpoint-toggle list matching BACK exactly, (b) keep a simplified grid but map it onto a curated subset of modules/endpoints chosen up front, or (c) punt — leave this task last/lowest priority. Need your call before task 5's branch starts.
-2. **Task 4 (panel-orders) status-axis decision** — show BACK's catalog-driven payment status, the `fulfillmentStatus` enum, or both, in the orders UI? Affects `CustomerOrders.vue`/`OrdersManagement.vue`'s filter options.
-3. **7 backend gaps found** (full detail in `shared.md` "Known backend gaps" + each section's "Known gaps"): admin order stats/aggregate endpoint; owner-dashboard revenue/sales/top-products/staff-activity; customer-scoped dashboard; self-service session list/revoke; 2FA; login history; security alerts. These become `FRONTEND_API_TODO.md` entries once Phase 3 tasks reach them — nothing to act on yet, just flagging scope.
-4. **Stock/availability field** for simple (non-variant) goods isn't on `GoodsDTO` at all (tasks 2 and 3) — worth a quick check with whoever owns BACK on whether that's intentional or missing before those tasks build UI around it.
+1. ~~Task 5 redesign direction~~ — answered 2026-10-06: deferred/documented, not implemented (PR #53).
+2. ~~Task 4 status-axis decision~~ — answered 2026-10-06: show both axes (PR #54).
+3. **Merge order** (in progress, Aria merging manually): #44 → #45 → #47 → #48 → #49 → #50 → #51 → #52 → #53 → #54, checking mergeability before each (per her request, excluding non-merging #46). `FRONTEND_API_TODO.md` collides as an independently-created new file across #47/#49/#50/#52/#53/#54 — expect a conflict on that one file each time one of these merges after another; keep the union of entries.
+4. **~10 backend gaps total**, now all filed as `FRONTEND_API_TODO.md` entries across the PRs above (stock field, image/attachment upload, brand picker, CategoryScope update/delete, order aggregate endpoint, OrderDocument.fulfillmentStatus, order/order-item/invoice update endpoints, owner-dashboard revenue/sales/top-products/staff-activity, customer-scoped dashboard, self-service sessions/2FA/login-history/security-alerts, users/roles permission-UI redesign) — review and reconcile into one list once all PRs are merged, since right now they're split across several copies of the file.
+
+## Final report
+- **Docs (Phase 1)**: all 11 FRONT modules documented, drift hook verified working (both flag and clear paths) — PR #44.
+- **Integration (Phase 2/3)**: 9 of 9 tasks have an outcome — 8 implementation PRs (#45, #47, #48, #49, #50, #51, #52, #54) plus 1 deferred/documented task (#53, panel-users-roles). No task left in `todo`/`blocked` state.
+- **Pre-existing docs corrected**: `API_ENDPOINTS_SUMMARY.md`/`BACKEND_INTEGRATION.md` at repo root were found to be aspirational (written before BACK's real contract was verified) and significantly wrong in several domains — `services/api/CLAUDE.md` and the `sections/*.md` files now carry the verified contract instead.
+- **FRONTEND_API_TODO.md entries**: ~10 across the PRs listed above (see item 4 in "Needs Aria").
+- **Outstanding**: Aria merging #44–#54 (except #46) herself in dependency order, resolving the expected trivial `FRONTEND_API_TODO.md` conflicts along the way. Runtime verification of every endpoint (noted per-PR) still pending against a live backend.
 
 ## Copy of the Resume protocol section
 1. `git checkout chore/integration-state && git pull` (create it from `<default>` if it doesn't exist). Read `plan.md` only. Run `gh auth status`.
