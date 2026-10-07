@@ -12,25 +12,27 @@ Customer-facing storefront routes: marketing/info, browsing/buying medications, 
 - `/` — `index.vue` — homepage composed entirely of child components; only sets `useHead` SEO meta itself.
 - `/login` — `login.vue` — multi-step auth wizard (phone → password/OTP → register → forgot-password) from `components/auth/*`, wired to `$api.auth.*`.
 - `/medications` — `medications/index.vue` — product listing: search, category filter, pagination, add-to-cart; fetches real product list from backend.
-- `/medications/[id]` — `medications/[id].vue` — **stub**: only renders `{{ $route.params.id }}`, no fetch, no `definePageMeta`.
+- `/medications/[id]` — `medications/[id].vue` — product detail page: fetches a single product via `$api.goods.getGoods`, renders name/price/description/prescription badge/image, has a loading skeleton and a not-found state, add-to-cart.
 
 ## Public surface
 - `index.vue` composes [`components/HeroSection.vue`, `CategoriesCarousel.vue`, `FeaturedProducts.vue`, `PopularMedications.vue`, `ChatbotWidget.vue`](../components/CLAUDE.md).
 - `cart.vue` composes `components/AuthModal.vue`; reads/writes `useCartStore()` directly; uses Nuxt UI `useToast()` and `this.$auth.loggedIn`/`navigateTo`.
 - `login.vue` composes all of [`components/auth/*`](../components/CLAUDE.md) (`AuthHero`, `PhoneStep`, `PasswordStep`, `OtpStep`, `RegisterStep`, `ResetPasswordStep`), switched via `<component :is="currentStepComponent">`. Uses `useNuxtApp()` (`$api`, `$auth`), `useAppToast()`, `useRoute()`, `navigateTo`.
 - `medications/index.vue` composes `components/ProductCard.vue` (wrapped in `NuxtLink` to `/medications/:id`), uses `useCartStore()`, `useAppToast()`, `useNuxtApp().$api.products`.
-- `account.vue`, `about.vue`, `medications/[id].vue` use only Nuxt UI primitives — no store/composable usage.
+- `medications/[id].vue` uses `useCartStore()`, `useAppToast()`, `useFormat()` (for `formatPrice`), `useNuxtApp().$api.goods.getGoods`. No child components — plain `UContainer`/`UBadge`/`UButton`/`USkeleton`.
+- `account.vue`, `about.vue` use only Nuxt UI primitives — no store/composable usage.
 
 ## Data flow and dependencies
 - `medications/index.vue`: client-only fetch via `onMounted()` (not `useFetch`/`useAsyncData`) calling `app.$api.products.fetchProductsList()` → [`services/api/products.js`](../services/api/CLAUDE.md) → `POST api/goods/list`. Category/search filtering is client-side on the fetched page only. `handleAddToCart` → `useCartStore().addItem(...)`.
 - `login.vue`: no fetch on load; all calls on user action against `services/api/auth.js` (`checkUser`, `login`, `loginOtp`, `register`, `sendRegisterOtp`, `forgotPassword`, `forgotPasswordOtp`). On success calls `app.$auth.setToken()`/`setUser()` (from [`plugins/auth.client.js`](../plugins/CLAUDE.md), syncs `stores/user.js`) then `navigateTo(route.query.redirect || '/')`. `definePageMeta({ layout: 'auth' })`.
 - `cart.vue`: no API calls; purely reads/mutates the Pinia `cart` store (persists to `localStorage`). Checkout is a stub — `handleCheckout()` redirects to `/login?redirect=/cart` if logged out, otherwise only shows a toast (navigation to a real checkout page is commented out as `// TODO`).
-- `account.vue`, `about.vue`, `medications/[id].vue`: no fetch, no store access — static/mock or unimplemented.
+- `medications/[id].vue`: client-only fetch via `onMounted()` (same pattern as `medications/index.vue`, not `useFetch`/`useAsyncData` — no SSR data) calling `app.$api.goods.getGoods({ id: route.params.id })` → `services/api/goods.js` → `POST api/goods/get`, unwraps `response.data.data`. Any thrown/missing-data response flips a single `notFound` state (covers both 404 and generic errors) rendering the not-found empty state; no separate toast on failure. `handleAddToCart` → `useCartStore().addItem(...)`, same success-toast pattern as `medications/index.vue`. Images come from `GoodsDTO.attachments[].url` (primary attachment preferred, first as fallback) — there is no flat `images` array on the DTO.
+- `account.vue`, `about.vue`: no fetch, no store access — static/mock or unimplemented.
 - Auth/middleware: only `login.vue` sets page meta (`layout: 'auth'`). None of the other storefront pages apply `middleware/auth.js` — `account.vue` renders with mock data even logged out; `cart.vue` enforces login manually in its own click handler.
 
 ## Gotchas
-- `medications/[id].vue` is effectively unimplemented — no product-detail endpoint exists in `services/api/products.js` either (only `fetchProductsList`), yet `ProductCard`/`medications/index.vue` link to this route expecting a real page. Flag for Phase 2 gap tracking.
-- `medications/index.vue` fetches in `onMounted()`, not `useAsyncData`/`useFetch` — no SSR data, hurts SEO despite being a Nuxt app.
+- `medications/[id].vue` is now implemented via `services/api/goods.js::getGoods` (`POST api/goods/get`), not `products.js`. `GoodsDTO` has no stock/availability field for simple (non-variant) products — only `GoodsVariantDTO.availableQuantity` exists, for variant products. The page intentionally shows no stock UI for simple products rather than fabricating one; see `FRONTEND_API_TODO.md` ("No stock/availability field on simple-product GoodsDTO").
+- `medications/index.vue` and `medications/[id].vue` both fetch in `onMounted()`, not `useAsyncData`/`useFetch` — no SSR data, hurts SEO despite being a Nuxt app.
 - Category/search on `/medications` filters only the current fetched page (`pageSize` 12), not the full catalog; pagination re-fetches but still applies filters only to the new page.
 - `cart.vue`'s `AuthModal` is rendered and wired to `@authenticated` but `handleCheckout` never opens it — redirects to `/login` instead, so `AuthModal` here is dead code on this page.
 - `account.vue` has no auth guard and no real backend wiring — treat as a UI mock, not a functional feature.
