@@ -17,6 +17,30 @@ When you encounter a pattern not covered there:
 
 ---
 
+## Module docs
+
+Every main module folder has its own `CLAUDE.md` with purpose, key files, public surface, data flow, and gotchas for that module specifically — read the relevant one before editing that area, instead of re-deriving it from the code:
+
+- [`components/CLAUDE.md`](components/CLAUDE.md) — storefront shell, auth-flow steps, role dashboards
+- [`components/panel/CLAUDE.md`](components/panel/CLAUDE.md) — pharmacist/admin panel UI building blocks
+- [`composables/CLAUDE.md`](composables/CLAUDE.md) — dashboard data, toast, role permissions, panel nav, Persian formatting
+- [`stores/CLAUDE.md`](stores/CLAUDE.md) — Pinia: cart, chat, products (mock), roles (RBAC), user
+- [`layouts/CLAUDE.md`](layouts/CLAUDE.md) — storefront / auth / panel page shells
+- [`middleware/CLAUDE.md`](middleware/CLAUDE.md) — route guards (currently unwired — see gotchas)
+- [`pages/CLAUDE.md`](pages/CLAUDE.md) — customer-facing storefront routes
+- [`pages/panel/CLAUDE.md`](pages/panel/CLAUDE.md) — pharmacist/admin/customer panel routes
+- [`plugins/CLAUDE.md`](plugins/CLAUDE.md) — `$api` and `$auth` bootstrapping
+- [`services/api/CLAUDE.md`](services/api/CLAUDE.md) — the API client layer, one file per backend domain — read this before any API integration task
+- [`utils/CLAUDE.md`](utils/CLAUDE.md) — validators, auth helpers, and the (currently orphaned) `types/*.ts` DTO reference
+
+### Docs rule
+- A code change inside a module updates that module's `CLAUDE.md` in the same commit.
+- A new module gets a `CLAUDE.md` and an entry in the index above.
+- A removed or renamed module updates its doc and the index.
+- Run `/sync-docs` after pulling commits you didn't write, to catch anything stale.
+
+---
+
 ## Stack & versions
 
 - **Nuxt 3** (latest)
@@ -29,13 +53,12 @@ When you encounter a pattern not covered there:
 
 ## Vue/Nuxt conventions
 
-- Always use `<script setup lang="ts">` — never Options API
+- Always use `<script setup>` — never Options API (a few legacy `.vue` files still use Options API; don't copy that pattern in new code)
 - Composition API only (`ref`, `computed`, `watch`, `onMounted`, etc.)
-- TypeScript for all props, emits, and composable return types
-- Define props with `defineProps<{}>()` and emits with `defineEmits<{}>()`
-- Composables go in `composables/`, named `useXxx.ts`
+- Plain JavaScript — the project reverted from TypeScript to JS in commit `209e98b` ("Revert from TS to JS"). Define props with `defineProps({})` and emits with `defineEmits([])`
+- Composables go in `composables/`, named `useXxx.js`. A few files (`useAppToast.ts`, `useUpdateRolePermission.ts`, `useUserPanelTabs.ts`) and two stores (`stores/roles.ts`) were never converted after the revert — treat as drift, not a pattern to follow; migrate to `.js` when touching them
 - Server-only logic goes in `server/` — never import server code in components
-- Use `useFetch` / `useAsyncData` for data fetching in pages
+- Use `useFetch` / `useAsyncData` for data fetching in pages (several existing pages still fetch in `onMounted()` — this is pre-existing drift, not the convention to copy)
 - Avoid `process.env` — use `import.meta.env` or `useRuntimeConfig()`
 
 ---

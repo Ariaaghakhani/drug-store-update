@@ -1,15 +1,9 @@
 export default (apiCaller) => ({
   getState() {
-    return apiCaller.get('/api/addresses/provinces', {})
+    return apiCaller.get('/api/locations/provinces', {})
   },
   getCity(province) {
-    const config = {
-      data: {
-        provinceId: province.id,
-        provinceSlug: province.slug,
-      },
-    }
-    return apiCaller.post('/api/addresses/cities/by-province-id', config)
+    return apiCaller.get(`/api/locations/provinces/${province.id}/cities`, {})
   },
 
   getAddresses(config) {
@@ -17,5 +11,11 @@ export default (apiCaller) => ({
   },
   addAddress(config) {
     return apiCaller.post('/api/addresses/create', config)
+  },
+  updateAddress(config) {
+    return apiCaller.post('/api/addresses/update', config)
+  },
+  deleteAddress(config) {
+    return apiCaller.post('/api/addresses/delete', config)
   },
 })
