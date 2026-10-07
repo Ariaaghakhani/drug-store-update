@@ -5,6 +5,7 @@
       :addresses="addresses"
       :loading="isLoading"
       :deleting-id="deletingId"
+      :setting-default-id="settingDefaultId"
       @add="openModal(null)"
       @edit="openModal"
       @delete="deleteAddress"
@@ -29,16 +30,26 @@ import AddressFormModal from '@/components/panel/address/AddressFormModal.vue'
 
 const app = useNuxtApp()
 const userStore = useUserStore()
-const toast = useToast()
+const toast = useAppToast()
 
 const isLoading = ref(true)
 const isModalOpen = ref(false)
 const isSaving = ref(false)
 const deletingId = ref(null)
+const settingDefaultId = ref(null)
 const editingAddress = ref(null)
 const addresses = ref([])
 const allProvinces = ref([])
 const cityOptions = ref([])
+
+const buildAddressPayload = (formData) => ({
+  title: formData.label,
+  fullAddress: formData.street,
+  postalCode: formData.postalCode,
+  recipientPhoneNumber: formData.recipientPhoneNumber,
+  cityId: formData.cityId,
+  isDefault: formData.isDefault,
+})
 
 async function onProvinceChange(provinceObj) {
   cityOptions.value = []
@@ -75,21 +86,34 @@ async function fetchAddresses() {
   }
 }
 
-const setDefault = (id) => {
-  addresses.value = addresses.value.map((a) => ({
-    ...a,
-    isDefault: a.id === id,
-  }))
-  toast.add({ title: 'آدرس پیش‌فرض تغییر کرد', color: 'success' })
+const setDefault = async (id) => {
+  const target = addresses.value.find((a) => a.id === id)
+  if (!target) return
+  settingDefaultId.value = id
+  try {
+    await app.$api.address.updateAddress({
+      data: { ...target, isDefault: true },
+    })
+    addresses.value = addresses.value.map((a) => ({
+      ...a,
+      isDefault: a.id === id,
+    }))
+    toast.success('آدرس پیش‌فرض تغییر کرد')
+  } catch (error) {
+    toast.error(error?.response?.data?.message ?? 'خطا در تغییر آدرس پیش‌فرض')
+  } finally {
+    settingDefaultId.value = null
+  }
 }
 
 const deleteAddress = async (id) => {
   deletingId.value = id
   try {
+    await app.$api.address.deleteAddress({ data: { id } })
     addresses.value = addresses.value.filter((a) => a.id !== id)
-    toast.add({ title: 'آدرس حذف شد', color: 'success' })
-  } catch {
-    toast.add({ title: 'خطا در حذف آدرس', color: 'error' })
+    toast.success('آدرس حذف شد')
+  } catch (error) {
+    toast.error(error?.response?.data?.message ?? 'خطا در حذف آدرس')
   } finally {
     deletingId.value = null
   }
@@ -99,39 +123,35 @@ const saveAddress = async (formData, id) => {
   isSaving.value = true
   try {
     if (id !== null) {
-      addresses.value = addresses.value.map((a) =>
-        a.id === id ? { ...a, ...formData } : a
-      )
-    } else {
-      const config = {
-        data: {
-          title: formData.label,
-          fullAddress: `${formData.province}،${formData.city}،${formData.street}`,
-          postalCode: formData.postalCode,
-          phone: formData.phone,
-          type: formData.type,
-          isDefault: formData.isDefault,
-        },
+      const target = addresses.value.find((a) => a.id === id)
+      const payload = { ...target, ...buildAddressPayload(formData), id }
+      const response = await app.$api.address.updateAddress({ data: payload })
+      const updated = response?.data?.data ?? payload
+      addresses.value = addresses.value.map((a) => (a.id === id ? updated : a))
+      if (formData.isDefault) {
+        addresses.value = addresses.value.map((a) => ({
+          ...a,
+          isDefault: a.id === id,
+        }))
       }
-      const response = await app.$api.address.addAddress(config)
+    } else {
+      const payload = buildAddressPayload(formData)
+      const response = await app.$api.address.addAddress({ data: payload })
+      const created = response?.data?.data ?? { ...payload, id: Date.now() }
       if (formData.isDefault) {
         addresses.value = addresses.value.map((a) => ({
           ...a,
           isDefault: false,
         }))
       }
-      addresses.value.push({
-        ...formData,
-        id: response?.data?.id ?? Date.now(),
-      })
+      addresses.value.push(created)
     }
-    toast.add({ title: 'آدرس با موفقیت ذخیره شد', color: 'success' })
+    toast.success('آدرس با موفقیت ذخیره شد')
     isModalOpen.value = false
     editingAddress.value = null
     cityOptions.value = []
   } catch (err) {
-    const message = err?.response?.data?.message ?? 'خطا در ذخیره آدرس'
-    toast.add({ title: message, color: 'error' })
+    toast.error(err?.response?.data?.message ?? 'خطا در ذخیره آدرس')
   } finally {
     isSaving.value = false
   }
