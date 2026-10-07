@@ -12,7 +12,7 @@ Covers `pages/panel.vue` (the panel shell route) and everything under `pages/pan
 - `/panel/products` — `products/index.vue` — product list/table with metrics, filters, pagination; permission-gated create/edit/delete.
 - `/panel/products/new` — `products/new.vue` — create-product form; guarded by `products.create` permission.
 - `/panel/products/[id]` — `products/[id].vue` — edit-product form; guarded by `products.update` permission.
-- `/panel/address` — `address.vue` — customer address book, with real API calls for provinces/cities/list.
+- `/panel/address` — `address.vue` — customer address book, fully wired to real API calls (list/create/update/delete/set-default).
 - `/panel/profile` — `profile.vue` — personal info, contact details, avatar — all client-mocked.
 - `/panel/security` — `security.vue` — password/2FA, sessions, login history, security alerts, danger zone — all client-mocked.
 - `/panel/users` — `users.vue` — user management table; fully mocked in-memory list; permission-gated by `users.*`.
@@ -28,7 +28,7 @@ Covers `pages/panel.vue` (the panel shell route) and everything under `pages/pan
 - `products/{index,new,[id]}.vue` → `components/panel/products/{ProductMetrics,ProductsFilters,ProductsTable,ProductImagesField}.vue`; uses `useProductsStore`, `useRolesStore`, `useUserPanelTabs`.
 
 ## Data flow and dependencies
-- Real backend calls only on `address.vue`, via `app.$api.address` ([`services/api/panel/address.js`](../../services/api/CLAUDE.md)): `getState()` → `GET /api/addresses/provinces`, `getCity(province)` → `POST /api/addresses/cities/by-province-id`, `getAddresses({data:{personId}})` → `POST /api/addresses/person`, `addAddress(config)` → `POST /api/addresses/create`. No update/delete endpoints exist — edit/delete/set-default are local-array mutations only.
+- Real backend calls only on `address.vue`, via `app.$api.address` ([`services/api/panel/address.js`](../../services/api/CLAUDE.md)): `getState()` → `GET /api/locations/provinces`, `getCity(province)` → `GET /api/locations/provinces/{provinceId}/cities`, `getAddresses({data:{personId}})` → `POST /api/addresses/person`, `addAddress(config)` → `POST /api/addresses/create`, `updateAddress(config)` → `POST /api/addresses/update`, `deleteAddress(config)` → `POST /api/addresses/delete`. Edit, delete, and set-default (update with `isDefault:true`) all now persist via real network calls; set-default has its own `settingDefaultId` loading state alongside the existing `deletingId`/`isSaving`.
 - `dashboard.vue`, `orders.vue`, `profile.vue`, `security.vue`, `users.vue`, `products/*.vue` have **no `useFetch`/`useAsyncData`/`$api` calls at all** — fully driven by [`stores/{roles,products}`](../../stores/CLAUDE.md) seeded with mock data, or local component state with simulated latency.
 - Role resolution: `useUserPanelTabs().getUserRole()` reads `userStore.currentUser?.role`, validated against `['customer','admin','owner']`, defaulting to `'admin'` if missing/invalid.
 - `users.vue`/`products/*` branch on fine-grained CRUD permissions from `useRolesStore().roles` (5 roles: owner/admin/pharmacist/support/customer) matched against `getUserRole()`'s 3-role output — a model mismatch, see Gotchas.
@@ -37,7 +37,7 @@ Covers `pages/panel.vue` (the panel shell route) and everything under `pages/pan
 ## Gotchas
 - **Dev bypass everywhere**: every guard (`pages/panel.vue`'s inline middleware, `panel-access.js`, `auth.js`) short-circuits with `if (import.meta.dev) return` — in local dev, all auth/role checks are skipped and the panel is reachable unauthenticated.
 - **Role model mismatch**: `useUserPanelTabs` only knows 3 roles (`customer`/`admin`/`owner`) for menu/route access, but `stores/roles.ts` defines 5 (adds `pharmacist`, `support`) with distinct permission sets used by `users.vue`/`products/*`. A `pharmacist`/`support` user falls through to `'admin'` for menu purposes while still getting pharmacist/support-level permission checks elsewhere.
-- **Most "management" pages aren't wired to a backend**: `users.vue`, `security.vue`, `profile.vue` are pure client-side mock state. Only `address.vue` talks to real endpoints, and even there edit/delete/default-setting have no corresponding API methods.
+- **Most "management" pages aren't wired to a backend**: `users.vue`, `security.vue`, `profile.vue` are pure client-side mock state. `address.vue` is now fully wired: create/edit/delete/set-default all hit real `AddressController`/`LocationController` endpoints and persist across reload.
 - `products/new.vue`/`products/[id].vue` call `await navigateTo(...)` synchronously at `<script setup>` top level if the permission is false **at setup time** — a permission that becomes true later (async role load) won't retroactively show the form.
 - `products/[id].vue`'s "not found" fallback compares `getById` with `String(id)`, so numeric/string route param mismatches are already handled.
 - `users.vue` computes `canCreate/canUpdate/canDelete` once from the *viewer's own role* — no protection against a lower-privileged admin editing a higher-privilege (owner) user via `EditUserModal`.
