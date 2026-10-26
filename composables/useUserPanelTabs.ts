@@ -141,6 +141,18 @@ export const useUserPanelTabs = () => {
 
   // Get user role
   const getUserRole = (): UserRole => {
+    // BACK's real logged-in user shape (`UserDTO`/`TokenResponse.user`) has `roles: string[]`
+    // (backend role names, e.g. `ROLE_STORE_ADMIN`/`ROLE_CUSTOMER`/a custom staff role name) —
+    // there is no singular `role` field. `ROLE_STORE_ADMIN` is the tenant's full-access owner;
+    // any other non-customer role is a lesser-privileged staff account, mapped to 'admin'.
+    const roles = userStore.currentUser?.roles
+    if (Array.isArray(roles) && roles.length > 0) {
+      if (roles.includes('ROLE_STORE_ADMIN')) return 'owner'
+      if (roles.includes('ROLE_CUSTOMER')) return 'customer'
+      return 'admin'
+    }
+
+    // Legacy/mock fallback: some seed data still uses a singular `role` string directly.
     const role = userStore.currentUser?.role
     const validRoles: UserRole[] = ['customer', 'admin', 'owner']
     return validRoles.includes(role as UserRole) ? (role as UserRole) : 'admin'

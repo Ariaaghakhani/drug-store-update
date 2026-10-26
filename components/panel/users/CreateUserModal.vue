@@ -25,27 +25,22 @@
             <UInput v-model="form.phone" placeholder="09XXXXXXXXX" dir="ltr" inputmode="tel" class="w-full" />
           </div>
           <div class="space-y-1.5">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">رمز عبور</label>
+            <UInput v-model="form.password" type="password" placeholder="رمز عبور کاربر" dir="ltr" class="w-full" />
+          </div>
+          <div class="space-y-1.5">
             <label class="text-xs font-medium text-gray-700 dark:text-gray-300">نقش</label>
             <USelect v-model="form.roleId" :items="roleSelectItems" class="w-full" />
-          </div>
-          <div class="flex items-center justify-between py-1">
-            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">حساب فعال</span>
-            <USwitch
-              v-model="form.isActive"
-              size="lg"
-              :ui="{
-                base: 'data-[state=checked]:bg-brand-500 dark:data-[state=checked]:bg-brand-400 data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-gray-600',
-              }"
-            />
           </div>
         </div>
 
         <div class="flex gap-3 px-5 pb-5">
-          <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="emit('update:open', false)">انصراف</UButton>
+          <UButton variant="soft" color="neutral" class="flex-1 justify-center" :disabled="loading" @click="emit('update:open', false)">انصراف</UButton>
           <UButton
             color="primary"
             class="flex-1 justify-center"
-            :disabled="!form.fullName.trim() || !form.phone.trim()"
+            :loading="loading"
+            :disabled="!form.fullName.trim() || !form.phone.trim() || !form.password.trim() || !form.roleId"
             @click="handleSubmit"
           >
             ذخیره
@@ -57,9 +52,10 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   open: { type: Boolean, required: true },
   roleSelectItems: { type: Array, required: true },
+  loading: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:open', 'create'])
@@ -67,12 +63,19 @@ const emit = defineEmits(['update:open', 'create'])
 const form = reactive({
   fullName: '',
   phone: '',
-  roleId: 'customer',
-  isActive: true,
+  password: '',
+  roleId: null,
 })
 
 const handleSubmit = () => {
   emit('create', { ...form })
-  Object.assign(form, { fullName: '', phone: '', roleId: 'customer', isActive: true })
 }
+
+// parent closes the modal on a successful create, so reset on close covers both that and manual cancel
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (!isOpen) Object.assign(form, { fullName: '', phone: '', password: '', roleId: null })
+  }
+)
 </script>

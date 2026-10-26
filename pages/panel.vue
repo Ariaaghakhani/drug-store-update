@@ -310,14 +310,11 @@ const isDev = import.meta.dev
 definePageMeta({
   layout: 'panel',
   middleware: (to) => {
-    if (import.meta.dev) return
-
     if (import.meta.client) {
       const token = localStorage.getItem('auth.local')
       if (!token) {
         return navigateTo('/login?next=panel')
       }
-      console.log(to)
       if (to.path === '/panel' || to.path === '/panel/') {
         return navigateTo('/panel/dashboard')
       }

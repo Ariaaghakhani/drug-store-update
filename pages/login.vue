@@ -429,8 +429,8 @@ const finalizeLogin = async (data) => {
   app.$auth.setUser(data.user) // This now automatically syncs with userStore
   toast.success('ورود موفقیت‌آمیز بود', '', 'i-heroicons-check-circle')
 
-  const redirectTo = route.query.redirect || '/'
-  navigateTo(redirectTo)
+  const redirectTo = route.query.redirect || '/panel/dashboard'
+  await navigateTo(redirectTo)
 }
 
 const startResendTimer = () => {

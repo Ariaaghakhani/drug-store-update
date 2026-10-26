@@ -142,6 +142,14 @@ Backend gaps discovered while wiring frontend features to real endpoints. Each e
 - Why: lets users verify no one else accessed their account, which is a standard account-security expectation.
 - Date: 2026-10-06
 
+## Personal-info form sends Gregorian ISO birthDate through a Jalali-styled input
+- Status: needs-change (FRONT-side, not a BACK gap)
+- Needed by: components/panel/profile/PersonalInfoEditModal.vue, pages/panel/profile.vue
+- Endpoint: `POST /api/persons/update` (existing, now wired) — `PersonDTO.birthDate` is a Gregorian `LocalDate` (ISO `yyyy-MM-dd`)
+- Current behavior: the birth-date field is a free-text `UInput` with placeholder `1370/01/01` (Jalali-styled), but BACK stores/validates it as a plain Gregorian `LocalDate`. `saveProfile` only normalizes `/` to `-` so the value is parseable JSON (avoids a hard 400), it does **not** convert Jalali digits to the equivalent Gregorian date — a user typing a real Jalali date will have it stored as a nonsensical Gregorian date (e.g. `1402-05-10` parses fine but is ~621 years off).
+- Why: no Jalali/Gregorian conversion library is in `package.json` (checked: no `jalaali-js`/`moment-jalaali`/`dayjs` plugin); picking one and reworking the input into a real Jalali date-picker is a product/UI decision, not something to guess at while just wiring the save button to the real endpoint.
+- Date: 2026-10-09
+
 ## Security alerts / notification preferences
 - Status: missing
 - Needed by: components/panel/security/SecurityAlertsCard.vue
