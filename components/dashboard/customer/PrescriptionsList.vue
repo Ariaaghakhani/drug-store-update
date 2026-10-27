@@ -103,18 +103,32 @@ defineEmits(['upload'])
 
 const statusLabel = (status) => {
   const labels = {
-    approved: 'تأیید شده',
-    pending: 'در حال بررسی',
-    rejected: 'رد شده',
+    SUBMITTED: 'در حال بررسی',
+    AVAILABLE: 'موجود',
+    PARTIALLY_AVAILABLE: 'بخشی موجود',
+    UNAVAILABLE: 'ناموجود',
+    INVALID: 'نامعتبر',
+    CONFIRMED: 'تأیید شده',
+    READY: 'آماده تحویل',
+    SHIPPED: 'ارسال شده',
+    DELIVERED: 'تحویل شده',
+    CANCELLED: 'لغو شده',
   }
   return labels[status] ?? status
 }
 
 const statusColor = (status) => {
   const colors = {
-    approved: 'success',
-    pending: 'warning',
-    rejected: 'error',
+    SUBMITTED: 'warning',
+    AVAILABLE: 'success',
+    PARTIALLY_AVAILABLE: 'warning',
+    UNAVAILABLE: 'error',
+    INVALID: 'error',
+    CONFIRMED: 'info',
+    READY: 'info',
+    SHIPPED: 'info',
+    DELIVERED: 'success',
+    CANCELLED: 'neutral',
   }
   return colors[status] ?? 'neutral'
 }

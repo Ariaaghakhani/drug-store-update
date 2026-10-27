@@ -122,24 +122,39 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <UCard :ui="{ body: 'p-5' }">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg flex items-center justify-center bg-green-100 dark:bg-green-900/20">
-            <UIcon name="i-heroicons-banknotes" class="w-5 h-5 text-green-600 dark:text-green-400" />
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center bg-success/10">
+            <UIcon name="i-heroicons-banknotes" class="w-5 h-5 text-success" />
           </div>
-          <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400">درآمد</p>
-            <p class="text-sm text-gray-400 dark:text-gray-600 font-medium">TODO</p>
+          <div class="min-w-0">
+            <p class="text-xs text-gray-500 dark:text-gray-400">درآمد این ماه</p>
+            <USkeleton v-if="revenueSummaryPending" class="h-5 w-20 mt-1" />
+            <template v-else>
+              <p class="text-sm font-bold text-gray-900 dark:text-white">
+                {{ formatPrice(revenueSummary?.periodRevenue ?? 0) }}
+              </p>
+              <p
+                v-if="revenueSummary?.revenueGrowthPercent !== null && revenueSummary?.revenueGrowthPercent !== undefined"
+                class="text-xs mt-0.5"
+                :class="revenueSummary.revenueGrowthPercent >= 0 ? 'text-success' : 'text-error'"
+              >
+                {{ revenueSummary.revenueGrowthPercent >= 0 ? '+' : '' }}{{ revenueSummary.revenueGrowthPercent.toLocaleString('fa-IR') }}٪ نسبت به ماه قبل
+              </p>
+            </template>
           </div>
         </div>
       </UCard>
 
       <UCard :ui="{ body: 'p-5' }">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg flex items-center justify-center bg-blue-100 dark:bg-blue-900/20">
-            <UIcon name="i-heroicons-chart-bar" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center bg-info/10">
+            <UIcon name="i-heroicons-chart-bar" class="w-5 h-5 text-info" />
           </div>
-          <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400">روند فروش</p>
-            <p class="text-sm text-gray-400 dark:text-gray-600 font-medium">TODO</p>
+          <div class="min-w-0">
+            <p class="text-xs text-gray-500 dark:text-gray-400">فروش ۳۰ روز اخیر</p>
+            <USkeleton v-if="salesTrendChartPending" class="h-5 w-20 mt-1" />
+            <p v-else class="text-sm font-bold text-gray-900 dark:text-white">
+              {{ formatPrice(salesTrendTotal) }}
+            </p>
           </div>
         </div>
       </UCard>
@@ -149,9 +164,14 @@
           <div class="w-9 h-9 rounded-lg flex items-center justify-center bg-brand-100 dark:bg-brand-900/20">
             <UIcon name="i-heroicons-cube" class="w-5 h-5 text-brand-500 dark:text-brand-400" />
           </div>
-          <div>
+          <div class="min-w-0">
             <p class="text-xs text-gray-500 dark:text-gray-400">پرفروش‌ترین</p>
-            <p class="text-sm text-gray-400 dark:text-gray-600 font-medium">TODO</p>
+            <USkeleton v-if="topProductsPending" class="h-5 w-20 mt-1" />
+            <template v-else-if="topProduct">
+              <p class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ topProduct.nameFa }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ formatCount(topProduct.unitsSold) }} عدد</p>
+            </template>
+            <p v-else class="text-sm text-gray-400 dark:text-gray-600 font-medium">داده‌ای وجود ندارد</p>
           </div>
         </div>
       </UCard>
@@ -161,9 +181,14 @@
           <div class="w-9 h-9 rounded-lg flex items-center justify-center bg-purple-100 dark:bg-purple-900/20">
             <UIcon name="i-heroicons-users" class="w-5 h-5 text-purple-600 dark:text-purple-400" />
           </div>
-          <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400">فعالیت کارکنان</p>
-            <p class="text-sm text-gray-400 dark:text-gray-600 font-medium">TODO</p>
+          <div class="min-w-0">
+            <p class="text-xs text-gray-500 dark:text-gray-400">فعال‌ترین کارمند</p>
+            <USkeleton v-if="staffActivityPending" class="h-5 w-20 mt-1" />
+            <template v-else-if="topStaff">
+              <p class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ topStaff.fullName }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ formatCount(topStaff.actionCount) }} فعالیت</p>
+            </template>
+            <p v-else class="text-sm text-gray-400 dark:text-gray-600 font-medium">داده‌ای وجود ندارد</p>
           </div>
         </div>
       </UCard>
@@ -175,10 +200,29 @@
 import { useOwnerDashboard } from '@/composables/useOwnerDashboard'
 import { useFormat } from '@/composables/useFormat'
 
-const { userActivityChart, userActivityChartPending, categoryChart, categoryChartPending } =
-  useOwnerDashboard()
+const {
+  userActivityChart,
+  userActivityChartPending,
+  categoryChart,
+  categoryChartPending,
+  revenueSummary,
+  revenueSummaryPending,
+  salesTrendChart,
+  salesTrendChartPending,
+  topProducts,
+  topProductsPending,
+  staffActivity,
+  staffActivityPending,
+} = useOwnerDashboard()
 
-const { formatCount } = useFormat()
+const { formatCount, formatPrice } = useFormat()
+
+const salesTrendTotal = computed(() =>
+  (salesTrendChart.value?.values ?? []).reduce((sum, v) => sum + Number(v ?? 0), 0)
+)
+
+const topProduct = computed(() => topProducts.value?.[0] ?? null)
+const topStaff = computed(() => staffActivity.value?.[0] ?? null)
 
 const userActivityBars = computed(() => {
   const labels = userActivityChart.value?.labels ?? []
