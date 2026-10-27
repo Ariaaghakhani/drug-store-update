@@ -38,7 +38,13 @@
           </div>
           <div class="space-y-1.5">
             <label class="text-xs font-medium text-gray-700 dark:text-gray-300">برند</label>
-            <UInput v-model="form.brandTitle" placeholder="نام برند سازنده" class="w-full" />
+            <USelectMenu
+              v-model="form.brandId"
+              :items="brandMenuItems"
+              value-key="value"
+              placeholder="انتخاب برند"
+              class="w-full"
+            />
           </div>
           <div class="space-y-1.5 sm:col-span-2">
             <label class="text-xs font-medium text-gray-700 dark:text-gray-300">دسته‌بندی‌ها</label>
@@ -124,6 +130,7 @@ if (!canCreate.value) {
 
 const categoryMenuItems = ref([])
 const tagMenuItems = ref([])
+const brandMenuItems = ref([])
 
 const loadCategories = async () => {
   try {
@@ -143,16 +150,26 @@ const loadTags = async () => {
   }
 }
 
+const loadBrands = async () => {
+  try {
+    const response = await app.$api.catalog.getCatalogsByType({ data: { type: 'BRAND' } })
+    brandMenuItems.value = (response.data.data ?? []).map((b) => ({ label: b.title, value: String(b.id) }))
+  } catch {
+    brandMenuItems.value = []
+  }
+}
+
 onMounted(() => {
   loadCategories()
   loadTags()
+  loadBrands()
 })
 
 const form = reactive({
   goodCode: '',
   nameFa: '',
   nameEn: '',
-  brandTitle: '',
+  brandId: null,
   categoryIds: [],
   tagIds: [],
   priceRaw: '',
@@ -166,6 +183,16 @@ const toastErrorMessage = (err, fallback) => err?.response?.data?.message ?? fal
 
 const goBack = () => navigateTo('/panel/products')
 
+const uploadPendingImages = async (goodsId) => {
+  const pending = form.images.filter((item) => item.file)
+  if (!pending.length) return
+  const formData = new FormData()
+  pending.forEach((item) => formData.append('files', item.file))
+  formData.append('referenceType', 'Goods')
+  formData.append('referenceId', goodsId)
+  await app.$api.attachment.uploadMultiple({ data: formData })
+}
+
 const handleCreate = async () => {
   saving.value = true
   try {
@@ -178,9 +205,15 @@ const handleCreate = async () => {
       expiryDate: form.expiryDate || undefined,
       categoryIds: form.categoryIds.map(Number),
       tagIds: form.tagIds.map(Number),
+      brandId: form.brandId ? Number(form.brandId) : undefined,
     }
     const response = await app.$api.goods.createGoods({ data: payload })
     const created = response.data.data
+    try {
+      await uploadPendingImages(created.id)
+    } catch (uploadErr) {
+      toast.add({ title: toastErrorMessage(uploadErr, 'محصول ثبت شد اما آپلود تصاویر ناموفق بود'), color: 'warning' })
+    }
     toast.add({ title: 'محصول جدید اضافه شد', color: 'success' })
     navigateTo(`/panel/products/${created.id}`)
   } catch (err) {

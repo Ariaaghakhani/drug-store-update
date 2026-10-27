@@ -94,6 +94,13 @@
                   {{ formatPrice(product.price) }}
                 </p>
 
+                <UBadge v-if="product.inStock === true" color="success" variant="subtle" size="md">
+                  موجود
+                </UBadge>
+                <UBadge v-else-if="product.inStock === false" color="error" variant="subtle" size="md">
+                  ناموجود
+                </UBadge>
+
                 <p
                   v-if="product.description"
                   class="text-gray-700 dark:text-gray-300 leading-relaxed"
@@ -107,9 +114,10 @@
                   size="xl"
                   icon="i-heroicons-shopping-cart"
                   class="mt-4"
+                  :disabled="product.inStock === false"
                   @click="handleAddToCart"
                 >
-                  افزودن به سبد خرید
+                  {{ product.inStock === false ? 'ناموجود' : 'افزودن به سبد خرید' }}
                 </UButton>
               </div>
             </div>

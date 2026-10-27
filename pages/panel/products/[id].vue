@@ -38,7 +38,13 @@
           </div>
           <div class="space-y-1.5">
             <label class="text-xs font-medium text-gray-700 dark:text-gray-300">برند</label>
-            <UInput v-model="form.brandTitle" placeholder="نام برند سازنده" class="w-full" />
+            <USelectMenu
+              v-model="form.brandId"
+              :items="brandMenuItems"
+              value-key="value"
+              placeholder="انتخاب برند"
+              class="w-full"
+            />
           </div>
           <div class="space-y-1.5 sm:col-span-2">
             <label class="text-xs font-medium text-gray-700 dark:text-gray-300">دسته‌بندی‌ها</label>
@@ -137,12 +143,14 @@ const loading = ref(true)
 const saving = ref(false)
 const categoryMenuItems = ref([])
 const tagMenuItems = ref([])
+const brandMenuItems = ref([])
+const originalAttachmentIds = ref([])
 
 const form = reactive({
   goodCode: '',
   nameFa: '',
   nameEn: '',
-  brandTitle: '',
+  brandId: null,
   categoryIds: [],
   tagIds: [],
   priceRaw: '',
@@ -171,6 +179,15 @@ const loadTags = async () => {
   }
 }
 
+const loadBrands = async () => {
+  try {
+    const response = await app.$api.catalog.getCatalogsByType({ data: { type: 'BRAND' } })
+    brandMenuItems.value = (response.data.data ?? []).map((b) => ({ label: b.title, value: String(b.id) }))
+  } catch {
+    brandMenuItems.value = []
+  }
+}
+
 const loadProduct = async () => {
   loading.value = true
   try {
@@ -180,13 +197,15 @@ const loadProduct = async () => {
     form.goodCode = g.goodCode ?? ''
     form.nameFa = g.nameFa ?? ''
     form.nameEn = g.nameEn ?? ''
-    form.brandTitle = g.brandTitle ?? ''
+    form.brandId = g.brandId ? String(g.brandId) : null
     form.categoryIds = g.categoryIds ? Array.from(g.categoryIds).map(String) : []
     form.tagIds = g.tagIds ? Array.from(g.tagIds).map(String) : []
     form.priceRaw = String(g.price ?? '')
     form.expiryDate = g.expiryDate ?? ''
     form.isPrescriptionRequired = g.isPrescriptionRequired ?? false
-    form.images = []
+    const attachments = g.attachments ?? []
+    form.images = attachments.map((a) => ({ id: a.id, url: a.url }))
+    originalAttachmentIds.value = attachments.map((a) => a.id)
   } catch {
     product.value = null
   } finally {
@@ -197,10 +216,27 @@ const loadProduct = async () => {
 onMounted(() => {
   loadCategories()
   loadTags()
+  loadBrands()
   loadProduct()
 })
 
 const goBack = () => navigateTo('/panel/products')
+
+const uploadPendingImages = async (goodsId) => {
+  const pending = form.images.filter((item) => item.file)
+  if (!pending.length) return
+  const formData = new FormData()
+  pending.forEach((item) => formData.append('files', item.file))
+  formData.append('referenceType', 'Goods')
+  formData.append('referenceId', goodsId)
+  await app.$api.attachment.uploadMultiple({ data: formData })
+}
+
+const deleteRemovedImages = async () => {
+  const remainingIds = new Set(form.images.filter((item) => item.id).map((item) => item.id))
+  const removedIds = originalAttachmentIds.value.filter((id) => !remainingIds.has(id))
+  await Promise.all(removedIds.map((id) => app.$api.attachment.deleteAttachment({ data: { id } })))
+}
 
 const handleSave = async () => {
   if (!product.value) return
@@ -216,8 +252,14 @@ const handleSave = async () => {
       expiryDate: form.expiryDate || undefined,
       categoryIds: form.categoryIds.map(Number),
       tagIds: form.tagIds.map(Number),
+      brandId: form.brandId ? Number(form.brandId) : undefined,
     }
     await app.$api.goods.updateGoods({ data: payload })
+    try {
+      await Promise.all([uploadPendingImages(payload.id), deleteRemovedImages()])
+    } catch (uploadErr) {
+      toast.add({ title: toastErrorMessage(uploadErr, 'تغییرات ذخیره شد اما به‌روزرسانی تصاویر ناموفق بود'), color: 'warning' })
+    }
     toast.add({ title: 'تغییرات محصول ذخیره شد', color: 'success' })
     goBack()
   } catch (err) {
