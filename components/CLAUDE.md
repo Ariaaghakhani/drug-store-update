@@ -53,5 +53,6 @@ Global presentational and feature components for the public storefront shell (he
 - Role gating is coarse (`admin | owner | else→customer`) and lives in the page, not the dashboard components.
 - `ProductCard` emits `addToCart` (camelCase) while the app otherwise uses kebab-case event names — check casing when adding listeners.
 - `Header`'s cart dropdown position is computed manually in JS, not CSS/popper.
+- **`h-full` on a dashboard card chains up through `pages/panel.vue`'s `<NuxtPage class="h-full" />`** (which falls through onto the page's/dashboard component's root) into the sidebar-vs-main grid stretch — the sidebar nav is usually taller than the dashboard content, so an un-grounded `h-full` on a card makes it balloon to sidebar height with a huge blank area below its content (fixed on `OrderTracking.vue` 2026-10-28 after removing `RefillReminders.vue`'s 2-column grid, which had been accidentally "grounding" the chain by being its own auto-height container). Only add `h-full` to a card root when it's paired with a sibling inside its own grid/flex row to match heights against — never on a lone/full-width card.
 
-Last synced: 2026-10-27 (OwnerDashboard KPI tiles wired to real revenue/sales-trend/top-products/staff-activity data; RefillReminders.vue removed — backend's answer to FRONTEND_API_TODO.md)
+Last synced: 2026-10-28 (OrderTracking.vue's h-full removed — was ballooning to sidebar height with RefillReminders.vue gone)
