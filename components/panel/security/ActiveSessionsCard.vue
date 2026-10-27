@@ -1,4 +1,3 @@
-<!-- Mocked: BACK has no self-service session list/revoke endpoint yet. See FRONTEND_API_TODO.md: "Active session list + revoke-one + revoke-all". -->
 <template>
   <div class="relative">
     <Transition name="sk">

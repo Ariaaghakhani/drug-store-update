@@ -48,4 +48,32 @@ export default (apiCaller) => ({
   verifyNewPhoneOtp(config) {
     return apiCaller.post('api/auth/me/phone/new/verify-otp', config)
   },
+
+  // ========== SESSIONS (own sessions only) ==========
+  listSessions(config) {
+    return apiCaller.get('api/auth/me/sessions', config)
+  },
+
+  revokeSession(id) {
+    return apiCaller.delete(`api/auth/me/sessions/${id}`)
+  },
+
+  revokeAllSessions() {
+    return apiCaller.post('api/auth/me/sessions/revoke-all')
+  },
+
+  // ========== LOGIN HISTORY (own rows only) ==========
+  getLoginHistory(config) {
+    return apiCaller.get('api/auth/me/login-history', config)
+  },
+
+  // ========== SECURITY NOTIFICATION PREFERENCES (own settings only) ==========
+  getSecurityNotifications(config) {
+    return apiCaller.get('api/auth/me/security-notifications', config)
+  },
+
+  // CORS only allows GET/POST/PUT/DELETE/OPTIONS — PUT here, never PATCH.
+  updateSecurityNotification(config) {
+    return apiCaller.put('api/auth/me/security-notifications', config)
+  },
 })

@@ -1,4 +1,3 @@
-<!-- Mocked: BACK has no security-alerts/notification-preferences endpoint yet. See FRONTEND_API_TODO.md: "Security alerts / notification preferences". -->
 <template>
   <div class="relative">
     <Transition name="sk">
@@ -32,6 +31,7 @@
             <USwitch
               :model-value="notif.enabled"
               size="lg"
+              :disabled="savingId === notif.id"
               :ui="switchUi"
               @update:model-value="emit('toggle', notif.id, $event)"
             />
@@ -46,6 +46,7 @@
 defineProps({
   loading: Boolean,
   notifications: Array,
+  savingId: String,
 })
 
 const emit = defineEmits(['toggle'])
