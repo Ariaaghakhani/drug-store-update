@@ -698,7 +698,14 @@ async function confirmCheckout() {
 
     if (result?.paymentUrl) {
       cartStore.clearCart()
-      await navigateTo(result.paymentUrl, { external: true })
+      await navigateTo({
+        path: '/checkout/redirect',
+        query: {
+          url: result.paymentUrl,
+          gateway: gateway.value,
+          amount: quote.value?.total,
+        },
+      })
       return
     }
 
