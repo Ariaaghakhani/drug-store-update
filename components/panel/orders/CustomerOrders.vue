@@ -67,11 +67,12 @@
               <p class="text-sm font-bold text-gray-900 dark:text-white">
                 {{ Number(order.totalAmount ?? 0).toLocaleString('fa-IR') }} تومان
               </p>
-              <button
-                class="text-xs text-brand-500 dark:text-brand-400 hover:underline mt-0.5"
+              <NuxtLink
+                :to="`/panel/orders/${order.id}`"
+                class="inline-block text-xs text-brand-500 dark:text-brand-400 hover:underline mt-0.5"
               >
                 مشاهده جزئیات
-              </button>
+              </NuxtLink>
             </div>
           </div>
         </div>
@@ -101,12 +102,7 @@
 </template>
 
 <script setup>
-const ORDER_STATUS_META = {
-  PENDING: { label: 'در انتظار پرداخت', color: 'warning' },
-  PAID: { label: 'پرداخت شده', color: 'success' },
-  FAILED: { label: 'پرداخت ناموفق', color: 'error' },
-}
-
+// ORDER_STATUS_META / orderStatusMeta(order) come from utils/orderStatus.js (keyed by OrderDTO.statusCode)
 const FULFILLMENT_META = {
   SHIPPED: { label: 'ارسال شده', color: 'info' },
   READY_FOR_PICKUP: { label: 'آماده تحویل', color: 'info' },
@@ -120,30 +116,12 @@ const userStore = useUserStore()
 
 const isLoading = ref(true)
 const orders = ref([])
-const statusCatalog = ref([])
 const statusFilter = ref('all')
 
-const catalogById = computed(() => {
-  const map = new Map()
-  statusCatalog.value.forEach((entry) => map.set(entry.id, entry))
-  return map
-})
-
-const statusOptions = computed(() => [
+const statusOptions = [
   { label: 'همه سفارشات', value: 'all' },
-  ...statusCatalog.value.map((entry) => ({
-    label: ORDER_STATUS_META[entry.code]?.label ?? entry.title,
-    value: entry.id,
-  })),
-])
-
-const orderStatusMeta = (order) => {
-  const entry = catalogById.value.get(order.statusId)
-  if (!entry) {
-    return { label: `#${order.statusId}`, color: 'neutral' }
-  }
-  return ORDER_STATUS_META[entry.code] ?? { label: entry.title, color: 'neutral' }
-}
+  ...Object.entries(ORDER_STATUS_META).map(([value, meta]) => ({ label: meta.label, value })),
+]
 
 const fulfillmentMeta = (order) => {
   if (!order.fulfillmentStatus) return FULFILLMENT_PREPARING
@@ -160,19 +138,8 @@ const formatDate = (value) => {
 const filteredOrders = computed(() =>
   statusFilter.value === 'all'
     ? orders.value
-    : orders.value.filter((order) => order.statusId === statusFilter.value)
+    : orders.value.filter((order) => order.statusCode === statusFilter.value)
 )
-
-async function fetchStatusCatalog() {
-  try {
-    const response = await app.$api.catalog.getCatalogsByType({
-      data: { type: 'ORDER_STATUS' },
-    })
-    statusCatalog.value = response.data.data ?? []
-  } catch {
-    statusCatalog.value = []
-  }
-}
 
 async function fetchOrders() {
   isLoading.value = true
@@ -181,7 +148,7 @@ async function fetchOrders() {
     const response = await app.$api.orders.byPerson({
       data: { personId },
     })
-    orders.value = response.data.data ?? []
+    orders.value = response.data.data?.content ?? []
   } catch (error) {
     console.log(error)
     orders.value = []
@@ -190,10 +157,7 @@ async function fetchOrders() {
   }
 }
 
-onMounted(() => {
-  fetchStatusCatalog()
-  fetchOrders()
-})
+onMounted(fetchOrders)
 </script>
 
 <style scoped>
