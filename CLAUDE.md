@@ -1,4 +1,4 @@
-# Daro Plus — Claude Code Instructions
+# CAPSULE کپسول (capsulepharmacy.ir) — Claude Code Instructions
 
 ## Project overview
 

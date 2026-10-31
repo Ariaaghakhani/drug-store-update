@@ -18,9 +18,12 @@ export default defineNuxtConfig({
       meta: [
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
-        { name: 'apple-mobile-web-app-title', content: 'داروپلاس' },
+        { name: 'apple-mobile-web-app-title', content: 'کپسول' },
       ],
-      link: [{ rel: 'apple-touch-icon', href: '/seo/pwa-512x512.png' }],
+      link: [
+        { rel: 'apple-touch-icon', href: '/seo/pwa-512x512.png' },
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+      ],
       htmlAttrs: {
         dir: 'rtl',
         lang: 'fa',
@@ -34,8 +37,8 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
-      name: 'دارو پلاس',
-      short_name: 'داروپلاس',
+      name: 'CAPSULE کپسول',
+      short_name: 'کپسول',
       theme_color: '#2C7A7B',
       background_color: '#ffffff',
       display: 'standalone',
@@ -52,10 +55,10 @@ export default defineNuxtConfig({
           type: 'image/png',
         },
         {
-          src: '/seo/pwa-512x512.png',
+          src: '/seo/pwa-maskable-512x512.png',
           sizes: '512x512',
           type: 'image/png',
-          purpose: 'any maskable',
+          purpose: 'maskable',
         },
       ],
     },

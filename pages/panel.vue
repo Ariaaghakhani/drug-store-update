@@ -12,30 +12,9 @@
               <UCard class="flex flex-col">
                 <!-- Logo & Brand -->
                 <div
-                  class="flex items-center gap-3 pb-6 border-b border-gray-200 dark:border-gray-700"
+                  class="pb-6 border-b border-gray-200 dark:border-gray-700"
                 >
-                  <div
-                    class="w-10 h-10 flex items-center justify-center flex-shrink-0"
-                  >
-                    <svg
-                      width="40"
-                      height="40"
-                      viewBox="0 0 32 32"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle
-                        cx="16"
-                        cy="16"
-                        r="16"
-                        :fill="colorMode === 'dark' ? '#14B8A6' : '#2C7A7B'"
-                      />
-                      <circle cx="16" cy="16" r="8" fill="white" />
-                    </svg>
-                  </div>
-                  <span class="text-xl font-black text-gray-900 dark:text-white"
-                    >دارو پلاس</span
-                  >
+                  <BrandLogo />
                 </div>
 
                 <!-- Navigation Menu -->

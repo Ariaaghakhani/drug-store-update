@@ -1,6 +1,6 @@
-# دارو پلاس — Design System
+# CAPSULE کپسول — Design System
 
-> Single source of truth for the Daroo Plus online pharmacy. Values below are lifted verbatim from the codebase (`Ariaaghakhani/drug-store-update`) so this doc and the running app stay in sync.
+> Single source of truth for the CAPSULE کپسول (capsulepharmacy.ir) online pharmacy. Values below are lifted verbatim from the codebase (`Ariaaghakhani/drug-store-update`) so this doc and the running app stay in sync.
 
 **Stack:** Nuxt 3 · @nuxt/ui v3 · Tailwind CSS v4 · Pinia · @vite-pwa/nuxt
 **Direction:** RTL (`dir="rtl"`, `lang="fa"`)
@@ -285,7 +285,7 @@ Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, cube placehol
 
 ### Header (`Header.vue`)
 - Sticky, `bg-white/50 backdrop-blur-sm dark:bg-gray-900`, height `h-16 lg:h-20`.
-- Logo: inline SVG (two concentric circles) + "دارو پلاس" `font-black`. Outer circle fill `#2C7A7B` (light) / `#14B8A6` (dark), inner white at half radius.
+- Logo: always use `components/BrandLogo.vue` (props `size`, `showName`, `textClass`, `forceDark`) — never inline the SVG. Mark = circle (`#2C7A7B` light / `#14B8A6` dark) with a 45°-rotated capsule: white half + `#9EDEDE` (brand-200) half. Wordmark = "کپسول" only (Persian, no Latin text) in `text-brand-500 dark:text-brand-400`, `font-black`. Static assets: `public/logo.svg`, `public/favicon.svg`, `public/seo/pwa-*.png`.
 - Desktop nav items with optional dropdown menus (`UDropdownMenu`, `dir="rtl"`). Nav data lives in `navItems` (داروها, سلامت و تندرستی, محصولات سلامت, درباره ما).
 - Actions: search, cart (with count badge `bg-red-500` top-left), dark toggle, profile, "تماس با پشتیبانی" `UButton`.
 - Mobile: hamburger → full-screen slide-down menu; cart → teleported dropdown.

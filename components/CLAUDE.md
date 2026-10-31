@@ -7,6 +7,7 @@ Global presentational and feature components for the public storefront shell (he
 
 ## Key files
 - `Header.vue` — sticky nav; cart dropdown (Teleport to body), mobile menu, dark-mode toggle, auth-aware profile button.
+- `BrandLogo.vue` — the single source of the capsule logo mark + Persian-only "کپسول" wordmark; props `size` (px, default 40), `showName`, `textClass`, `forceDark` (always-dark footer). Used by `Header.vue` (desktop + mobile menu), `Footer.vue`, `pages/panel.vue`.
 - `Footer.vue` — static footer, no script logic.
 - `HeroSection.vue` — landing hero text + search box; embeds `HeroCarousel`.
 - `HeroCarousel.vue` — self-contained autoplay/swipe carousel, no store/API deps.

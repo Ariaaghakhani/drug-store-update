@@ -138,8 +138,8 @@ const stepComponents = {
 }
 
 const stepTitles = {
-  phone: 'ورود به داروپلاس',
-  password: 'ورود به داروپلاس',
+  phone: 'ورود به CAPSULE کپسول',
+  password: 'ورود به CAPSULE کپسول',
   'otp-login': 'ورود با کد یکبار مصرف',
   'otp-register': 'تایید شماره موبایل',
   'forgot-password-otp': 'بازیابی رمز عبور',
