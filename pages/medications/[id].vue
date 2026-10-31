@@ -119,6 +119,31 @@
                 >
                   {{ product.inStock === false ? 'ناموجود' : 'افزودن به سبد خرید' }}
                 </UButton>
+
+                <div v-if="wishlistEnabled || (stockAlertsEnabled && product.inStock === false)" class="flex gap-2">
+                  <UButton
+                    v-if="wishlistEnabled"
+                    block
+                    color="neutral"
+                    variant="outline"
+                    :icon="wished ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
+                    :loading="togglingWish"
+                    @click="toggleWishlist"
+                  >
+                    {{ wished ? 'در علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها' }}
+                  </UButton>
+                  <UButton
+                    v-if="stockAlertsEnabled && product.inStock === false"
+                    block
+                    color="neutral"
+                    variant="outline"
+                    :icon="alerted ? 'i-heroicons-bell-alert-solid' : 'i-heroicons-bell-alert'"
+                    :loading="togglingAlert"
+                    @click="toggleStockAlert"
+                  >
+                    {{ alerted ? 'لغو خبرم کن' : 'موجود شد خبرم کن' }}
+                  </UButton>
+                </div>
               </div>
             </div>
           </div>
@@ -137,6 +162,7 @@ const app = useNuxtApp()
 const cartStore = useCartStore()
 const toast = useAppToast()
 const { formatPrice } = useFormat()
+const { wishlistEnabled, stockAlertsEnabled } = useStoreProfile()
 
 const product = ref({})
 const pending = ref(true)
@@ -192,11 +218,70 @@ const handleAddToCart = () => {
   }
 }
 
+// ---------- wishlist / "notify me" (login required; guests are sent to login and brought back) ----------
+const wished = ref(false)
+const alerted = ref(false)
+const togglingWish = ref(false)
+const togglingAlert = ref(false)
+
+const requireLogin = () => {
+  if (app.$auth.loggedIn) return true
+  navigateTo({ path: '/login', query: { redirect: route.fullPath } })
+  return false
+}
+
+const loadUserFlags = async () => {
+  if (!app.$auth.loggedIn) return
+  const id = Number(route.params.id)
+  try {
+    if (wishlistEnabled.value) {
+      wished.value = ((await app.$api.storefront.listWishlistIds()).data.data ?? []).includes(id)
+    }
+    if (stockAlertsEnabled.value) {
+      alerted.value = ((await app.$api.storefront.listStockAlertIds()).data.data ?? []).includes(id)
+    }
+  } catch {
+    // hearts just start unfilled
+  }
+}
+
+const toggleWishlist = async () => {
+  if (!requireLogin()) return
+  togglingWish.value = true
+  try {
+    if (wished.value) await app.$api.storefront.removeFromWishlist(product.value.id)
+    else await app.$api.storefront.addToWishlist(product.value.id)
+    wished.value = !wished.value
+  } catch (error) {
+    toast.error('ذخیره علاقه‌مندی ناموفق بود', error?.response?.data?.message)
+  } finally {
+    togglingWish.value = false
+  }
+}
+
+const toggleStockAlert = async () => {
+  if (!requireLogin()) return
+  togglingAlert.value = true
+  try {
+    if (alerted.value) await app.$api.storefront.removeStockAlert(product.value.id)
+    else await app.$api.storefront.addStockAlert(product.value.id)
+    alerted.value = !alerted.value
+  } catch (error) {
+    toast.error('ثبت درخواست ناموفق بود', error?.response?.data?.message)
+  } finally {
+    togglingAlert.value = false
+  }
+}
+
+// flags arrive async (store profile), so reload the user's state once they are known
+watch([wishlistEnabled, stockAlertsEnabled], loadUserFlags)
+
 useHead({
   title: 'جزئیات محصول | داروخانه آنلاین',
 })
 
 onMounted(() => {
   fetchProduct()
+  loadUserFlags()
 })
 </script>

@@ -11,6 +11,7 @@ Covers `pages/panel.vue` (the panel shell route) and everything under `pages/pan
 - `/panel/orders` — `orders/index.vue` (moved from `orders.vue` 2026-10-28 so `orders/[id].vue` is a sibling route, not a nested child with no `<NuxtPage/>`) — `CustomerOrders` for role `customer`, else `OrdersManagement`.
 - `/panel/orders/[id]` — `orders/[id].vue` — order detail: `$api.orders.getOrder({data:{id}})` (`OrderDTO` incl. `items[]`, which is only populated on `/get`, not lists) (status badge from `OrderDTO.statusCode` via `utils/orderStatus.js`, no catalog call); shows summary/tracking, items, totals, shipping address. Linked from `CustomerOrders.vue`'s "مشاهده جزئیات". Passes `hasAccessToRoute` via its `/panel/orders/` prefix match.
 - `/panel/wallet` — `wallet.vue` — balance, paginated transactions, top-up modal (form is in Toman, sent to BACK ×10 as Rials, plus `returnOrigin`; interstitial → gateway); disabled state if `walletEnabled` is off.
+- `/panel/wishlist` — `wishlist.vue` — paginated wishlist (`WishlistItemDTO.card`), remove; disabled state if `wishlistEnabled` is off.
 - `/panel/products` — `products/index.vue` — product list/table with metrics, filters, pagination; permission-gated create/edit/delete.
 - `/panel/products/new` — `products/new.vue` — create-product form; guarded by `products.create` permission.
 - `/panel/products/[id]` — `products/[id].vue` — edit-product form; guarded by `products.update` permission.
