@@ -110,7 +110,7 @@
             </li>
             <li>
               <NuxtLink
-                to="/contact-pharmacist"
+                to="/contact"
                 class="text-sm text-gray-400 hover:text-teal-400 transition-colors inline-block"
               >
                 تماس با داروساز

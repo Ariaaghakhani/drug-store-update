@@ -12,6 +12,7 @@ Shared Composition API logic for the pharmacy storefront's user panel area: role
 - `useUpdateRolePermission.ts` — updates a role's permission in [`stores/roles.ts`](../stores/CLAUDE.md) and calls a no-op `syncToApi` stub.
 - `useUserPanelTabs.ts` — builds role-based panel navigation (customer/admin/owner) and route-access helpers, reading the current user's role from [`stores/user.js`](../stores/CLAUDE.md).
 - `useStoreProfile.js` — **new (2026-10-29)**: shares `GET api/store-profile` flags app-wide via `useState`; optional features (`wishlistEnabled`, `walletEnabled`, `stockAlertsEnabled`, ...) read OFF until it loads, `orderingEnabled` reads ON.
+- `useInfoDocuments.js` — **new (2026-10-29)**: loads a public text page (about/terms/privacy/returns) into `components/InfoDocument.vue`'s `documents` shape.
 
 ## Public surface
 - `useAdminDashboard()` → `{ summary, summaryPending, lowStock, lowStockPending, expiringGoods, expiringGoodsPending }` — `summary` is `DashboardSummaryDTO`-shaped (`totalUsers, totalGoods, stockValueAtPurchasePrice, stockValueAtSalePrice, lowStockCount`), `lowStock`/`expiringGoods` are arrays per BACK's `LowStockDTO`/`ExpiringGoodsDTO`. No order-queue/prescription-review-queue fields (no BACK endpoint).
