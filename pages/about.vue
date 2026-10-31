@@ -1,176 +1,94 @@
 <template>
   <UContainer>
-    <div class="py-12">
-      <!-- Page Header -->
-      <div class="text-center mb-16">
-        <h1
-          class="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white mb-4"
-        >
-          درباره <span class="text-brand-500">ما</span>
-        </h1>
-        <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-          ارائه‌دهنده معتبر خدمات دارویی و بهداشتی با بیش از ۱۰ سال تجربه
-        </p>
-      </div>
-
-      <!-- Mission Section -->
-      <div class="mb-20">
-        <UCard>
-          <div class="grid lg:grid-cols-2 gap-12 items-center p-8">
-            <div>
-              <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                ماموریت ما
-              </h2>
-              <p
-                class="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-6"
-              >
-                ما متعهد هستیم که دسترسی به داروها و محصولات بهداشتی با کیفیت را
-                برای همه آسان کنیم. با استفاده از فناوری‌های نوین و تیم متخصص،
-                خدماتی سریع، ایمن و قابل اعتماد ارائه می‌دهیم.
-              </p>
-              <p
-                class="text-lg text-gray-600 dark:text-gray-400 leading-relaxed"
-              >
-                سلامتی شما، اولویت اول ماست.
-              </p>
-            </div>
-            <div
-              class="aspect-square rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 dark:from-brand-900 dark:to-brand-800 flex items-center justify-center"
-            >
-              <UIcon
-                name="i-heroicons-heart"
-                class="w-32 h-32 text-brand-500 opacity-30"
-              />
-            </div>
+    <div class="py-12 max-w-3xl mx-auto">
+      <div class="relative">
+        <Transition name="sk">
+          <div v-if="loading" key="skeleton" class="space-y-3">
+            <USkeleton class="h-10 w-56 mx-auto" />
+            <USkeleton class="h-4 w-full" />
+            <USkeleton class="h-4 w-full" />
+            <USkeleton class="h-4 w-2/3" />
           </div>
-        </UCard>
-      </div>
 
-      <!-- Features Grid -->
-      <div class="mb-20">
-        <h2
-          class="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12"
-        >
-          چرا ما را انتخاب کنید؟
-        </h2>
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <UCard v-for="feature in features" :key="feature.title">
-            <div class="text-center p-6">
-              <div
-                class="w-16 h-16 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center mx-auto mb-6"
-              >
-                <UIcon :name="feature.icon" class="w-8 h-8 text-brand-500" />
-              </div>
-              <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                {{ feature.title }}
-              </h3>
-              <p class="text-gray-600 dark:text-gray-400">
-                {{ feature.description }}
-              </p>
+          <div v-else-if="about" key="content" class="space-y-8">
+            <div class="text-center">
+              <img v-if="about.logoUrl" :src="about.logoUrl" :alt="about.title" class="h-20 mx-auto mb-4" />
+              <h1 class="text-4xl font-black text-gray-900 dark:text-white">{{ about.title }}</h1>
             </div>
-          </UCard>
-        </div>
-      </div>
 
-      <!-- Stats -->
-      <div class="mb-20">
-        <div class="grid md:grid-cols-4 gap-8 text-center">
-          <div v-for="stat in stats" :key="stat.label">
-            <div class="text-4xl font-black text-brand-500 mb-2">
-              {{ stat.value }}
+            <!-- Store-authored text is rendered as plain text on purpose (no v-html) -->
+            <p class="text-gray-700 dark:text-gray-300 leading-loose whitespace-pre-line">{{ about.content }}</p>
+
+            <div v-if="about.mission || about.vision" class="grid sm:grid-cols-2 gap-4">
+              <UCard v-if="about.mission">
+                <h2 class="font-bold text-gray-900 dark:text-white mb-2">ماموریت ما</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line">{{ about.mission }}</p>
+              </UCard>
+              <UCard v-if="about.vision">
+                <h2 class="font-bold text-gray-900 dark:text-white mb-2">چشم‌انداز</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line">{{ about.vision }}</p>
+              </UCard>
             </div>
-            <div class="text-gray-600 dark:text-gray-400">
-              {{ stat.label }}
-            </div>
+
+            <UCard v-if="contactRows.length">
+              <h2 class="font-bold text-gray-900 dark:text-white mb-3">راه‌های ارتباطی</h2>
+              <ul class="space-y-2 text-sm">
+                <li v-for="row in contactRows" :key="row.icon" class="flex items-start gap-2">
+                  <UIcon :name="row.icon" class="w-5 h-5 text-brand-500 dark:text-brand-400 flex-shrink-0" />
+                  <a v-if="row.href" :href="row.href" class="text-gray-700 dark:text-gray-300 hover:underline" dir="auto">{{ row.text }}</a>
+                  <span v-else class="text-gray-700 dark:text-gray-300 whitespace-pre-line">{{ row.text }}</span>
+                </li>
+              </ul>
+              <UButton to="/contact" color="primary" class="mt-4" icon="i-heroicons-envelope">تماس با ما</UButton>
+            </UCard>
           </div>
-        </div>
-      </div>
 
-      <!-- Contact CTA -->
-      <UCard class="text-center">
-        <div class="p-12">
-          <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            سوالی دارید؟
-          </h2>
-          <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">
-            تیم پشتیبانی ما ۲۴/۷ آماده پاسخگویی به شماست
-          </p>
-          <div class="flex flex-wrap gap-4 justify-center">
-            <UButton size="xl" color="primary" icon="i-heroicons-phone">
-              تماس با ما
-            </UButton>
-            <UButton
-              size="xl"
-              color="white"
-              variant="outline"
-              icon="i-heroicons-chat-bubble-left-right"
-            >
-              چت آنلاین
-            </UButton>
+          <div v-else key="empty" class="text-center py-16">
+            <UIcon name="i-heroicons-information-circle" class="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto" />
+            <h2 class="text-base font-bold text-gray-900 dark:text-white mt-4 mb-2">اطلاعاتی ثبت نشده است</h2>
+            <UButton to="/" color="primary" class="mt-4" icon="i-heroicons-home">بازگشت به صفحه اصلی</UButton>
           </div>
-        </div>
-      </UCard>
+        </Transition>
+      </div>
     </div>
   </UContainer>
 </template>
 
-<script>
-import { defineComponent } from 'vue'
+<script setup>
+const app = useNuxtApp()
 
-export default defineComponent({
-  name: 'AboutPage',
+const about = ref(null)
+const loading = ref(true)
 
-  data() {
-    return {
-      features: [
-        {
-          title: 'محصولات اصل',
-          description:
-            'تمامی محصولات ما اصل و دارای مجوز از سازمان غذا و دارو هستند',
-          icon: 'i-heroicons-shield-check',
-        },
-        {
-          title: 'ارسال سریع',
-          description:
-            'تحویل ۲۴ ساعته در اکثر شهرها و ارسال رایگان برای خریدهای بالای ۵۰۰ هزار تومان',
-          icon: 'i-heroicons-truck',
-        },
-        {
-          title: 'مشاوره رایگان',
-          description:
-            'داروسازان مجرب ما آماده ارائه مشاوره رایگان به شما هستند',
-          icon: 'i-heroicons-chat-bubble-left-right',
-        },
-        {
-          title: 'پرداخت امن',
-          description:
-            'تمامی تراکنش‌ها با بالاترین استانداردهای امنیتی محافظت می‌شوند',
-          icon: 'i-heroicons-lock-closed',
-        },
-        {
-          title: 'قیمت مناسب',
-          description: 'بهترین قیمت‌ها با تخفیف‌های ویژه برای مشتریان وفادار',
-          icon: 'i-heroicons-currency-dollar',
-        },
-        {
-          title: 'پشتیبانی ۲۴/۷',
-          description: 'تیم پشتیبانی ما همیشه در دسترس شماست',
-          icon: 'i-heroicons-clock',
-        },
-      ],
-      stats: [
-        { value: '۵۰,۰۰۰+', label: 'مشتری راضی' },
-        { value: '۱۰+', label: 'سال تجربه' },
-        { value: '۱۰۰,۰۰۰+', label: 'محصول فروخته شده' },
-        { value: '۹۹.۹٪', label: 'رضایت مشتریان' },
-      ],
-    }
-  },
-
-  head() {
-    return {
-      title: 'درباره ما | داروخانه آنلاین',
-    }
-  },
+const contactRows = computed(() => {
+  const a = about.value
+  if (!a) return []
+  return [
+    a.contactPhone && { icon: 'i-heroicons-phone', text: a.contactPhone, href: `tel:${a.contactPhone}` },
+    a.contactEmail && { icon: 'i-heroicons-envelope', text: a.contactEmail, href: `mailto:${a.contactEmail}` },
+    a.address && { icon: 'i-heroicons-map-pin', text: a.address },
+    a.workingHours && { icon: 'i-heroicons-clock', text: a.workingHours },
+    a.instagram && { icon: 'i-heroicons-camera', text: a.instagram },
+    a.telegram && { icon: 'i-heroicons-paper-airplane', text: a.telegram },
+    a.whatsapp && { icon: 'i-heroicons-chat-bubble-left-right', text: a.whatsapp },
+  ].filter(Boolean)
 })
+
+onMounted(async () => {
+  try {
+    about.value = (await app.$api.storefront.getAboutUs()).data.data ?? null
+  } catch {
+    about.value = null
+  } finally {
+    loading.value = false
+  }
+})
+
+useHead({ title: 'درباره ما | داروخانه آنلاین' })
 </script>
+
+<style scoped>
+.sk-enter-active { transition: opacity 0.25s ease; }
+.sk-leave-active { transition: opacity 0.25s ease; position: absolute; inset: 0; }
+.sk-enter-from, .sk-leave-to { opacity: 0; }
+</style>

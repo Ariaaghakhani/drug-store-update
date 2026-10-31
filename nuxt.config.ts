@@ -18,9 +18,12 @@ export default defineNuxtConfig({
       meta: [
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
-        { name: 'apple-mobile-web-app-title', content: 'داروپلاس' },
+        { name: 'apple-mobile-web-app-title', content: 'کپسول' },
       ],
-      link: [{ rel: 'apple-touch-icon', href: '/seo/pwa-512x512.png' }],
+      link: [
+        { rel: 'apple-touch-icon', href: '/seo/pwa-512x512.png' },
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+      ],
       htmlAttrs: {
         dir: 'rtl',
         lang: 'fa',
@@ -34,8 +37,8 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
-      name: 'دارو پلاس',
-      short_name: 'داروپلاس',
+      name: 'CAPSULE کپسول',
+      short_name: 'کپسول',
       theme_color: '#2C7A7B',
       background_color: '#ffffff',
       display: 'standalone',
@@ -52,10 +55,10 @@ export default defineNuxtConfig({
           type: 'image/png',
         },
         {
-          src: '/seo/pwa-512x512.png',
+          src: '/seo/pwa-maskable-512x512.png',
           sizes: '512x512',
           type: 'image/png',
-          purpose: 'any maskable',
+          purpose: 'maskable',
         },
       ],
     },
@@ -79,6 +82,18 @@ export default defineNuxtConfig({
       // BACKEND_URL: 'https://lanelle-unbronzed-carpologically.ngrok-free.dev/',
       BACKEND_URL: 'http://localhost:8081',
       CMS_URL: 'https://ancient-balance-34dc5d8db0.strapiapp.com',
+      // Firebase web app config for push (Project settings → General → Your apps; vapidKey: Cloud Messaging →
+      // Web Push certificates). Public values, not secrets. Override per environment with NUXT_PUBLIC_FIREBASE_*
+      // (e.g. NUXT_PUBLIC_FIREBASE_API_KEY, NUXT_PUBLIC_FIREBASE_VAPID_KEY). Empty = push UI hidden, inbox still works.
+      firebase: {
+        apiKey: 'AIzaSyDZHvmDcfJaaJujewgetXj776LcNGyKrrM',
+        authDomain: 'capsule-pharmacy-c1985.firebaseapp.com',
+        projectId: 'capsule-pharmacy-c1985',
+        storageBucket: 'capsule-pharmacy-c1985.firebasestorage.app',
+        messagingSenderId: '578896930773',
+        appId: '1:578896930773:web:a16f262856a22adf357f5c',
+        vapidKey: 'BFm3mzLEFDp6id-uEwla_ETLFqLk9fUB8Ir2idmRYzfDDYGsxilaT8fY0eAG3UNuHnpWvC6o82itGtXIdX3TH-0',
+      },
     },
   },
 })

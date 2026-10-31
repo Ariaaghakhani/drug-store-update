@@ -62,7 +62,8 @@
 
     <CreateUserModal
       v-model:open="showCreateModal"
-      :role-select-items="roleSelectItems"
+      :role-select-items="realRoleSelectItems"
+      :loading="creatingUser"
       @create="onCreateUser"
     />
 
@@ -95,6 +96,8 @@ useHead({ title: 'مدیریت کاربران | پنل مدیریت' })
 
 const rolesStore = useRolesStore()
 const { getUserRole } = useUserPanelTabs()
+const app = useNuxtApp()
+const toast = useToast()
 
 const myPerms = computed(() => {
   const role = rolesStore.roles.find((r) => r.id === getUserRole())
@@ -120,88 +123,7 @@ const getRolePermissions = (roleId) => {
   }
 }
 
-const allUsers = ref([
-  {
-    id: 1,
-    fullName: 'رضا حسینی',
-    phone: '09121000001',
-    roleId: 'owner',
-    roleFa: 'مالک',
-    isActive: true,
-    lastLoginFa: '۱۴۰۳/۰۳/۱۵',
-    permissions: getRolePermissions('owner'),
-  },
-  {
-    id: 2,
-    fullName: 'آرش محمدی',
-    phone: '09121000002',
-    roleId: 'admin',
-    roleFa: 'مدیر',
-    isActive: true,
-    lastLoginFa: '۱۴۰۳/۰۳/۱۵',
-    permissions: getRolePermissions('admin'),
-  },
-  {
-    id: 3,
-    fullName: 'نیلوفر احمدی',
-    phone: '09351000003',
-    roleId: 'pharmacist',
-    roleFa: 'داروساز',
-    isActive: true,
-    lastLoginFa: '۱۴۰۳/۰۳/۱۲',
-    permissions: getRolePermissions('pharmacist'),
-  },
-  {
-    id: 4,
-    fullName: 'فاطمه موسوی',
-    phone: '09181000004',
-    roleId: 'support',
-    roleFa: 'پشتیبانی',
-    isActive: true,
-    lastLoginFa: '۱۴۰۳/۰۳/۱۴',
-    permissions: getRolePermissions('support'),
-  },
-  {
-    id: 5,
-    fullName: 'سارا رضایی',
-    phone: '09351000005',
-    roleId: 'pharmacist',
-    roleFa: 'داروساز',
-    isActive: false,
-    lastLoginFa: '۱۴۰۳/۰۲/۳۰',
-    permissions: getRolePermissions('pharmacist'),
-  },
-  {
-    id: 6,
-    fullName: 'مهدی کریمی',
-    phone: '09101000006',
-    roleId: 'customer',
-    roleFa: 'مشتری',
-    isActive: true,
-    lastLoginFa: '۱۴۰۳/۰۳/۱۳',
-    permissions: getRolePermissions('customer'),
-  },
-  {
-    id: 7,
-    fullName: 'زهرا قاسمی',
-    phone: '09191000007',
-    roleId: 'customer',
-    roleFa: 'مشتری',
-    isActive: true,
-    lastLoginFa: '۱۴۰۳/۰۳/۱۰',
-    permissions: getRolePermissions('customer'),
-  },
-  {
-    id: 8,
-    fullName: 'امیر صادقی',
-    phone: '09361000008',
-    roleId: 'customer',
-    roleFa: 'مشتری',
-    isActive: false,
-    lastLoginFa: '۱۴۰۳/۰۳/۰۱',
-    permissions: getRolePermissions('customer'),
-  },
-])
+const allUsers = ref([])
 
 const searchQuery = ref('')
 const roleFilter = ref('all')
@@ -228,6 +150,73 @@ const statusFilterItems = [
 
 const roleSelectItems = computed(() =>
   rolesStore.roles.map((r) => ({ label: r.labelFa, value: r.id }))
+)
+
+// real tenant roles from BACK — used to label the real staff list below and to feed the
+// create-user flow's role picker; users.vue's permission/filter logic still runs on the
+// separate mock `rolesStore` model (see FRONTEND_API_TODO.md)
+const realRoles = ref([])
+const creatingUser = ref(false)
+
+// BACK's real role-name space has no fixed tiers below "store admin" (see
+// composables/useUserPanelTabs.js's same mapping) — this mirrors that heuristic so a
+// fetched staff row's permissions/badge color at least degrade consistently with the rest
+// of the mock-driven page, rather than matching nothing.
+const mapStaffRoleId = (roleNames) =>
+  roleNames?.includes('ROLE_STORE_ADMIN') ? 'owner' : 'admin'
+
+const resolveRoleFa = (roleNames, mappedRoleId) => {
+  const backendRoleName = roleNames?.[0]
+  const matchedRealRole = realRoles.value.find((r) => r.name === backendRoleName)
+  if (matchedRealRole) return matchedRealRole.description || matchedRealRole.name
+  return rolesStore.roles.find((r) => r.id === mappedRoleId)?.labelFa || backendRoleName || ''
+}
+
+const mapStaffUser = (user) => {
+  const roleId = mapStaffRoleId(user.roles)
+  return {
+    id: user.id,
+    fullName: [user.firstName, user.lastName].filter(Boolean).join(' '),
+    phone: user.phone,
+    roleId,
+    roleFa: resolveRoleFa(user.roles, roleId),
+    isActive: user.active ?? true,
+    lastLoginFa: user.lastLoginAt
+      ? new Date(user.lastLoginAt).toLocaleDateString('fa-IR')
+      : 'هرگز',
+    permissions: getRolePermissions(roleId),
+  }
+}
+
+const fetchUsers = async () => {
+  pending.value = true
+  try {
+    const response = await app.$api.user.listStaff()
+    allUsers.value = (response.data.data ?? []).map(mapStaffUser)
+  } catch (error) {
+    toast.add({
+      title: 'خطا',
+      description: error?.response?.data?.message || 'مشکلی در دریافت لیست کاربران پیش آمد',
+      color: 'error',
+    })
+  } finally {
+    pending.value = false
+  }
+}
+
+onMounted(async () => {
+  try {
+    const response = await app.$api.user.listRoles()
+    realRoles.value = response.data.data ?? []
+  } catch {
+    realRoles.value = []
+  }
+  // fetched after roles resolve so the first render's roleFa labels are already resolved
+  await fetchUsers()
+})
+
+const realRoleSelectItems = computed(() =>
+  realRoles.value.map((r) => ({ label: r.description || r.name, value: r.id }))
 )
 
 const filteredUsers = computed(() => {
@@ -284,18 +273,32 @@ const confirmDelete = () => {
   userToDelete.value = null
 }
 
-const onCreateUser = (form) => {
-  const role = rolesStore.roles.find((r) => r.id === form.roleId)
-  allUsers.value.unshift({
-    id: Date.now(),
-    fullName: form.fullName,
-    phone: form.phone,
-    roleId: form.roleId,
-    roleFa: role?.labelFa ?? '',
-    isActive: form.isActive,
-    lastLoginFa: '—',
-    permissions: getRolePermissions(form.roleId),
-  })
-  showCreateModal.value = false
+const onCreateUser = async (form) => {
+  const [firstName, ...rest] = form.fullName.trim().split(/\s+/)
+  const lastName = rest.join(' ') || undefined
+
+  creatingUser.value = true
+  try {
+    await app.$api.user.createStaff({
+      data: {
+        firstName,
+        lastName,
+        phone: form.phone,
+        password: form.password,
+        roleIds: [form.roleId],
+      },
+    })
+    showCreateModal.value = false
+    toast.add({ title: 'موفق', description: 'کاربر جدید با موفقیت ایجاد شد', color: 'success' })
+    await fetchUsers()
+  } catch (error) {
+    toast.add({
+      title: 'خطا',
+      description: error?.response?.data?.message || 'مشکلی در ایجاد کاربر پیش آمد',
+      color: 'error',
+    })
+  } finally {
+    creatingUser.value = false
+  }
 }
 </script>

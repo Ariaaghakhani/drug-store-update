@@ -20,12 +20,12 @@ const faLocale = defineLocale({
   messages: {},
 })
 useSeoMeta({
-  title: 'دارو پلاس',
+  title: 'CAPSULE کپسول',
   description: 'خرید آنلاین دارو و محصولات بهداشتی',
-  ogTitle: 'دارو پلاس',
+  ogTitle: 'CAPSULE کپسول',
   ogDescription: 'خرید آنلاین دارو و محصولات بهداشتی',
-  ogImage: 'https://drug-store-update.vercel.app/seo/banner.png',
-  ogUrl: 'https://drug-store-update.vercel.app',
+  ogImage: 'https://capsulepharmacy.ir/seo/banner.png',
+  ogUrl: 'https://capsulepharmacy.ir',
   ogType: 'website',
   ogLocale: 'fa_IR',
   twitterCard: 'summary_large_image',

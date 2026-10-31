@@ -221,9 +221,10 @@
                   size="xl"
                   color="primary"
                   icon="i-heroicons-shopping-bag"
+                  :disabled="!orderingEnabled"
                   @click="handleCheckout"
                 >
-                  تکمیل خرید
+                  {{ orderingEnabled ? 'تکمیل خرید' : 'سفارش آنلاین بسته است' }}
                 </UButton>
 
                 <div
@@ -531,6 +532,7 @@ import { useCartStore } from '~/stores/cart'
 import { useUserStore } from '~/stores/user'
 
 const app = useNuxtApp()
+const { orderingEnabled } = useStoreProfile()
 const cartStore = useCartStore()
 const userStore = useUserStore()
 const toast = useToast()
@@ -691,6 +693,7 @@ async function confirmCheckout() {
         paymentMethod: paymentMethod.value,
         gateway: gateway.value,
         acceptedTerms: acceptedTerms.value,
+        returnOrigin: window.location.origin,
       },
     })
 
@@ -698,7 +701,14 @@ async function confirmCheckout() {
 
     if (result?.paymentUrl) {
       cartStore.clearCart()
-      await navigateTo(result.paymentUrl, { external: true })
+      await navigateTo({
+        path: '/checkout/redirect',
+        query: {
+          url: result.paymentUrl,
+          gateway: gateway.value,
+          amount: quote.value?.total,
+        },
+      })
       return
     }
 
@@ -719,7 +729,7 @@ async function confirmCheckout() {
       color: 'error',
     })
   } catch (error) {
-    const message = error?.response?.data?.message ?? 'خطا در ثبت سفارش'
+    const message = paymentErrorMessage(error, 'خطا در ثبت سفارش')
     toast.add({ title: message, icon: 'i-heroicons-exclamation-circle', color: 'error' })
   } finally {
     isSubmittingCheckout.value = false

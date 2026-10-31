@@ -4,11 +4,11 @@
 
     <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
       <div
-        v-for="(src, index) in modelValue"
+        v-for="(item, index) in modelValue"
         :key="index"
         class="group relative aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800"
       >
-        <img :src="src" alt="" class="w-full h-full object-cover" />
+        <img :src="item.previewUrl || item.url" alt="" class="w-full h-full object-cover" />
         <button
           type="button"
           class="absolute top-1 end-1 w-6 h-6 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity hover:border-error"
@@ -40,30 +40,26 @@
 </template>
 
 <script setup>
+// modelValue items: { file: File, previewUrl: string } for a pending local pick,
+// or { id, url } for an attachment already uploaded/persisted on the goods record.
 const props = defineProps({ modelValue: { type: Array, required: true } })
 const emit = defineEmits(['update:modelValue'])
 
 const fileInput = ref(null)
 
-const readAsDataUrl = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-
-const onFilesChange = async (event) => {
+const onFilesChange = (event) => {
   const input = event.target
   const files = Array.from(input.files ?? []).filter((f) => f.type.startsWith('image/'))
   if (files.length) {
-    const urls = await Promise.all(files.map(readAsDataUrl))
-    emit('update:modelValue', [...props.modelValue, ...urls])
+    const items = files.map((file) => ({ file, previewUrl: URL.createObjectURL(file) }))
+    emit('update:modelValue', [...props.modelValue, ...items])
   }
   input.value = ''
 }
 
 const removeAt = (index) => {
+  const item = props.modelValue[index]
+  if (item?.previewUrl) URL.revokeObjectURL(item.previewUrl)
   emit('update:modelValue', props.modelValue.filter((_, i) => i !== index))
 }
 </script>

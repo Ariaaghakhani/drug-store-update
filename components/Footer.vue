@@ -9,21 +9,7 @@
       >
         <!-- Brand Section -->
         <div class="sm:col-span-2 lg:col-span-1">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 flex items-center justify-center">
-              <svg
-                width="40"
-                height="40"
-                viewBox="0 0 32 32"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle cx="16" cy="16" r="16" fill="#14B8A6" />
-                <circle cx="16" cy="16" r="8" fill="white" />
-              </svg>
-            </div>
-            <span class="text-xl font-black text-white">دارو پلاس</span>
-          </div>
+          <BrandLogo class="mb-4" force-dark />
           <p class="text-sm leading-7 mb-6 text-gray-400">
             داروخانه آنلاین قابل اعتماد شما که راه‌حل‌های سلامت و تندرستی را با
             فناوری پیشرفته و مراقبت شخصی‌سازی شده ارائه می‌دهد.
@@ -124,7 +110,7 @@
             </li>
             <li>
               <NuxtLink
-                to="/contact-pharmacist"
+                to="/contact"
                 class="text-sm text-gray-400 hover:text-teal-400 transition-colors inline-block"
               >
                 تماس با داروساز
@@ -173,7 +159,7 @@
                 name="i-heroicons-envelope"
                 class="w-5 h-5 text-teal-400 flex-shrink-0"
               />
-              <span class="text-sm text-gray-400">support@daroplus.ir</span>
+              <span class="text-sm text-gray-400">support@capsulepharmacy.ir</span>
             </li>
             <li class="flex items-center gap-3">
               <UIcon
@@ -191,7 +177,7 @@
         class="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-right"
       >
         <p class="text-sm text-gray-500">
-          © ۱۴۰۳ دارو پلاس. تمام حقوق محفوظ است. داروخانه مجاز - شماره پروانه:
+          © ۱۴۰۳ CAPSULE کپسول. تمام حقوق محفوظ است. داروخانه مجاز - شماره پروانه:
           ۱۲۳۴۵۶۷
         </p>
         <div class="flex items-center gap-4">

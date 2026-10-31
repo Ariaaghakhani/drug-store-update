@@ -76,9 +76,13 @@
                 <UBadge :color="orderStatusMeta(order).color" variant="subtle" size="xs">
                   {{ orderStatusMeta(order).label }}
                 </UBadge>
+                <UBadge :color="fulfillmentMeta(order).color" variant="subtle" size="xs">
+                  {{ fulfillmentMeta(order).label }}
+                </UBadge>
               </div>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
                 {{ order.personFullName }} · {{ formatDate(order.dateOrdered) }}
+                <span v-if="order.trackingCode"> · کد پیگیری: {{ order.trackingCode }}</span>
               </p>
             </div>
 
@@ -90,15 +94,18 @@
               {{ Number(order.totalAmount ?? 0).toLocaleString('fa-IR') }} تومان
             </span>
 
-            <UButton
-              color="neutral"
-              variant="soft"
-              size="xs"
-              icon="i-heroicons-eye"
-              class="flex-shrink-0"
-            >
-              <span class="hidden sm:inline">بررسی</span>
-            </UButton>
+            <UDropdownMenu :items="actionsForOrder(order)" :content="{ align: 'end' }">
+              <UButton
+                color="neutral"
+                variant="soft"
+                size="xs"
+                icon="i-heroicons-eye"
+                class="flex-shrink-0"
+                :loading="actingOrderId === order.id"
+              >
+                <span class="hidden sm:inline">بررسی</span>
+              </UButton>
+            </UDropdownMenu>
           </div>
         </div>
 
@@ -116,6 +123,34 @@
         </div>
       </Transition>
     </div>
+
+    <UModal v-model:open="shipModalOpen" title="ثبت ارسال سفارش">
+      <template #body>
+        <UFormField label="کد پیگیری (اختیاری)" name="trackingCode">
+          <UInput v-model="trackingCodeInput" dir="ltr" placeholder="TR-12345" class="w-full" />
+        </UFormField>
+        <div class="flex justify-end gap-2 mt-4">
+          <UButton color="neutral" variant="outline" @click="shipModalOpen = false">انصراف</UButton>
+          <UButton color="primary" :loading="actingOrderId === pendingOrder?.id" @click="confirmShip">
+            ثبت ارسال
+          </UButton>
+        </div>
+      </template>
+    </UModal>
+
+    <UModal v-model:open="failModalOpen" title="ثبت عدم تحویل">
+      <template #body>
+        <UFormField label="دلیل عدم تحویل" name="reason">
+          <USelect v-model="failureReason" :items="failureReasonOptions" class="w-full" />
+        </UFormField>
+        <div class="flex justify-end gap-2 mt-4">
+          <UButton color="neutral" variant="outline" @click="failModalOpen = false">انصراف</UButton>
+          <UButton color="error" variant="soft" :loading="actingOrderId === pendingOrder?.id" @click="confirmDeliveryFailed">
+            ثبت
+          </UButton>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
@@ -124,9 +159,35 @@ const ORDER_STATUS_META = {
   PENDING: { label: 'در انتظار پرداخت', color: 'warning' },
   PAID: { label: 'پرداخت شده', color: 'success' },
   FAILED: { label: 'پرداخت ناموفق', color: 'error' },
+  CANCELLED: { label: 'لغو شده', color: 'neutral' },
 }
 
+const FULFILLMENT_META = {
+  SHIPPED: { label: 'ارسال شده', color: 'info' },
+  READY_FOR_PICKUP: { label: 'آماده تحویل', color: 'info' },
+  DELIVERED: { label: 'تحویل شده', color: 'success' },
+  DELIVERY_FAILED: { label: 'تحویل ناموفق', color: 'error' },
+  RETURNED_TO_STORE: { label: 'بازگشت به فروشگاه', color: 'warning' },
+  NOT_COLLECTED: { label: 'عدم دریافت', color: 'warning' },
+  LOST: { label: 'مفقود شده', color: 'error' },
+  DAMAGED: { label: 'آسیب‌دیده', color: 'error' },
+}
+const FULFILLMENT_PREPARING = { label: 'در حال آماده‌سازی', color: 'neutral' }
+
+const FAILURE_REASON_LABELS = {
+  CUSTOMER_ABSENT: 'مشتری حضور نداشت',
+  UNREACHABLE: 'عدم دسترسی به مشتری',
+  WRONG_ADDRESS: 'آدرس نادرست',
+  REFUSED: 'عدم تحویل توسط مشتری',
+  OTHER: 'سایر موارد',
+}
+const failureReasonOptions = Object.entries(FAILURE_REASON_LABELS).map(([value, label]) => ({
+  label,
+  value,
+}))
+
 const app = useNuxtApp()
+const toast = useAppToast()
 
 const search = ref('')
 const statusFilter = ref('all')
@@ -135,19 +196,25 @@ const orders = ref([])
 const statusCatalog = ref([])
 const totalCount = ref(0)
 const statusCounts = ref({})
+const revenueTotal = ref(0)
+const actingOrderId = ref(null)
+const shipModalOpen = ref(false)
+const failModalOpen = ref(false)
+const trackingCodeInput = ref('')
+const failureReason = ref('CUSTOMER_ABSENT')
+const pendingOrder = ref(null)
 let searchDebounce = null
 
-const stats = computed(() => {
-  const pageSum = orders.value.reduce((sum, order) => sum + Number(order.totalAmount ?? 0), 0)
-  return [
-    { label: 'کل سفارشات', value: totalCount.value.toLocaleString('fa-IR') },
-    ...statusCatalog.value.map((entry) => ({
-      label: ORDER_STATUS_META[entry.code]?.label ?? entry.title,
-      value: (statusCounts.value[entry.code] ?? 0).toLocaleString('fa-IR'),
-    })),
-    { label: 'جمع این صفحه', value: pageSum.toLocaleString('fa-IR') + ' ت' },
-  ]
-})
+const extractErrorMessage = (error, fallback) => error?.response?.data?.message ?? fallback
+
+const stats = computed(() => [
+  { label: 'کل سفارشات', value: totalCount.value.toLocaleString('fa-IR') },
+  ...statusCatalog.value.map((entry) => ({
+    label: ORDER_STATUS_META[entry.code]?.label ?? entry.title,
+    value: (statusCounts.value[entry.code] ?? 0).toLocaleString('fa-IR'),
+  })),
+  { label: 'جمع درآمد', value: revenueTotal.value.toLocaleString('fa-IR') + ' ت' },
+])
 
 const statusTabs = computed(() => [
   { label: 'همه', value: 'all', count: totalCount.value },
@@ -161,6 +228,8 @@ const statusTabs = computed(() => [
 const orderStatusMeta = (order) => {
   return ORDER_STATUS_META[order.statusCode] ?? { label: order.status ?? `#${order.statusCode}`, color: 'neutral' }
 }
+
+const fulfillmentMeta = (order) => FULFILLMENT_META[order.fulfillmentStatus] ?? FULFILLMENT_PREPARING
 
 const formatDate = (value) => {
   if (!value) return ''
@@ -180,30 +249,104 @@ async function fetchStatusCatalog() {
   }
 }
 
-async function fetchStatusCounts() {
+async function fetchStats() {
   try {
-    const allResponse = await app.$api.orders.searchOrders({ data: { page: 0, size: 1 } })
-    totalCount.value = allResponse.data.data?.totalElements ?? 0
-
-    const counts = {}
-    await Promise.all(
-      statusCatalog.value.map(async (entry) => {
-        try {
-          const response = await app.$api.orders.searchOrdersByStatus(entry.code, {
-            data: { page: 0, size: 1 },
-          })
-          counts[entry.code] = response.data.data?.totalElements ?? 0
-        } catch {
-          counts[entry.code] = 0
-        }
-      })
-    )
-    statusCounts.value = counts
+    const response = await app.$api.orders.getStats()
+    const data = response.data.data ?? {}
+    totalCount.value = data.totalOrders ?? 0
+    statusCounts.value = data.countByStatus ?? {}
+    revenueTotal.value = data.revenueTotal ?? 0
   } catch (error) {
     console.log(error)
     totalCount.value = 0
     statusCounts.value = {}
+    revenueTotal.value = 0
   }
+}
+
+function actionsForOrder(order) {
+  const fulfillment = order.fulfillmentStatus
+  const run = (action, needsInput) => () => {
+    if (needsInput) {
+      pendingOrder.value = order
+      if (action === 'ship') {
+        trackingCodeInput.value = ''
+        shipModalOpen.value = true
+      } else if (action === 'delivery-failed') {
+        failureReason.value = 'CUSTOMER_ABSENT'
+        failModalOpen.value = true
+      }
+      return
+    }
+    performAction(order, action)
+  }
+
+  const items = []
+  if (!fulfillment) {
+    items.push({ label: 'ثبت ارسال', icon: 'i-heroicons-truck', onSelect: run('ship', true) })
+    items.push({ label: 'آماده تحویل حضوری', icon: 'i-heroicons-shopping-bag', onSelect: run('ready-for-pickup') })
+  }
+  if (fulfillment === 'SHIPPED' || fulfillment === 'READY_FOR_PICKUP') {
+    items.push({ label: 'تحویل شد', icon: 'i-heroicons-check-circle', onSelect: run('deliver') })
+    items.push({ label: 'ثبت عدم تحویل', icon: 'i-heroicons-x-circle', onSelect: run('delivery-failed', true) })
+  }
+  if (fulfillment === 'READY_FOR_PICKUP') {
+    items.push({ label: 'عدم دریافت مشتری', icon: 'i-heroicons-clock', onSelect: run('not-collected') })
+  }
+  items.push({ label: 'بازگشت به فروشگاه', icon: 'i-heroicons-arrow-uturn-right', onSelect: run('returned') })
+  items.push({ label: 'مفقود شده', icon: 'i-heroicons-question-mark-circle', onSelect: run('lost') })
+  items.push({ label: 'آسیب‌دیده', icon: 'i-heroicons-exclamation-triangle', onSelect: run('damaged') })
+  return items
+}
+
+async function performAction(order, action, payload) {
+  actingOrderId.value = order.id
+  try {
+    switch (action) {
+      case 'ship':
+        await app.$api.orders.shipOrder(order.id, { data: payload?.trackingCode ? { trackingCode: payload.trackingCode } : undefined })
+        break
+      case 'ready-for-pickup':
+        await app.$api.orders.readyForPickup(order.id)
+        break
+      case 'deliver':
+        await app.$api.orders.deliverOrder(order.id)
+        break
+      case 'delivery-failed':
+        await app.$api.orders.deliveryFailed(order.id, { data: { reason: payload?.reason } })
+        break
+      case 'returned':
+        await app.$api.orders.returnedToStore(order.id)
+        break
+      case 'not-collected':
+        await app.$api.orders.notCollected(order.id)
+        break
+      case 'lost':
+        await app.$api.orders.lostOrder(order.id)
+        break
+      case 'damaged':
+        await app.$api.orders.damagedOrder(order.id)
+        break
+    }
+    toast.success('وضعیت سفارش به‌روزرسانی شد')
+    shipModalOpen.value = false
+    failModalOpen.value = false
+    await Promise.all([fetchOrders(), fetchStats()])
+  } catch (error) {
+    toast.error(extractErrorMessage(error, 'ثبت تغییر وضعیت سفارش ناموفق بود'))
+  } finally {
+    actingOrderId.value = null
+  }
+}
+
+function confirmShip() {
+  if (!pendingOrder.value) return
+  performAction(pendingOrder.value, 'ship', { trackingCode: trackingCodeInput.value || undefined })
+}
+
+function confirmDeliveryFailed() {
+  if (!pendingOrder.value) return
+  performAction(pendingOrder.value, 'delivery-failed', { reason: failureReason.value })
 }
 
 async function fetchOrders() {
@@ -232,7 +375,7 @@ watch(search, () => {
 
 onMounted(async () => {
   await fetchStatusCatalog()
-  fetchStatusCounts()
+  fetchStats()
   fetchOrders()
 })
 </script>

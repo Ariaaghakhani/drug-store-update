@@ -12,30 +12,9 @@
               <UCard class="flex flex-col">
                 <!-- Logo & Brand -->
                 <div
-                  class="flex items-center gap-3 pb-6 border-b border-gray-200 dark:border-gray-700"
+                  class="pb-6 border-b border-gray-200 dark:border-gray-700"
                 >
-                  <div
-                    class="w-10 h-10 flex items-center justify-center flex-shrink-0"
-                  >
-                    <svg
-                      width="40"
-                      height="40"
-                      viewBox="0 0 32 32"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle
-                        cx="16"
-                        cy="16"
-                        r="16"
-                        :fill="colorMode === 'dark' ? '#14B8A6' : '#2C7A7B'"
-                      />
-                      <circle cx="16" cy="16" r="8" fill="white" />
-                    </svg>
-                  </div>
-                  <span class="text-xl font-black text-gray-900 dark:text-white"
-                    >دارو پلاس</span
-                  >
+                  <BrandLogo />
                 </div>
 
                 <!-- Navigation Menu -->
@@ -150,6 +129,7 @@
                       {{ todayDate }}
                     </p>
                   </div>
+                  <NotificationBell class="flex-shrink-0" />
                 </div>
               </UCard>
 
@@ -282,6 +262,18 @@
               <span class="text-[10px]">محصولات</span>
             </NuxtLink>
 
+            <!-- Notifications -->
+            <NuxtLink
+              to="/panel/notifications"
+              class="flex flex-col items-center gap-1 py-2 px-4 text-gray-500 dark:text-gray-400 transition-colors"
+              active-class="!text-teal-600 dark:!text-teal-400"
+            >
+              <UChip :show="unreadCount > 0" color="error" size="md" inset>
+                <UIcon name="i-heroicons-bell" class="w-6 h-6" />
+              </UChip>
+              <span class="text-[10px]">اعلان‌ها</span>
+            </NuxtLink>
+
             <!-- Profile (opens menu) -->
             <button
               class="flex flex-col items-center gap-1 py-2 px-4 transition-colors"
@@ -303,6 +295,8 @@
 </template>
 
 <script setup>
+import NotificationBell from '@/components/panel/notifications/NotificationBell.vue'
+
 const route = useRoute()
 const userStore = useUserStore()
 const isDev = import.meta.dev
@@ -310,14 +304,11 @@ const isDev = import.meta.dev
 definePageMeta({
   layout: 'panel',
   middleware: (to) => {
-    if (import.meta.dev) return
-
     if (import.meta.client) {
       const token = localStorage.getItem('auth.local')
       if (!token) {
         return navigateTo('/login?next=panel')
       }
-      console.log(to)
       if (to.path === '/panel' || to.path === '/panel/') {
         return navigateTo('/panel/dashboard')
       }
@@ -333,7 +324,20 @@ definePageMeta({
 
 const app = useNuxtApp()
 const toast = useToast()
-const { getMenuItems, getUserRole } = useUserPanelTabs()
+const { getMenuItems, getUserRole, refreshMenus } = useUserPanelTabs()
+
+// Keep the cached menus in sync with BACK (permissions can change between logins)
+onMounted(refreshMenus)
+
+// Unread count for the bell / bottom-nav badge; polled while the panel is open (push may be off or unreachable)
+const notifications = useNotifications()
+const push = usePushNotifications()
+const unreadCount = computed(() => notifications.unread.value)
+onMounted(() => {
+  notifications.refreshUnread()
+  notifications.startPolling()
+})
+onBeforeUnmount(notifications.stopPolling)
 
 // Computed
 const userFullName = computed(() => {
@@ -399,6 +403,9 @@ watch(
 const handleLogout = async () => {
   isProfileMenuOpen.value = false
   try {
+    // Unregister this browser's push token while the access token is still valid
+    await push.disable()
+    notifications.reset()
     app.$auth.reset()
     toast.add({
       title: 'خروج موفق',

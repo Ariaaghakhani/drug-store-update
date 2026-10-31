@@ -3,25 +3,25 @@
  * Category and catalog management
  */
 export default (apiCaller) => ({
-  // ========== CATALOGS (Generic Lookup) ==========
+  // ========== CATALOGS (Generic Lookup) — base path is /api/catalogs (plural) ==========
   listCatalogs(config) {
-    return apiCaller.post('api/catalog/list', config)
+    return apiCaller.post('api/catalogs/list', config)
   },
 
   getCatalog(config) {
-    return apiCaller.post('api/catalog/get', config)
+    return apiCaller.post('api/catalogs/get', config)
   },
 
   createCatalog(config) {
-    return apiCaller.post('api/catalog/create', config)
+    return apiCaller.post('api/catalogs/create', config)
   },
 
   updateCatalog(config) {
-    return apiCaller.post('api/catalog/update', config)
+    return apiCaller.post('api/catalogs/update', config)
   },
 
   deleteCatalog(config) {
-    return apiCaller.post('api/catalog/delete', config)
+    return apiCaller.post('api/catalogs/delete', config)
   },
 
   getCatalogsByType(config) {
@@ -66,11 +66,6 @@ export default (apiCaller) => ({
     return apiCaller.post('api/category-scopes/create', config)
   },
 
-  updateCategoryScope(config) {
-    return apiCaller.post('api/category-scopes/update', config)
-  },
-
-  deleteCategoryScope(config) {
-    return apiCaller.post('api/category-scopes/delete', config)
-  },
+  // No update/delete: scopes are system values every store copies on creation and code refers to
+  // by name (goods categories, Excel import, blog) — backend will not expose these (2026-10-27).
 })

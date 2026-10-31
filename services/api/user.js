@@ -24,9 +24,18 @@ export default (apiCaller) => ({
     return apiCaller.post('api/persons/delete', config)
   },
 
+  // ========== STAFF/USER MANAGEMENT (tenant login accounts, not plain persons) ==========
+  createStaff(config) {
+    return apiCaller.post('api/users/create', config)
+  },
+
+  listStaff(config) {
+    return apiCaller.get('api/users/staff', config)
+  },
+
   // ========== ROLES ==========
   listRoles(config) {
-    return apiCaller.post('api/roles/list', config)
+    return apiCaller.get('api/roles', config)
   },
 
   getRole(config) {

@@ -5,29 +5,8 @@
     <div class="mx-auto px-4 lg:px-8">
       <div class="flex items-center justify-between h-16 lg:h-20 gap-4">
         <!-- Logo -->
-        <NuxtLink to="/" class="flex items-center gap-3 flex-shrink-0">
-          <div class="w-10 h-10 flex items-center justify-center">
-            <svg
-              width="40"
-              height="40"
-              viewBox="0 0 32 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="16"
-                cy="16"
-                r="16"
-                :fill="colorMode === 'dark' ? '#14B8A6' : '#2C7A7B'"
-              />
-              <circle cx="16" cy="16" r="8" fill="white" />
-            </svg>
-          </div>
-          <span
-            class="text-xl lg:text-2xl font-black text-gray-900 dark:text-white"
-          >
-            دارو پلاس
-          </span>
+        <NuxtLink to="/" class="flex-shrink-0">
+          <BrandLogo text-class="text-xl lg:text-2xl" />
         </NuxtLink>
 
         <!-- Desktop Navigation -->
@@ -326,28 +305,7 @@
           <div
             class="flex bg-white dark:bg-gray-900 items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800"
           >
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 flex items-center justify-center">
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 32 32"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle
-                    cx="16"
-                    cy="16"
-                    r="16"
-                    :fill="colorMode === 'dark' ? '#14B8A6' : '#2C7A7B'"
-                  />
-                  <circle cx="16" cy="16" r="8" fill="white" />
-                </svg>
-              </div>
-              <span class="text-lg font-black text-gray-900 dark:text-white">
-                دارو پلاس
-              </span>
-            </div>
+            <BrandLogo :size="32" text-class="text-lg" />
             <button
               class="p-2 rounded-lg text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
               @click="closeMobileMenu"

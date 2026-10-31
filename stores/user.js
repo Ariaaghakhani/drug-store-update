@@ -3,6 +3,7 @@ import { ref } from 'vue'
 
 // TEMPORARY: Remove this when backend /api/auth/me endpoint is ready
 const USER_STORAGE_KEY = 'user.data'
+const PERMISSIONS_STORAGE_KEY = 'user.permissions'
 
 export const useUserStore = defineStore('userStore', () => {
   // Helper to read from localStorage
@@ -51,8 +52,34 @@ export const useUserStore = defineStore('userStore', () => {
     }
   }
 
+  // Distinct `{module, action}` pairs the user may use (from POST /api/auth/me/permissions, allowed only), or null when
+  // not loaded / the call failed (→ useUserPanelTabs falls back to the role-based menus). Persisted so the /panel route
+  // guard can read it synchronously on a hard reload, like `currentUser`.
+  const readPermissions = () => {
+    if (!import.meta.client) return null
+    try {
+      const stored = JSON.parse(localStorage.getItem(PERMISSIONS_STORAGE_KEY))
+      return Array.isArray(stored) ? stored : null
+    } catch {
+      return null
+    }
+  }
+  const permissions = ref(readPermissions())
+
+  const setPermissions = (list) => {
+    permissions.value = Array.isArray(list) ? list : null
+    if (import.meta.client) {
+      if (permissions.value) {
+        localStorage.setItem(PERMISSIONS_STORAGE_KEY, JSON.stringify(permissions.value))
+      } else {
+        localStorage.removeItem(PERMISSIONS_STORAGE_KEY)
+      }
+    }
+  }
+
   const clearUser = () => {
     currentUser.value = null
+    setPermissions(null)
     // TEMPORARY: Clear from localStorage
     if (import.meta.client) {
       localStorage.removeItem(USER_STORAGE_KEY)
@@ -61,7 +88,9 @@ export const useUserStore = defineStore('userStore', () => {
 
   return {
     currentUser,
+    permissions,
     setUser,
+    setPermissions,
     clearUser,
   }
 })

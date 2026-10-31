@@ -7,6 +7,7 @@ Global presentational and feature components for the public storefront shell (he
 
 ## Key files
 - `Header.vue` — sticky nav; cart dropdown (Teleport to body), mobile menu, dark-mode toggle, auth-aware profile button.
+- `BrandLogo.vue` — the single source of the capsule logo mark + Persian-only "کپسول" wordmark; props `size` (px, default 40), `showName`, `textClass`, `forceDark` (always-dark footer). Used by `Header.vue` (desktop + mobile menu), `Footer.vue`, `pages/panel.vue`.
 - `Footer.vue` — static footer, no script logic.
 - `HeroSection.vue` — landing hero text + search box; embeds `HeroCarousel`.
 - `HeroCarousel.vue` — self-contained autoplay/swipe carousel, no store/API deps.
@@ -18,9 +19,9 @@ Global presentational and feature components for the public storefront shell (he
 - `AuthModal.vue` — standalone **legacy** login/register modal with simulated (`setTimeout`) calls; still mounted only from `pages/cart.vue`.
 - `auth/PhoneStep.vue`, `PasswordStep.vue`, `OtpStep.vue`, `RegisterStep.vue`, `ResetPasswordStep.vue`, `AuthHero.vue` — the real, current login flow steps, driven entirely by `pages/login.vue`.
 - `dashboard/admin/AdminDashboard.vue` — renders real data from [`composables/useAdminDashboard`](../composables/CLAUDE.md) (store summary, low-stock, expiring goods); order-queue/prescription-review-queue sections remain TODO placeholders (no BACK endpoint).
-- `dashboard/owner/OwnerDashboard.vue` — renders real data from [`composables/useOwnerDashboard`](../composables/CLAUDE.md) (user-activity bar chart, goods-by-category pie chart only); revenue/sales-trend/top-products/staff-activity sections remain TODO placeholders (no BACK endpoint — see `FRONTEND_API_TODO.md`).
-- `dashboard/customer/CustomerDashboard.vue` — orchestrates the customer dashboard via [`composables/useCustomerDashboard`](../composables/CLAUDE.md).
-- `dashboard/customer/{DashboardStats,OrderTracking,PrescriptionsList,RefillReminders,ReorderGrid}.vue` — presentational cards, props-in/emits-out, with `loading` skeleton states.
+- `dashboard/owner/OwnerDashboard.vue` — renders real data from [`composables/useOwnerDashboard`](../composables/CLAUDE.md): user-activity bar chart, goods-by-category pie chart (both hand-rolled horizontal bars, no chart library), plus 4 KPI tiles (revenue this month + growth %, 30-day sales total, top product, most-active staff member) — **wired for real as of 2026-10-27**, previously static "TODO" text.
+- `dashboard/customer/CustomerDashboard.vue` — orchestrates the customer dashboard via [`composables/useCustomerDashboard`](../composables/CLAUDE.md). No longer renders a reminders card — see below.
+- `dashboard/customer/{DashboardStats,OrderTracking,PrescriptionsList,ReorderGrid}.vue` — presentational cards, props-in/emits-out, with `loading` skeleton states. **`RefillReminders.vue` was deleted (2026-10-27)**: BACK confirmed its `refillReminders` field is permanently `[]` (no refill-reminder feature), so the card and its consuming code were removed rather than kept as dead mock UI.
 
 ## Public surface
 - `ProductCard` — prop `product: Object` (required); emits `addToCart` (camelCase — note casing when wiring listeners elsewhere, which mostly use kebab-case).
@@ -30,11 +31,11 @@ Global presentational and feature components for the public storefront shell (he
 - `auth/OtpStep` — props `digits` (array), `error`, `timer`, `loading`, `context` (`'login'|'register'|'forgot-password'`); emits `update:digits`, `update:error`, `submit`, `resend`, `switchToPassword`, `goBack`; exposes `focusFirst()` via `defineExpose`. "Switch to password" button only shown when `context === 'login'`.
 - `auth/RegisterStep` / `ResetPasswordStep` — prop `form: Object` (required, must contain an `errors` sub-object the component mutates directly), `loading`; emit `update:form`, `submit`, `goBack`.
 - `auth/AuthHero` — no props, decorative only, hidden below `md:`.
-- `dashboard/customer/*` — accept `loading: Boolean` + data props, emit `track`/`shop`/`viewAll`/`upload`/`order`/`add`.
+- `dashboard/customer/*` — accept `loading: Boolean` + data props, emit `track`/`shop`/`viewAll`/`upload`/`add` (`order`, previously `RefillReminders.vue`'s emit, no longer exists — that component was removed).
 - `AdminDashboard`/`OwnerDashboard` — no props/emits; read their composables directly (see Key files).
 - Composables read: `useCustomerDashboard`, `useFormat` (`DashboardStats`/`ReorderGrid`), `useUserPanelTabs` (used by `pages/panel/dashboard.vue`, not the components themselves).
 - Stores read: `useCartStore` (`Header`, `FeaturedProducts`, `ChatbotWidget`, `CustomerDashboard`); `useChatStore` (`ChatbotWidget`, `HeroSection`).
-- Services/API: only `pages/login.vue` calls real endpoints via `$api.auth.*` (see [`services/api/CLAUDE.md`](../services/api/CLAUDE.md)); no `components/auth/*`/`dashboard/*` component calls the API directly. `AuthModal.vue` and `useCustomerDashboard.js` only simulate network calls.
+- Services/API: only `pages/login.vue` calls real endpoints via `$api.auth.*` (see [`services/api/CLAUDE.md`](../services/api/CLAUDE.md)) among components in this module; no `components/auth/*`/`dashboard/*` component calls the API directly — `dashboard/*` reads through `useCustomerDashboard`/`useOwnerDashboard`/`useAdminDashboard`, all real as of 2026-10-27. `AuthModal.vue` still only simulates network calls.
 
 ## Data flow and dependencies
 - `pages/login.vue` is the sole consumer of `components/auth/*`, owning all state and wiring every step's emits; steps swap via a `currentStep` string machine (`phone → password/register → otp-login/otp-register/forgot-password-otp → reset-password`).
@@ -49,9 +50,12 @@ Global presentational and feature components for the public storefront shell (he
 - **RTL-specific scroll math**: `CategoriesCarousel`/`HeroCarousel` invert normal LTR scroll-direction logic because the app is RTL — don't "fix" these to look like standard LTR code.
 - `RegisterStep`/`ResetPasswordStep` mutate `form.errors` in place via a two-way computed over the `form` prop — passing an object without an `errors` key throws.
 - `OtpStep`'s `context` prop drives conditional UI; an unlisted value fails the prop validator (dev warning only, doesn't throw).
-- Admin/owner dashboard data is now real (store-wide aggregates only — no per-user scoping on BACK). Customer dashboard (`useCustomerDashboard`) is still entirely mocked — no backend equivalent exists.
+- Admin/owner dashboard data is now real (store-wide aggregates only — no per-user scoping on BACK). Customer dashboard (`useCustomerDashboard`) is also now real as of 2026-10-27, scoped to the logged-in customer's own data.
 - Role gating is coarse (`admin | owner | else→customer`) and lives in the page, not the dashboard components.
 - `ProductCard` emits `addToCart` (camelCase) while the app otherwise uses kebab-case event names — check casing when adding listeners.
 - `Header`'s cart dropdown position is computed manually in JS, not CSS/popper.
+- **`h-full` on a dashboard card chains up through `pages/panel.vue`'s `<NuxtPage class="h-full" />`** (which falls through onto the page's/dashboard component's root) into the sidebar-vs-main grid stretch — the sidebar nav is usually taller than the dashboard content, so an un-grounded `h-full` on a card makes it balloon to sidebar height with a huge blank area below its content (fixed on `OrderTracking.vue` 2026-10-28 after removing `RefillReminders.vue`'s 2-column grid, which had been accidentally "grounding" the chain by being its own auto-height container). Only add `h-full` to a card root when it's paired with a sibling inside its own grid/flex row to match heights against — never on a lone/full-width card.
 
-Last synced: 209e98b
+Last synced: 2026-10-28 (OrderTracking.vue's h-full removed — was ballooning to sidebar height with RefillReminders.vue gone)
+
+- `InfoDocument.vue` (2026-10-29) — generic public text page shell: prop `documents: [{key,title,content,meta?}]`, `loading`, `emptyTitle`; skeleton/empty states; content is plain text (no `v-html`). Used by `terms.vue`/`privacy.vue`/`returns.vue`.

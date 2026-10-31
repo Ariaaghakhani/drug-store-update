@@ -4,7 +4,7 @@
 Three top-level page shells selected via `definePageMeta({ layout: ... })`: control the RTL `dir`/font wrapper and which chrome (header/footer, or none) wraps `<NuxtPage />` for storefront, auth, and pharmacist-panel routes.
 
 ## Key files
-- `default.vue` — storefront shell: `Header` + `<main>` + `Footer`, `dir="rtl"`, `font-dana`.
+- `default.vue` — storefront shell: `Header` + `<main>` + `Footer`, `dir="rtl"`, `font-dana`. Since 2026-10-29 it also renders a warning banner under the header (text = `orderingClosedMessage`) when `useStoreProfile()` reports `orderingEnabled: false` (`GET api/store-profile`).
 - `auth.vue` — bare shell for `/login`: no `dir`/font wrapper, no header/footer, just `<NuxtPage />`.
 - `panel.vue` — pharmacist-panel shell: `dir="rtl"`, `font-dana`, `<main>` wrapping `<NuxtPage />`, no header/footer of its own.
 
@@ -15,6 +15,7 @@ None declare `<slot/>`s — all render `<NuxtPage />` directly (standard Nuxt la
 - `panel.vue` wires in nothing itself; the real panel chrome (top bar, bottom tab bar, user menu) lives in [`pages/panel.vue`](../pages/panel/CLAUDE.md) (the page, not the layout).
 
 ## Data flow and dependencies
+- `default.vue` also calls `useStoreProfile()` (shared `useState`, loaded once client-side) for the ordering-closed banner.
 - All three call `useFavicon()` from `assets/composables/useFavicon.js`.
 - Neither `auth.vue` nor `panel.vue` reads auth/user state itself — the user-store read (`useUserStore()`, role lookups via `useUserPanelTabs()`) happens in `pages/panel.vue`, not in this layout.
 
@@ -23,4 +24,4 @@ None declare `<slot/>`s — all render `<NuxtPage />` directly (standard Nuxt la
 - `routeRules: { '/panel/**': { ssr: false } }` in `nuxt.config.ts` means everything under this layout is client-only rendered.
 - `auth.vue` deliberately omits `dir="rtl"`/`font-dana` — a new auth-flow page expecting RTL globally won't get it from this layout.
 
-Last synced: 209e98b
+Last synced: 2026-10-29 (default.vue ordering-closed banner)

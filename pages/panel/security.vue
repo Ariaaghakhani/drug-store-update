@@ -4,10 +4,8 @@
     <div class="space-y-4">
       <AuthMethodsCard
         :loading="pending"
-        :two-f-a-enabled="twoFAEnabled"
         :sms-enabled="smsEnabled"
         @change-password="showPasswordModal = true"
-        @manage-2fa="show2FAModal = true"
         @update:sms-enabled="smsEnabled = $event"
       />
       <ActiveSessionsCard
@@ -16,10 +14,17 @@
         @revoke="revokeSession"
         @revoke-all="revokeAllSessions"
       />
-      <LoginHistoryCard :loading="pending" :history="loginHistory" />
+      <LoginHistoryCard
+        :loading="pending"
+        :loading-more="loadingMoreHistory"
+        :has-more="loginHistoryPage + 1 < loginHistoryTotalPages"
+        :history="loginHistory"
+        @load-more="loadMoreLoginHistory"
+      />
       <SecurityAlertsCard
         :loading="pending"
         :notifications="securityNotifications"
+        :saving-id="savingNotificationId"
         @toggle="onNotificationToggle"
       />
       <DangerZoneCard
@@ -30,12 +35,6 @@
     </div>
 
     <ChangePasswordModal v-model:open="showPasswordModal" @saved="onPasswordSaved" />
-    <TwoFAModal
-      v-model:open="show2FAModal"
-      :enabled="twoFAEnabled"
-      @activate="onActivate2FA"
-      @deactivate="onDeactivate2FA"
-    />
   </div>
 </template>
 
@@ -46,62 +45,134 @@ import LoginHistoryCard from '@/components/panel/security/LoginHistoryCard.vue'
 import SecurityAlertsCard from '@/components/panel/security/SecurityAlertsCard.vue'
 import DangerZoneCard from '@/components/panel/security/DangerZoneCard.vue'
 import ChangePasswordModal from '@/components/panel/security/ChangePasswordModal.vue'
-import TwoFAModal from '@/components/panel/security/TwoFAModal.vue'
 
+const app = useNuxtApp()
 const toast = useToast()
 
 const pending = ref(true)
-const twoFAEnabled = ref(true)
 const smsEnabled = ref(false)
 const showPasswordModal = ref(false)
-const show2FAModal = ref(false)
 
-const activeSessions = ref([
-  { id: 1, current: true, icon: 'i-heroicons-computer-desktop', device: 'MacBook Pro', browser: 'Chrome 124 · macOS', location: 'تهران', ip: '185.xx.xx.42', lastActive: 'هم‌اکنون' },
-  { id: 2, current: false, icon: 'i-heroicons-device-phone-mobile', device: 'Samsung Galaxy S23', browser: 'Samsung Browser · Android 14', location: 'اصفهان', ip: '94.xx.xx.17', lastActive: '۲ ساعت پیش' },
-  { id: 3, current: false, icon: 'i-heroicons-computer-desktop', device: 'Windows PC', browser: 'Firefox 125 · Windows 11', location: 'مشهد', ip: '91.xx.xx.88', lastActive: 'دیروز، ۱۴:۳۰' },
-])
+const activeSessions = ref([])
+const loginHistory = ref([])
+const loginHistoryPage = ref(0)
+const loginHistoryTotalPages = ref(0)
+const loadingMoreHistory = ref(false)
+const securityNotifications = ref([])
+const savingNotificationId = ref(null)
 
-const loginHistory = ref([
-  { id: 1, success: true, suspicious: false, action: 'ورود موفق', device: 'Chrome · MacBook Pro', ip: '185.xx.xx.42', time: 'امروز، ۱۰:۱۵' },
-  { id: 2, success: true, suspicious: false, action: 'ورود موفق', device: 'Samsung Browser · Android', ip: '94.xx.xx.17', time: 'دیروز، ۱۸:۴۰' },
-  { id: 3, success: false, suspicious: true, action: 'تلاش ناموفق برای ورود', device: 'Chrome · Windows', ip: '212.xx.xx.11', time: 'دیروز، ۰۳:۲۲' },
-  { id: 4, success: true, suspicious: false, action: 'ورود موفق', device: 'Firefox · Windows PC', ip: '91.xx.xx.88', time: '۳ روز پیش، ۱۴:۳۰' },
-])
+const extractErrorMessage = (error, fallback) => error?.response?.data?.message ?? fallback
 
-const securityNotifications = ref([
-  { id: 'new-device', label: 'ورود از دستگاه جدید', description: 'هنگام ورود از یک دستگاه ناشناس اطلاع‌رسانی شوید', enabled: true },
-  { id: 'failed-login', label: 'تلاش‌های ناموفق برای ورود', description: 'پس از ۳ تلاش ناموفق متوالی اطلاع‌رسانی شوید', enabled: true },
-  { id: 'profile-change', label: 'تغییرات پروفایل', description: 'هنگام تغییر اطلاعات حساب یا رمز عبور اطلاع‌رسانی شوید', enabled: false },
-])
-
-const revokeSession = (id) => {
-  activeSessions.value = activeSessions.value.filter((s) => s.id !== id)
-  toast.add({ title: 'دسترسی لغو شد', color: 'success' })
+const DEVICE_ICONS = {
+  Windows: 'i-heroicons-computer-desktop',
+  macOS: 'i-heroicons-computer-desktop',
+  Linux: 'i-heroicons-computer-desktop',
+  Android: 'i-heroicons-device-phone-mobile',
+  iOS: 'i-heroicons-device-phone-mobile',
+  App: 'i-heroicons-device-phone-mobile',
 }
 
-const revokeAllSessions = () => {
-  activeSessions.value = activeSessions.value.filter((s) => s.current)
-  toast.add({ title: 'خروج از همه دستگاه‌ها', description: 'از تمام دستگاه‌های دیگر خارج شدید', color: 'primary' })
+const mapSession = (session) => ({
+  id: session.id,
+  current: session.current,
+  icon: DEVICE_ICONS[session.device] ?? 'i-heroicons-question-mark-circle',
+  device: session.device ?? 'نامشخص',
+  browser: session.browser ?? 'نامشخص',
+  location: session.location ?? 'نامشخص',
+  ip: session.ip ?? 'نامشخص',
+  lastActive: session.lastActiveAt
+    ? new Date(session.lastActiveAt).toLocaleString('fa-IR')
+    : '',
+})
+
+const fetchSessions = async () => {
+  try {
+    const response = await app.$api.auth.listSessions()
+    activeSessions.value = (response.data.data ?? []).map(mapSession)
+  } catch {
+    activeSessions.value = []
+  }
 }
 
-const onNotificationToggle = (id, enabled) => {
+const fetchLoginHistory = async (page = 0) => {
+  try {
+    const response = await app.$api.auth.getLoginHistory({ params: { page, size: 20 } })
+    const content = response.data.data?.content ?? []
+    loginHistory.value = page === 0 ? content : [...loginHistory.value, ...content]
+    const totalElements = response.data.data?.totalElements ?? 0
+    loginHistoryTotalPages.value = Math.ceil(totalElements / 20)
+    loginHistoryPage.value = page
+  } catch {
+    loginHistory.value = []
+    loginHistoryTotalPages.value = 0
+  }
+}
+
+const loadMoreLoginHistory = async () => {
+  loadingMoreHistory.value = true
+  try {
+    await fetchLoginHistory(loginHistoryPage.value + 1)
+  } finally {
+    loadingMoreHistory.value = false
+  }
+}
+
+const fetchSecurityNotifications = async () => {
+  try {
+    const response = await app.$api.auth.getSecurityNotifications()
+    securityNotifications.value = response.data.data ?? []
+  } catch {
+    securityNotifications.value = []
+  }
+}
+
+const revokeSession = async (id) => {
+  const session = activeSessions.value.find((s) => s.id === id)
+  try {
+    await app.$api.auth.revokeSession(id)
+    if (session?.current) {
+      // Not logoutAndResetAuthentication/$auth.reset() — that navigates to '/',
+      // which would race this explicit '/login' redirect.
+      app.$auth.setToken(null)
+      await navigateTo('/login')
+      return
+    }
+    activeSessions.value = activeSessions.value.filter((s) => s.id !== id)
+    toast.add({ title: 'دسترسی لغو شد', color: 'success' })
+  } catch (error) {
+    toast.add({ title: extractErrorMessage(error, 'لغو دسترسی ناموفق بود'), color: 'error' })
+  }
+}
+
+const revokeAllSessions = async () => {
+  try {
+    await app.$api.auth.revokeAllSessions()
+    app.$auth.setToken(null)
+    await navigateTo('/login')
+  } catch (error) {
+    toast.add({ title: extractErrorMessage(error, 'خروج از همه دستگاه‌ها ناموفق بود'), color: 'error' })
+  }
+}
+
+const onNotificationToggle = async (id, enabled) => {
   const notif = securityNotifications.value.find((n) => n.id === id)
-  if (notif) notif.enabled = enabled
+  if (!notif) return
+  const previous = notif.enabled
+  notif.enabled = enabled
+  savingNotificationId.value = id
+  try {
+    const response = await app.$api.auth.updateSecurityNotification({ data: { id, enabled } })
+    securityNotifications.value = response.data.data ?? securityNotifications.value
+  } catch (error) {
+    notif.enabled = previous
+    toast.add({ title: extractErrorMessage(error, 'ذخیره تنظیمات ناموفق بود'), color: 'error' })
+  } finally {
+    savingNotificationId.value = null
+  }
 }
 
 const onPasswordSaved = () => {
   toast.add({ title: 'رمز عبور تغییر کرد', color: 'success' })
-}
-
-const onActivate2FA = () => {
-  twoFAEnabled.value = true
-  toast.add({ title: 'فعال شد', description: 'اپلیکیشن احراز هویت با موفقیت فعال شد', color: 'success' })
-}
-
-const onDeactivate2FA = () => {
-  twoFAEnabled.value = false
-  toast.add({ title: 'غیرفعال شد', description: 'احراز هویت دو مرحله‌ای غیرفعال شد', color: 'success' })
 }
 
 const handleDeleteAccount = () => {
@@ -109,7 +180,7 @@ const handleDeleteAccount = () => {
 }
 
 onMounted(async () => {
-  await new Promise((r) => setTimeout(r, 600))
+  await Promise.all([fetchSessions(), fetchLoginHistory(0), fetchSecurityNotifications()])
   pending.value = false
 })
 

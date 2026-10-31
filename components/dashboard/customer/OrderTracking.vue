@@ -1,5 +1,5 @@
 <template>
-  <UCard :ui="{ body: 'p-0' }" class="h-full">
+  <UCard :ui="{ body: 'p-0' }">
     <div
       class="flex items-center justify-between gap-2 px-5 py-4 border-b border-gray-100 dark:border-gray-800"
     >

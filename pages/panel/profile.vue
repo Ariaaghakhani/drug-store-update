@@ -88,22 +88,57 @@ const loadUserData = () => {
     ? {
         firstName: user.person.firstName || '',
         lastName: user.person.lastName || '',
-        nationalId: user.person.nationalId || '',
+        nationalId: user.person.nationalCode || '',
         birthDate: user.person.birthDate || '',
-        gender: user.person.gender || 'unspecified',
+        gender: GENDER_FROM_API[user.person.gender] || 'unspecified',
       }
     : { firstName: 'آریا', lastName: 'آقاخانی', nationalId: '', birthDate: '', gender: 'unspecified' }
 }
 
+const GENDER_TO_API = { male: 'MALE', female: 'FEMALE' }
+const GENDER_FROM_API = { MALE: 'male', FEMALE: 'female', OTHER: 'unspecified' }
+
 const saveProfile = async (newForm) => {
+  const personId = userStore.currentUser?.person?.id
+  if (!personId) {
+    toast.add({ title: 'خطا', description: 'شناسه کاربر یافت نشد', color: 'error' })
+    return
+  }
+
   isLoading.value = true
   try {
-    await new Promise((r) => setTimeout(r, 800))
-    form.value = { ...newForm }
+    const response = await app.$api.user.updateUser({
+      data: {
+        id: personId,
+        // phone intentionally omitted: backend treats a missing phone as "no change"
+        // (phone changes require the separate OTP flow in ChangePhoneModal.vue)
+        dto: {
+          firstName: newForm.firstName,
+          lastName: newForm.lastName || null,
+          nationalCode: newForm.nationalId || null,
+          birthDate: newForm.birthDate ? newForm.birthDate.replace(/\//g, '-') : null,
+          gender: GENDER_TO_API[newForm.gender] || null,
+        },
+      },
+    })
+
+    const updatedPerson = response.data.data
+    userStore.setUser({ ...userStore.currentUser, person: updatedPerson })
+    form.value = {
+      firstName: updatedPerson.firstName || '',
+      lastName: updatedPerson.lastName || '',
+      nationalId: updatedPerson.nationalCode || '',
+      birthDate: updatedPerson.birthDate || '',
+      gender: GENDER_FROM_API[updatedPerson.gender] || 'unspecified',
+    }
     showProfileModal.value = false
     toast.add({ title: 'موفق', description: 'اطلاعات شما با موفقیت به‌روزرسانی شد', color: 'success' })
-  } catch {
-    toast.add({ title: 'خطا', description: 'مشکلی در به‌روزرسانی اطلاعات پیش آمد', color: 'error' })
+  } catch (error) {
+    toast.add({
+      title: 'خطا',
+      description: error?.response?.data?.message || 'مشکلی در به‌روزرسانی اطلاعات پیش آمد',
+      color: 'error',
+    })
   } finally {
     isLoading.value = false
   }

@@ -7,21 +7,13 @@
       :loading="statsPending"
     />
 
-    <div class="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
-      <OrderTracking
-        :orders="orders ?? []"
-        :loading="ordersPending"
-        @track="handleTrackOrder"
-        @view-all="handleTrackOrder"
-        @shop="router.push('/medications')"
-      />
-      <RefillReminders
-        :reminders="reminders ?? []"
-        :loading="remindersPending"
-        @order="handleOrderReminder"
-        @view-all="router.push('/panel/medications')"
-      />
-    </div>
+    <OrderTracking
+      :orders="orders ?? []"
+      :loading="ordersPending"
+      @track="handleTrackOrder"
+      @view-all="handleTrackOrder"
+      @shop="router.push('/medications')"
+    />
 
     <PrescriptionsList
       :prescriptions="prescriptions ?? []"
@@ -40,7 +32,6 @@
 <script setup>
 import DashboardStats from '@/components/dashboard/customer/DashboardStats.vue'
 import OrderTracking from '@/components/dashboard/customer/OrderTracking.vue'
-import RefillReminders from '@/components/dashboard/customer/RefillReminders.vue'
 import PrescriptionsList from '@/components/dashboard/customer/PrescriptionsList.vue'
 import ReorderGrid from '@/components/dashboard/customer/ReorderGrid.vue'
 import { useCustomerDashboard } from '@/composables/useCustomerDashboard'
@@ -55,28 +46,11 @@ const {
   statsPending,
   orders,
   ordersPending,
-  reminders,
-  remindersPending,
   prescriptions,
   prescriptionsPending,
   reorderItems,
   reorderPending,
 } = useCustomerDashboard()
-
-const handleOrderReminder = (reminder) => {
-  cartStore.addItem({
-    id: `reminder-${reminder.id}`,
-    nameFa: reminder.medicationName,
-    price: 0,
-    quantity: 1,
-    inStock: true,
-  })
-  toast.add({
-    title: 'به سبد خرید اضافه شد',
-    description: reminder.medicationName,
-    color: 'success',
-  })
-}
 
 const handleReorder = (item) => {
   cartStore.addItem({ ...item, quantity: 1, inStock: true })

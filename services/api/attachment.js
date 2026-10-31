@@ -25,12 +25,21 @@ export default (apiCaller) => ({
   },
 
   // ========== BULK OPERATIONS ==========
+  // multipart: { files: File[], referenceType, referenceId } — all-or-nothing
   uploadMultiple(config) {
-    return apiCaller.post('api/attachments/upload-multiple', config)
+    return apiCaller.post('api/attachments/upload/batch', config)
   },
 
   deleteMultiple(config) {
     return apiCaller.post('api/attachments/delete-multiple', config)
+  },
+
+  setPrimary(config) {
+    return apiCaller.post('api/attachments/set-primary', config)
+  },
+
+  byReference(config) {
+    return apiCaller.post('api/attachments/by-reference', config)
   },
 
   // ========== ATTACHMENT METADATA ==========
