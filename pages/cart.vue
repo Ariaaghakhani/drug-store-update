@@ -221,9 +221,10 @@
                   size="xl"
                   color="primary"
                   icon="i-heroicons-shopping-bag"
+                  :disabled="!orderingEnabled"
                   @click="handleCheckout"
                 >
-                  تکمیل خرید
+                  {{ orderingEnabled ? 'تکمیل خرید' : 'سفارش آنلاین بسته است' }}
                 </UButton>
 
                 <div
@@ -531,6 +532,7 @@ import { useCartStore } from '~/stores/cart'
 import { useUserStore } from '~/stores/user'
 
 const app = useNuxtApp()
+const { orderingEnabled } = useStoreProfile()
 const cartStore = useCartStore()
 const userStore = useUserStore()
 const toast = useToast()

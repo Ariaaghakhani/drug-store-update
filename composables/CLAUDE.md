@@ -11,6 +11,7 @@ Shared Composition API logic for the pharmacy storefront's user panel area: role
 - `useOwnerDashboard.js` — **fully wired (2026-10-27)**: `userActivityChart`/`categoryChart` as before, plus `revenueSummary` (`getRevenueSummary`), `salesTrendChart` (`getSalesTrendChart`), `topProducts` (`getTopProducts`), `staffActivity` (`getStaffActivity`) — each its own `useAsyncData` key following the same `{data, pending}`-pair pattern, all staff-with-dashboard-access only.
 - `useUpdateRolePermission.ts` — updates a role's permission in [`stores/roles.ts`](../stores/CLAUDE.md) and calls a no-op `syncToApi` stub.
 - `useUserPanelTabs.ts` — builds role-based panel navigation (customer/admin/owner) and route-access helpers, reading the current user's role from [`stores/user.js`](../stores/CLAUDE.md).
+- `useStoreProfile.js` — **new (2026-10-29)**: shares `GET api/store-profile` flags app-wide via `useState`; optional features (`wishlistEnabled`, `walletEnabled`, `stockAlertsEnabled`, ...) read OFF until it loads, `orderingEnabled` reads ON.
 
 ## Public surface
 - `useAdminDashboard()` → `{ summary, summaryPending, lowStock, lowStockPending, expiringGoods, expiringGoodsPending }` — `summary` is `DashboardSummaryDTO`-shaped (`totalUsers, totalGoods, stockValueAtPurchasePrice, stockValueAtSalePrice, lowStockCount`), `lowStock`/`expiringGoods` are arrays per BACK's `LowStockDTO`/`ExpiringGoodsDTO`. No order-queue/prescription-review-queue fields (no BACK endpoint).

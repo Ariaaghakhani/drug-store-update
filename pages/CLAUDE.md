@@ -46,3 +46,5 @@ Customer-facing storefront routes: marketing/info, browsing/buying medications, 
 - `middleware/auth.js` no-ops in dev and only checks `localStorage` client-side; no storefront page actually applies it — auth protection here is ad-hoc (`cart.vue`'s inline check) rather than middleware-driven.
 
 Last synced: 2026-10-28 (added checkout/redirect.vue interstitial between checkout and the gateway; verified result.vue's/redirect's data contracts against PouyanPlatform BACK source)
+
+- **Ordering closed (2026-10-29)**: `layouts/default.vue` shows a banner with `orderingClosedMessage` and `cart.vue` disables checkout when `GET api/store-profile` says `orderingEnabled: false`.
