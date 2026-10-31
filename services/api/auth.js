@@ -76,4 +76,19 @@ export default (apiCaller) => ({
   updateSecurityNotification(config) {
     return apiCaller.put('api/auth/me/security-notifications', config)
   },
+
+  // ========== EMAIL (own account; verified against BACK, dev mock code 12345) ==========
+  // body {email}
+  sendEmailOtp(config) {
+    return apiCaller.post('api/auth/me/email/send-otp', config)
+  },
+
+  // body {email, otpCode}
+  verifyEmailOtp(config) {
+    return apiCaller.post('api/auth/me/email/verify-otp', config)
+  },
+
+  removeEmail() {
+    return apiCaller.delete('api/auth/me/email')
+  },
 })

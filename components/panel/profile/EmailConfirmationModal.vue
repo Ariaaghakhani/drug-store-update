@@ -16,9 +16,10 @@
         </div>
 
         <Transition name="step-forward" mode="out-in">
-          <div v-if="!linkSent" key="unsent" class="px-5 py-5 space-y-4">
+          <!-- Step 1: enter the email, BACK sends a code -->
+          <div v-if="step === 'email'" key="email" class="px-5 py-5 space-y-4">
             <p class="text-xs text-gray-500 dark:text-gray-400 text-center leading-relaxed">
-              یک لینک تأیید به آدرس زیر ارسال می‌شود
+              یک کد تأیید به آدرس زیر ارسال می‌شود
             </p>
             <UInput v-model="localEmail" dir="ltr" placeholder="example@email.com" size="md" class="w-full" />
             <div class="flex gap-3 pt-1">
@@ -29,25 +30,57 @@
                 icon="i-heroicons-paper-airplane"
                 :loading="sending"
                 :disabled="!localEmail"
-                @click="sendLink"
+                @click="sendCode"
               >
-                ارسال لینک تأیید
+                ارسال کد تأیید
               </UButton>
             </div>
           </div>
 
-          <div v-else key="sent" class="px-5 py-5 space-y-4 text-center">
+          <!-- Step 2: enter the code -->
+          <div v-else-if="step === 'code'" key="code" class="px-5 py-5 space-y-4">
+            <p class="text-xs text-gray-500 dark:text-gray-400 text-center leading-relaxed">
+              کد ارسال‌شده به
+              <span class="font-mono" dir="ltr">{{ localEmail }}</span>
+              را وارد کنید
+            </p>
+            <UInput
+              v-model="otpCode"
+              dir="ltr"
+              inputmode="numeric"
+              placeholder="- - - - -"
+              size="md"
+              class="w-full"
+              :color="error ? 'error' : undefined"
+              @keyup.enter="verifyCode"
+            />
+            <p v-if="error" class="text-xs text-error text-center">{{ error }}</p>
+            <div class="flex gap-3 pt-1">
+              <UButton variant="soft" color="neutral" class="flex-1 justify-center" @click="step = 'email'">ویرایش ایمیل</UButton>
+              <UButton
+                color="primary"
+                class="flex-1 justify-center"
+                :loading="verifying"
+                :disabled="!otpCode"
+                @click="verifyCode"
+              >
+                تأیید
+              </UButton>
+            </div>
+          </div>
+
+          <!-- Step 3: done -->
+          <div v-else key="done" class="px-5 py-5 space-y-4 text-center">
             <div class="flex justify-center">
               <div class="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center pop-in">
-                <UIcon name="i-heroicons-paper-airplane" class="w-8 h-8 text-success" />
+                <UIcon name="i-heroicons-check" class="w-8 h-8 text-success" />
               </div>
             </div>
             <div class="space-y-1.5">
-              <h3 class="text-base font-semibold text-gray-900 dark:text-white">لینک ارسال شد</h3>
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">ایمیل تأیید شد</h3>
               <p class="text-xs text-gray-400 leading-relaxed">
-                ایمیل تأیید به
                 <span class="font-mono" dir="ltr">{{ localEmail }}</span>
-                ارسال شد
+                به حساب شما اضافه شد
               </p>
             </div>
             <UButton color="primary" block @click="close">متوجه شدم</UButton>
@@ -66,36 +99,67 @@ const props = defineProps({
 
 const emit = defineEmits(['update:open', 'saved'])
 
+const app = useNuxtApp()
+const toast = useAppToast()
+
 const isOpen = computed({
   get: () => props.open,
   set: (v) => emit('update:open', v),
 })
 
 const localEmail = ref(props.email ?? '')
-const linkSent = ref(false)
+const otpCode = ref('')
+const step = ref('email') // 'email' | 'code' | 'done'
 const sending = ref(false)
+const verifying = ref(false)
+const error = ref('')
 
 watch(
   () => props.open,
   (val) => {
     if (val) {
       localEmail.value = props.email ?? ''
-      linkSent.value = false
+      otpCode.value = ''
+      error.value = ''
+      step.value = 'email'
     }
   }
 )
 
-const sendLink = async () => {
+// POST api/auth/me/email/send-otp {email}
+const sendCode = async () => {
   sending.value = true
-  await new Promise((r) => setTimeout(r, 800))
-  sending.value = false
-  linkSent.value = true
+  try {
+    await app.$api.auth.sendEmailOtp({ data: { email: localEmail.value.trim() } })
+    otpCode.value = ''
+    error.value = ''
+    step.value = 'code'
+  } catch (err) {
+    toast.error('ارسال کد ناموفق بود', err?.response?.data?.message)
+  } finally {
+    sending.value = false
+  }
+}
+
+// POST api/auth/me/email/verify-otp {email, otpCode}
+const verifyCode = async () => {
+  verifying.value = true
+  error.value = ''
+  try {
+    await app.$api.auth.verifyEmailOtp({
+      data: { email: localEmail.value.trim(), otpCode: otpCode.value.trim() },
+    })
+    step.value = 'done'
+  } catch (err) {
+    error.value = err?.response?.data?.message || 'کد وارد شده نادرست است'
+  } finally {
+    verifying.value = false
+  }
 }
 
 const close = () => {
-  if (linkSent.value) emit('saved', localEmail.value)
+  if (step.value === 'done') emit('saved', localEmail.value.trim())
   isOpen.value = false
-  setTimeout(() => { linkSent.value = false }, 300)
 }
 </script>
 
