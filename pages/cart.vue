@@ -693,6 +693,7 @@ async function confirmCheckout() {
         paymentMethod: paymentMethod.value,
         gateway: gateway.value,
         acceptedTerms: acceptedTerms.value,
+        returnOrigin: window.location.origin,
       },
     })
 
@@ -728,7 +729,7 @@ async function confirmCheckout() {
       color: 'error',
     })
   } catch (error) {
-    const message = error?.response?.data?.message ?? 'خطا در ثبت سفارش'
+    const message = paymentErrorMessage(error, 'خطا در ثبت سفارش')
     toast.add({ title: message, icon: 'i-heroicons-exclamation-circle', color: 'error' })
   } finally {
     isSubmittingCheckout.value = false

@@ -49,6 +49,7 @@
 </template>
 
 <script setup>
+// Pre-gateway interstitial only. The post-payment page is /checkout/result (BACK redirects there).
 const route = useRoute()
 const { formatPrice } = useFormat()
 
