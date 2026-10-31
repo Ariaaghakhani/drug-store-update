@@ -25,6 +25,7 @@ import audit from '@/services/api/audit.js'
 import dynamic from '@/services/api/dynamic.js'
 import sms from '@/services/api/sms.js'
 import address from '~/services/api/panel/address.js'
+import ticket from '@/services/api/ticket.js'
 import storefront from '@/services/api/storefront.js'
 
 export default (apiCaller, apiInstances) => ({
@@ -48,6 +49,7 @@ export default (apiCaller, apiInstances) => ({
 
   // ========== COMMUNICATION ==========
   communication: communication(apiCaller),
+  ticket: ticket(apiCaller),
   storefront: storefront(apiCaller),
 
   // ========== USERS & ORGANIZATION ==========
