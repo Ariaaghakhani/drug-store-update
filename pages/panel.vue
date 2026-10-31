@@ -129,6 +129,7 @@
                       {{ todayDate }}
                     </p>
                   </div>
+                  <NotificationBell class="flex-shrink-0" />
                 </div>
               </UCard>
 
@@ -261,6 +262,18 @@
               <span class="text-[10px]">محصولات</span>
             </NuxtLink>
 
+            <!-- Notifications -->
+            <NuxtLink
+              to="/panel/notifications"
+              class="flex flex-col items-center gap-1 py-2 px-4 text-gray-500 dark:text-gray-400 transition-colors"
+              active-class="!text-teal-600 dark:!text-teal-400"
+            >
+              <UChip :show="unreadCount > 0" color="error" size="md" inset>
+                <UIcon name="i-heroicons-bell" class="w-6 h-6" />
+              </UChip>
+              <span class="text-[10px]">اعلان‌ها</span>
+            </NuxtLink>
+
             <!-- Profile (opens menu) -->
             <button
               class="flex flex-col items-center gap-1 py-2 px-4 transition-colors"
@@ -282,6 +295,8 @@
 </template>
 
 <script setup>
+import NotificationBell from '@/components/panel/notifications/NotificationBell.vue'
+
 const route = useRoute()
 const userStore = useUserStore()
 const isDev = import.meta.dev
@@ -310,6 +325,16 @@ definePageMeta({
 const app = useNuxtApp()
 const toast = useToast()
 const { getMenuItems, getUserRole } = useUserPanelTabs()
+
+// Unread count for the bell / bottom-nav badge; polled while the panel is open (push may be off or unreachable)
+const notifications = useNotifications()
+const push = usePushNotifications()
+const unreadCount = computed(() => notifications.unread.value)
+onMounted(() => {
+  notifications.refreshUnread()
+  notifications.startPolling()
+})
+onBeforeUnmount(notifications.stopPolling)
 
 // Computed
 const userFullName = computed(() => {
@@ -375,6 +400,9 @@ watch(
 const handleLogout = async () => {
   isProfileMenuOpen.value = false
   try {
+    // Unregister this browser's push token while the access token is still valid
+    await push.disable()
+    notifications.reset()
     app.$auth.reset()
     toast.add({
       title: 'خروج موفق',

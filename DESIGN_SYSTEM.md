@@ -172,6 +172,7 @@ Common mappings actually used:
 | Rating star | `i-heroicons-star-solid` (color `text-yellow-400`) |
 | Add / remove | `i-heroicons-plus` / `i-heroicons-minus` |
 | Shield / guarantee | `i-heroicons-shield-check` |
+| Notifications / none | `i-heroicons-bell` / `i-heroicons-bell-slash` |
 
 Sizing: `w-4` (16) inline · `w-5` (20) buttons · `w-6` (24) nav · `w-8`+ feature. Color via Tailwind (`text-brand-500`, `dark:text-brand-400`).
 
@@ -308,6 +309,12 @@ Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, cube placehol
 - Profile banner with gradient avatar `from-teal-400 to-teal-600`, initials.
 - Mobile: fixed bottom nav (home / products / profile) + slide-up profile sheet.
 - Roles: customer / admin / owner (labels مشتری / مدیر / مالک).
+
+### Notifications (bell, inbox row, push opt-in)
+- **Bell (`NotificationBell.vue`):** icon-only `UButton color="neutral" variant="ghost" square size="lg" icon="i-heroicons-bell"` (`w-10 h-10`) wrapped in `UChip color="error" size="3xl" inset` showing the unread count (`toLocaleString('fa-IR')`, `۹۹+` above 99). Opens a `UPopover` (`align: 'end'`), `w-80` panel with `dir="rtl" font-dana`: header row (`text-sm font-bold` title + `neutral soft xs` "خواندن همه"), `max-h-96` scrolling list, footer link `text-brand-500 dark:text-brand-400` "مشاهده همه اعلان‌ها".
+- **Mobile nav badge:** a dot only (`UChip color="error" size="md" inset`, no text) around the `w-6` nav icon.
+- **Inbox row (`NotificationItem.vue`):** type icon tile `rounded-xl` (`w-11 h-11` page / `w-9 h-9` bell) tinted by type: `bg-{token}/10 dark:bg-{token}/20 text-{token}` for success/warning/info/error, brand uses `bg-brand-50 dark:bg-brand-900/20 text-brand-500`. Unread = `font-semibold` title + `w-2 h-2 rounded-full bg-brand-500` dot; read = `font-medium text-gray-600 dark:text-gray-300`. Body is plain text (`whitespace-pre-line`, `line-clamp-2` in the bell). Time is relative ("۵ دقیقه پیش") via `utils/notificationMeta.js`.
+- **Push opt-in (`PushPermissionCard.vue`):** standard panel card header strip + one row: state tile (`w-10 h-10 rounded-xl`) + title/description + action. "فعال‌سازی" is the page's one `primary` CTA. "غیرفعال‌سازی" is `neutral soft`. The blocked state has no button, only browser-settings instructions. Never prompt for permission on page load, only from that button.
 
 ### UInput
 - Global `min-h-9` (36px) applied to `input.slots.root` in `app.config.ts` — all inputs are exactly 36px tall regardless of size variant.

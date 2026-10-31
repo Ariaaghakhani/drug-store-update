@@ -5,6 +5,7 @@
 
 ## Key files
 - `utils/auth.js` — exports `tokenGeneratedAtLocalStorageKey` (localStorage key constant) and `logoutAndResetAuthentication(app, opts)`, which calls the backend logout endpoint (swallowing errors) then resets `$auth` state.
+- `utils/notificationMeta.js` — **new (2026-10-29)**: `NOTIFICATION_TYPE_META` / `notificationTypeMeta(type)` (label, Heroicon, icon-tile classes per BACK `NotificationType`), `notificationTime(value)` (Persian relative time: "۵ دقیقه پیش", then a `fa-IR` date after a week). `panelMenus.js` gained the `notifications` menu (`always: true`, in every fallback list).
 - `utils/validations.js` — exports Persian-language validators: `validatePhoneNumber`, `isValidPhoneNumber`, `validateIranianNationalCode`, `validateRegisterForm`.
 - `types/api.ts` — `interface` declarations modeling backend DTOs across every domain: auth, users/roles, products/goods, orders, payments, inventory, addresses, dashboard/analytics, tickets, reviews, blog, suppliers, patients/prescriptions, attachments, pagination, errors, cart.
 - `types/panel-products.ts` — `interface Product`, a simplified product shape for the admin/storefront panel UI.
