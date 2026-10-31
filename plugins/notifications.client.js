@@ -1,6 +1,7 @@
 // Foreground side of push (see public/firebase-messaging-sw.js): a push that reaches a visible tab becomes a toast and
 // a bell refresh; a clicked OS notification asks an open tab to route to its link. Also refreshes this browser's FCM
-// token once auth is known, when the user already allowed notifications.
+// token whenever a session starts (app load or login, which doesn't reload the page), when the user already allowed
+// notifications. Logout removes the token from BACK, so without this a re-login gets no push until the next reload.
 const isSafeLink = (link) => typeof link === 'string' && link.startsWith('/') && !link.startsWith('//')
 
 export default defineNuxtPlugin((nuxtApp) => {
@@ -33,6 +34,12 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   nuxtApp.hook('app:mounted', async () => {
     await nuxtApp.$authReady
-    if (nuxtApp.$auth.loggedIn) nuxtApp.runWithContext(() => usePushNotifications().sync())
+    watch(
+      () => nuxtApp.$auth.loggedIn,
+      (loggedIn) => {
+        if (loggedIn) nuxtApp.runWithContext(() => usePushNotifications().sync())
+      },
+      { immediate: true }
+    )
   })
 })
