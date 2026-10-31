@@ -427,6 +427,8 @@ const handleResetPasswordSubmit = async () => {
 const finalizeLogin = async (data) => {
   app.$auth.setToken(data.accessToken)
   app.$auth.setUser(data.user) // This now automatically syncs with userStore
+  // Menus must be cached before navigating: the /panel route guard reads them synchronously
+  await useUserPanelTabs().refreshMenus()
   toast.success('ورود موفقیت‌آمیز بود', '', 'i-heroicons-check-circle')
 
   const redirectTo = route.query.redirect || '/panel/dashboard'

@@ -324,7 +324,10 @@ definePageMeta({
 
 const app = useNuxtApp()
 const toast = useToast()
-const { getMenuItems, getUserRole } = useUserPanelTabs()
+const { getMenuItems, getUserRole, refreshMenus } = useUserPanelTabs()
+
+// Keep the cached menus in sync with BACK (permissions can change between logins)
+onMounted(refreshMenus)
 
 // Unread count for the bell / bottom-nav badge; polled while the panel is open (push may be off or unreachable)
 const notifications = useNotifications()

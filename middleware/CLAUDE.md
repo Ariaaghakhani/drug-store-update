@@ -16,7 +16,7 @@ Route guards intended to protect authenticated/role-gated pages: `auth.js` for g
 ## Data flow and dependencies
 - `auth.js` reads only `localStorage.getItem('auth.local')`, no store.
 - `panel-access.js` reads `useUserStore()` (`userStore.currentUser?.person?.id`), [`useUserPanelTabs()`](../composables/CLAUDE.md) (`hasAccessToRoute`, `getAccessiblePaths`), and awaits `$authReady` injected by [`plugins/auth.client.js`](../plugins/CLAUDE.md).
-- `useUserPanelTabs.ts` derives role (`customer | admin | owner`, defaulting unknown roles to `'admin'`) from `userStore.currentUser?.roles` (real backend role-name array — `ROLE_STORE_ADMIN`→`owner`, `ROLE_CUSTOMER`→`customer`, else `admin`; `currentUser?.role` is only a legacy/mock fallback, see [`composables/CLAUDE.md`](../composables/CLAUDE.md)) and defines a per-role whitelist of panel sub-routes.
+- `useUserPanelTabs.js` derives role (`customer | admin | owner`, defaulting unknown roles to `'admin'`) from `userStore.currentUser?.roles` (real backend role-name array — `ROLE_STORE_ADMIN`→`owner`, `ROLE_CUSTOMER`→`customer`, else `admin`; `currentUser?.role` is only a legacy/mock fallback, see [`composables/CLAUDE.md`](../composables/CLAUDE.md)); the route whitelist now comes from BACK's per-user permissions (`userStore.permissions` → module-mapped menus), with the per-role list in `utils/panelMenus.js` as fallback.
 
 ## Gotchas
 - **Both files appear to be dead/unused code as currently wired**: nothing in `pages/` names them in `middleware`, neither has `.global.js`. The actual `/panel` protection lives in `pages/panel.vue`'s inline duplicate logic — editing `panel-access.js` expecting it to affect behavior won't work until it's actually referenced.

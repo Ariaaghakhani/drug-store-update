@@ -159,7 +159,7 @@ const realRoles = ref([])
 const creatingUser = ref(false)
 
 // BACK's real role-name space has no fixed tiers below "store admin" (see
-// composables/useUserPanelTabs.ts's same mapping) — this mirrors that heuristic so a
+// composables/useUserPanelTabs.js's same mapping) — this mirrors that heuristic so a
 // fetched staff row's permissions/badge color at least degrade consistently with the rest
 // of the mock-driven page, rather than matching nothing.
 const mapStaffRoleId = (roleNames) =>

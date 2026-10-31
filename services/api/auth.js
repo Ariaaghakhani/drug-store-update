@@ -91,4 +91,11 @@ export default (apiCaller) => ({
   removeEmail() {
     return apiCaller.delete('api/auth/me/email')
   },
+
+  // ========== PANEL PERMISSIONS (own only) ==========
+  // POST api/auth/me/permissions, body {modules?, actions?, allowed?} → [{module, action, endpoint, httpMethod, nameFa, allowed}].
+  // The panel menu is derived from this (module → menu mapping lives in utils/panelMenus.js).
+  getMyPermissions(config) {
+    return apiCaller.post('api/auth/me/permissions', config)
+  },
 })
