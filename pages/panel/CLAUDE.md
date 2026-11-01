@@ -57,5 +57,6 @@ Covers `pages/panel.vue` (the panel shell route) and everything under `pages/pan
 - `goodCode` is required by BACK (`GoodsServiceImpl.save`, 400 if blank) but wasn't in the old mock form — `new.vue`/`[id].vue` now have an explicit "کد کالا" input and both submit buttons are disabled until it's non-empty.
 - `users.vue` computes `canCreate/canUpdate/canDelete` once from the *viewer's own role* — no protection against a lower-privileged admin editing a higher-privilege (owner) user via `EditUserModal`.
 - `pages/panel.vue` gates its whole panel UI behind `userStore.currentUser || isDev` inside `ClientOnly` — first-paint behavior differs meaningfully between dev and prod.
+- `pages/panel.vue`'s `handleLogout` must call `$api.auth.logout()` before `$auth.reset()`: it revokes the HttpOnly refresh cookie, which otherwise stays valid. Clearing the user flips `getUserRole()` to its `'admin'` default, so on `/panel/dashboard` `AdminDashboard` briefly mounts and sends token-less requests; `plugins/api.js` no longer refreshes on those 401s.
 
 Last synced: 2026-10-27 (products pages gained real brandId/image-upload/inStock wiring; security.vue wired for real except 2FA removal/delete-account — backend's answer to FRONTEND_API_TODO.md)
