@@ -9,21 +9,19 @@
       </UContainer>
     </div>
 
+    <!-- Hides itself while BACK keeps categories behind login -->
     <UContainer>
       <CategoriesCarousel />
     </UContainer>
 
-    <!-- Featured Products - Contained -->
     <UContainer>
-      <FeaturedProducts />
+      <BrandsStrip />
     </UContainer>
 
-    <!-- Popular Medications - Full Width Background -->
-    <div class="bg-gray-50 dark:bg-gray-900 py-16">
-      <UContainer>
-        <PopularMedications />
-      </UContainer>
-    </div>
+    <!-- Product sections from GET api/storefront/home -->
+    <UContainer>
+      <HomeSections />
+    </UContainer>
 
     <!-- Chatbot Widget - Fixed Position -->
     <ChatbotWidget />

@@ -10,6 +10,53 @@ export default (apiCaller) => ({
     return apiCaller.get('api/store-profile')
   },
 
+  // ========== HOME / BRANDS / PRODUCT PAGE EXTRAS (public) ==========
+  // StorefrontHomeDTO {sections: [{key, title, items: StorefrontGoodsDTO[]}]}; off/empty sections are not returned
+  getHome() {
+    return apiCaller.get('api/storefront/home')
+  },
+
+  // CategoryDTO[] roots with nested `children` {id, name, parentId, level, code, sortOrder, children}.
+  // NOT public on BACK yet (401 for a guest) — see BACKEND_REQUESTS.md; callers must treat 401/403 as "no categories".
+  getCategoryTree(config) {
+    return apiCaller.get('api/categories/tree', { params: { scope: 'PRODUCT' }, ...config })
+  },
+
+  // config.params {withGoodsOnly=true, limit?} → StorefrontBrandDTO {id, name, logoUrl, goodsCount}[]
+  listBrands(config) {
+    return apiCaller.get('api/storefront/brands', config)
+  },
+
+  // StorefrontBrandDetailDTO {id, name, logoUrl, description, goodsCount, categories}; 404 brand.not.found
+  getBrand(brandId) {
+    return apiCaller.get(`api/storefront/brands/${brandId}`)
+  },
+
+  // config.params {categoryId?, sort?, page, size} → {days, goods: PageResponse<StorefrontGoodsDTO>}
+  listNearExpiry(config) {
+    return apiCaller.get('api/storefront/goods/near-expiry', config)
+  },
+
+  // {goodsId, similar, brandId, brandName, sameBrand} — both lists are StorefrontGoodsDTO[], in-stock only
+  getRelatedGoods(goodsId) {
+    return apiCaller.get(`api/storefront/goods/${goodsId}/related`)
+  },
+
+  // config.params {rating?: 1..5, page, size} → PageResponse<GoodsReviewDTO> (approved only, newest first)
+  listGoodsReviews(goodsId, config) {
+    return apiCaller.get(`api/reviews/goods/${goodsId}`, config)
+  },
+
+  // {goodsId, averageRating (null when no reviews), reviewCount, ratingCounts: {1..5: n}}
+  getGoodsRatingSummary(goodsId) {
+    return apiCaller.get(`api/reviews/goods/${goodsId}/summary`)
+  },
+
+  // config.params {page, size} → PageResponse<GoodsQuestionDTO> (answered + public only; empty when the store turned Q&A off)
+  listGoodsQuestions(goodsId, config) {
+    return apiCaller.get(`api/questions/goods/${goodsId}`, config)
+  },
+
   // ========== INFO PAGES (public) ==========
   getAboutUs() {
     return apiCaller.get('api/about-us')

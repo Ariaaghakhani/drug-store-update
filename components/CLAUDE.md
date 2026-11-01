@@ -7,6 +7,7 @@ Global presentational and feature components for the public storefront shell (he
 
 ## Key files
 - `Header.vue` — sticky nav; cart dropdown (Teleport to body), mobile menu, dark-mode toggle, auth-aware profile button.
+- `HeaderSearch.vue` — **new (2026-11-02)**: the navbar search, mounted by `Header.vue` in place of the old dead icon. Icon toggles a panel (`absolute` under the icon on `sm:`, `fixed` full-width on mobile) with an input; typing (350 ms debounce, stale responses dropped by a request counter) calls `$api.search.searchGoods` `{keyword, size: 5}` and lists up to 5 rows (image, name, brand, price / ناموجود) linking to `/medications/{linkId}`; loading skeletons, a "محصولی یافت نشد" state and a failed state with retry. A CTA sits under every non-empty state: "مشاهده همه نتایج" → `/medications?search=<text>` when there are hits, "مشاهده همه محصولات" → `/medications` when there are none (there is no `/products` route). Enter goes to the listing; Esc, outside click, a link click or any route change closes it. Note `Header`'s `backdrop-blur` makes it the containing block for the mobile `fixed` panel.
 - `BrandLogo.vue` — the single source of the capsule logo mark + Persian-only "کپسول" wordmark; props `size` (px, default 40), `showName`, `textClass`, `forceDark` (always-dark footer). Used by `Header.vue` (desktop + mobile menu), `Footer.vue`, `pages/panel.vue`.
 - `Footer.vue` — static footer, no script logic.
 - `StoreLocationCard.vue` — **(2026-11-01)** map card for the physical pharmacy: OpenStreetMap iframe (no key; Neshan SDK was tried and dropped) + direction buttons (Neshan / Google Maps / Waze), data from `utils/storeLocation.js`. Used on `/contact`.
@@ -14,7 +15,11 @@ Global presentational and feature components for the public storefront shell (he
 - `HeroCarousel.vue` — self-contained autoplay/swipe carousel, no store/API deps.
 - `CategoriesCarousel.vue` — scrollable category chips; navigates to `/medications?category=...`.
 - `FeaturedProducts.vue` / `PopularMedications.vue` — hardcoded product/medication grids; render `ProductCard`/`UCard`.
-- `ProductCard.vue` — reusable product tile, used by `FeaturedProducts` and the catalog page.
+- `ProductCard.vue` — reusable product tile (**rewritten as `<script setup>` 2026-11-02**): is itself the `NuxtLink` to `/medications/{linkId ?? id}`, shows the real image (`product.image`), "از …" price for products with variants, strike-through + `٪ تخفیف` badge, `expiryLabel` notice, and uses valid color tokens. Used by `ProductGrid` (and the legacy `FeaturedProducts`).
+- `ProductGrid.vue` — **new (2026-11-02)**: skeleton (`h-96`, `sk` transition) → grid → empty state (props `products`, `loading`, `skeletonCount`, `emptyIcon/Title/Text`, `gridClass`; slot `empty-action`; emits `addToCart`). Shared by home, listing, brand, near-expiry and related rows.
+- `HomeSections.vue` — **new**: `GET api/storefront/home` → one titled `ProductGrid` per section, own loading/failed/empty states. `BrandsStrip.vue` — **new**: `GET api/storefront/brands?limit=12` horizontal strip, hides itself on empty/failed.
+- `SearchFilters.vue` — **new**: the `/medications` filter card (a single-choice category group on top when `useStoreCategories()` has a tree). Props `state` (from `utils/searchQuery.js::parseSearchQuery`), `facets` (`AttributeFacetDTO[]`), `brands`, `loading`; emits `change(nextState)` (page reset to 1) — it never touches the router itself. Checkbox groups for options/boolean facets, min–max inputs for NUMBER facets (apply on blur/enter, Persian digits accepted).
+- `RelatedGoods.vue` / `ProductReviews.vue` / `ProductQuestions.vue` — **new**: product-page blocks, each takes `goodsId` and fetches itself (client-only; mount them only after the product loaded). Related renders nothing when empty/failed; reviews = rating summary + 1–5★ filter + load-more; questions = answered Q&A + load-more. Read-only — writing a review/question (customer, B9) is not built.
 - `StatsSection.vue` — static stats cards, no logic.
 - `ChatbotWidget.vue` — floating AI chat widget driven by [`stores/chat`](../stores/CLAUDE.md) and `stores/cart`.
 - `AuthModal.vue` — standalone **legacy** login/register modal with simulated (`setTimeout`) calls; still mounted only from `pages/cart.vue`.
@@ -25,7 +30,7 @@ Global presentational and feature components for the public storefront shell (he
 - `dashboard/customer/{DashboardStats,OrderTracking,PrescriptionsList,ReorderGrid}.vue` — presentational cards, props-in/emits-out, with `loading` skeleton states. **`RefillReminders.vue` was deleted (2026-10-27)**: BACK confirmed its `refillReminders` field is permanently `[]` (no refill-reminder feature), so the card and its consuming code were removed rather than kept as dead mock UI.
 
 ## Public surface
-- `ProductCard` — prop `product: Object` (required); emits `addToCart` (camelCase — note casing when wiring listeners elsewhere, which mostly use kebab-case).
+- `ProductCard` — prop `product: Object` (required; build it with `utils/storefrontGoods.js::toProductCard`); emits `addToCart` (camelCase — note casing when wiring listeners elsewhere, which mostly use kebab-case). The card swallows its own button click (`preventDefault`/`stopPropagation`) so it doesn't follow the link — wire add-to-cart with `useAddToCart()`, which sends a `hasVariants` card to its product page instead.
 - `AuthModal` — props `modelValue: Boolean`, `redirectAfterAuth: String`; emits `update:modelValue`, `authenticated`.
 - `auth/PhoneStep` — props `phoneNumber`, `loading`; emits `update:phoneNumber`, `submit`.
 - `auth/PasswordStep` — props `password`, `error`, `loading`; emits `update:password`, `update:error`, `submit`, `switchToOtp`, `forgotPassword`, `goBack`.
@@ -44,7 +49,7 @@ Global presentational and feature components for the public storefront shell (he
 - `CustomerDashboard.vue` depends on `useCustomerDashboard` (mocked) and `useCartStore`/`useToast` for add-to-cart actions.
 - `Header.vue` depends on `useCartStore`, `useColorMode`, `this.$auth.loggedIn` to route "profile" clicks to `/panel` vs `/login?redirect=/panel`.
 - `ChatbotWidget.vue`/`AuthModal.vue` both call `useNuxtApp().$auth.setToken(...)` directly rather than via a dedicated composable.
-- Landing components (`HeroSection`, `HeroCarousel`, `CategoriesCarousel`, `FeaturedProducts`, `PopularMedications`, `StatsSection`) are assembled on `pages/index.vue`; all use hardcoded Farsi mock data.
+- `pages/index.vue` (2026-11-02) mounts `HeroSection` (mock copy), `BrandsStrip` and `HomeSections` (real data). `FeaturedProducts`, `PopularMedications` and `StatsSection` are hardcoded mock components that are **no longer mounted** — safe to delete or revive. `CategoriesCarousel` is mounted again, **rewritten as `<script setup>` on `useStoreCategories()`** (top-level categories → `/medications?categoryId=<id>`, icon from the name via `utils/storefrontGoods.js::categoryIcon`); it renders nothing while the category endpoint is not public (see `pages/CLAUDE.md` gotchas). The RTL scroll math was kept as is.
 
 ## Gotchas
 - **Two parallel, inconsistent auth flows**: the real one (`auth/*` + `pages/login.vue`) and a legacy dead-end one (`AuthModal.vue`, simulated) still mounted from `pages/cart.vue`. Future login-logic edits won't propagate to the cart modal unless both are updated.
