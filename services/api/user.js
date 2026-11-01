@@ -33,6 +33,58 @@ export default (apiCaller) => ({
     return apiCaller.get('api/users/staff', config)
   },
 
+  // Staff and customers of this store. GET, 0-based `page`, `size` 1..100, optional `type` (ALL|STAFF|CUSTOMER), `q`,
+  // `active`, `locked` via config.params → PageResponse<ManagedUserDTO>
+  searchManagedUsers(config) {
+    return apiCaller.get('api/users', config)
+  },
+
+  // body {id} → ManagedUserDTO, like every other action below that takes {id}
+  getManagedUser(config) {
+    return apiCaller.post('api/users/get', config)
+  },
+
+  // body {id, roleIds}: replaces the staff roles. [] is only allowed for a user who also has the customer role
+  setManagedUserRoles(config) {
+    return apiCaller.post('api/users/roles', config)
+  },
+
+  activateManagedUser(config) {
+    return apiCaller.post('api/users/activate', config)
+  },
+
+  deactivateManagedUser(config) {
+    return apiCaller.post('api/users/deactivate', config)
+  },
+
+  lockManagedUser(config) {
+    return apiCaller.post('api/users/lock', config)
+  },
+
+  unlockManagedUser(config) {
+    return apiCaller.post('api/users/unlock', config)
+  },
+
+  // body {id} → SessionDTO[] (`current` is always false here, `location` null)
+  listManagedUserSessions(config) {
+    return apiCaller.post('api/users/sessions', config)
+  },
+
+  // body {id, sessionId}
+  revokeManagedUserSession(config) {
+    return apiCaller.post('api/users/sessions/revoke', config)
+  },
+
+  // body {id} → {revokedCount}
+  revokeAllManagedUserSessions(config) {
+    return apiCaller.post('api/users/sessions/revoke-all', config)
+  },
+
+  // body {id, page (0-based), size 1..100} → PageResponse<LoginHistoryEntryDTO>
+  getManagedUserLoginHistory(config) {
+    return apiCaller.post('api/users/login-history', config)
+  },
+
   // ========== ROLES ==========
   listRoles(config) {
     return apiCaller.get('api/roles', config)
