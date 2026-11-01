@@ -347,6 +347,10 @@ Icon container (`w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/20`) + `w-5
 ### Admin data table
 Wrapped in `UCard :ui="{ body: 'p-0' }"` with `overflow-x-auto`. `<thead>` uses `bg-gray-50 dark:bg-gray-800/50 border-b` with `text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3 text-start`. `<tbody>` rows use `border-b border-gray-100 dark:divide-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors`. Expandable rows: sibling `<tr>` with colspan rendered immediately after the parent, background `bg-gray-50/50 dark:bg-gray-800/20`. Row actions via `UDropdownMenu` with ghost trigger button.
 
+**Tables with only row actions (no page-level create):** the header's end slot holds a secondary action (`color="neutral" variant="soft" size="lg"`, e.g. "به‌روزرسانی") and the page has no primary button. The one primary is the submit button inside the row action's modal. Example: `/panel/inventory`.
+
+**Quantity inputs:** use a text `UInput` with `inputmode="numeric" dir="ltr"`, not `type="number"`, which rejects digits from a Persian keyboard. Parse with `parseQuantity` (`utils/inventoryMeta.js`) and show limits through `UFormField`'s `help`/`error`.
+
 ### Metric card grid (admin)
 `grid grid-cols-2 lg:grid-cols-4 gap-4`. Each `UCard :ui="{ body: 'p-4' }"` holds `flex items-center gap-3`: icon container (`w-10 h-10 rounded-xl`) + div with `text-xs text-gray-500` label above `text-xl font-black` value formatted with `.toLocaleString('fa-IR')`.
 
@@ -354,6 +358,7 @@ Wrapped in `UCard :ui="{ body: 'p-0' }"` with `overflow-x-auto`. `<thead>` uses 
 - **Empty (cart/search):** centered large gray icon + bold heading + muted line + CTA.
 - **Loading grid:** `USkeleton` ×12, `h-80 w-full`, in the product grid columns.
 - **No results (`medications/index.vue`):** `i-heroicons-magnifying-glass` w-20 + "محصولی یافت نشد".
+- **Failed load (panel lists):** never show a failed fetch as "nothing here". Use the empty-state layout with `i-heroicons-exclamation-triangle` and a `neutral soft` retry button, or `i-heroicons-lock-closed` and no button for a 403, and hide metrics that would read as zero.
 - **Toast:** top-center, 3s, RTL (`app.config.ts`); use `color: 'success'` and `color: 'error'`. Never pass `'green'` or `'red'`.
 
 ### USkeleton
@@ -391,6 +396,7 @@ Routes (from `pages/`):
 /panel/profile          Profile
 /panel/address          Addresses
 /panel/users            Users (admin)
+/panel/inventory        Stock list, adjust, transfer (staff)
 ```
 
 Layouts: `default.vue` (storefront), `panel.vue` (dashboard shell), `auth.vue` (login).
