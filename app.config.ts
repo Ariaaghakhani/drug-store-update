@@ -8,6 +8,15 @@ export default defineAppConfig({
         root: 'min-h-9',
       },
     },
+    // Nuxt UI's xs/sm badges are 8px/10px, too small for Persian text: nothing goes below --t-xs (12px)
+    badge: {
+      variants: {
+        size: {
+          xs: { base: 'text-xs px-1.5 py-0.5' },
+          sm: { base: 'text-xs px-2 py-1' },
+        },
+      },
+    },
     colors: {
       primary: 'brand',
       secondary: 'secondary',

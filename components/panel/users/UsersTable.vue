@@ -48,25 +48,38 @@
                     <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center flex-shrink-0">
                       <span class="text-xs font-bold text-white">{{ user.fullName[0] }}</span>
                     </div>
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ user.fullName }}</span>
+                    <NuxtLink
+                      :to="`/panel/users/${user.id}`"
+                      class="text-sm font-medium text-gray-900 dark:text-white hover:text-brand-500 dark:hover:text-brand-400 transition-colors"
+                    >
+                      {{ user.fullName }}
+                    </NuxtLink>
                   </div>
                 </td>
                 <td class="px-6 py-4">
                   <span class="text-sm font-mono tabular-nums text-gray-600 dark:text-gray-400" dir="ltr">{{ user.phone }}</span>
                 </td>
                 <td class="px-6 py-4">
-                  <UBadge :color="roleBadgeColor[user.roleId] ?? 'neutral'" variant="subtle" size="sm">
-                    {{ user.roleFa }}
-                  </UBadge>
+                  <div class="flex flex-wrap gap-1">
+                    <UBadge
+                      v-for="role in user.roleBadges"
+                      :key="role.name"
+                      :color="role.color"
+                      variant="subtle"
+                      size="sm"
+                    >
+                      {{ role.label }}
+                    </UBadge>
+                  </div>
                 </td>
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-2">
                     <span
                       class="w-2 h-2 rounded-full flex-shrink-0"
-                      :class="user.isActive ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'"
+                      :class="statusOf(user).dot"
                     />
                     <span class="text-xs text-gray-600 dark:text-gray-400">
-                      {{ user.isActive ? 'فعال' : 'غیرفعال' }}
+                      {{ statusOf(user).label }}
                     </span>
                   </div>
                 </td>
@@ -75,7 +88,6 @@
                 </td>
                 <td class="px-6 py-4">
                   <UDropdownMenu
-                    v-if="hasActions"
                     :items="[rowActions(user)]"
                     :ui="{ content: 'font-dana w-44' }"
                   >
@@ -85,17 +97,9 @@
                       size="xs"
                       color="neutral"
                       square
+                      aria-label="عملیات کاربر"
                     />
                   </UDropdownMenu>
-                  <UButton
-                    v-else
-                    variant="ghost"
-                    icon="i-heroicons-ellipsis-vertical"
-                    size="xs"
-                    color="neutral"
-                    square
-                    disabled
-                  />
                 </td>
               </tr>
             </tbody>
@@ -113,50 +117,41 @@
 </template>
 
 <script setup>
-const props = defineProps({
+defineProps({
   users: { type: Array, required: true },
   pending: { type: Boolean, required: true },
   pageSize: { type: Number, required: true },
-  canUpdate: { type: Boolean, required: true },
-  canDelete: { type: Boolean, required: true },
 })
 
-const emit = defineEmits(['edit', 'deactivate', 'delete'])
+const emit = defineEmits(['roles', 'set-active', 'set-locked'])
 
-const hasActions = computed(() => props.canUpdate || props.canDelete)
-
-const roleBadgeColor = {
-  owner: 'warning',
-  admin: 'info',
-  pharmacist: 'primary',
-  support: 'neutral',
-  customer: 'success',
+const statusOf = (user) => {
+  if (user.isLocked) return { label: 'قفل‌شده', dot: 'bg-error' }
+  return user.isActive
+    ? { label: 'فعال', dot: 'bg-success' }
+    : { label: 'غیرفعال', dot: 'bg-gray-300 dark:bg-gray-600' }
 }
 
-const rowActions = (user) => {
-  const items = []
-  if (props.canUpdate) {
-    items.push({
-      label: 'ویرایش',
-      icon: 'i-heroicons-pencil-square',
-      onSelect: () => emit('edit', user),
-    })
-    items.push({
-      label: user.isActive ? 'غیرفعال‌سازی' : 'فعال‌سازی',
-      icon: user.isActive ? 'i-heroicons-no-symbol' : 'i-heroicons-check-circle',
-      onSelect: () => emit('deactivate', user),
-    })
-  }
-  if (props.canDelete) {
-    items.push({
-      label: 'حذف',
-      icon: 'i-heroicons-trash',
-      color: 'error',
-      onSelect: () => emit('delete', user),
-    })
-  }
-  return items
-}
+// No delete: BACK has no hard delete for an account, only deactivate and lock
+const rowActions = (user) => [
+  { label: 'مشاهده جزئیات', icon: 'i-heroicons-eye', to: `/panel/users/${user.id}` },
+  {
+    label: user.staff ? 'تغییر نقش' : 'دادن نقش کارکنان',
+    icon: 'i-heroicons-identification',
+    onSelect: () => emit('roles', user),
+  },
+  {
+    label: user.isActive ? 'غیرفعال‌سازی' : 'فعال‌سازی',
+    icon: user.isActive ? 'i-heroicons-no-symbol' : 'i-heroicons-check-circle',
+    onSelect: () => emit('set-active', user, !user.isActive),
+  },
+  {
+    label: user.isLocked ? 'باز کردن قفل' : 'قفل کردن',
+    icon: user.isLocked ? 'i-heroicons-lock-open' : 'i-heroicons-lock-closed',
+    color: user.isLocked ? undefined : 'error',
+    onSelect: () => emit('set-locked', user, !user.isLocked),
+  },
+]
 </script>
 
 <style scoped>

@@ -8,16 +8,22 @@
       @update:model-value="(v) => emit('update:searchQuery', v)"
     />
     <USelect
-      :model-value="roleFilter"
-      :items="roleFilterItems"
-      class="w-40"
-      @update:model-value="(v) => emit('update:roleFilter', v)"
+      :model-value="typeFilter"
+      :items="TYPE_ITEMS"
+      class="w-36"
+      @update:model-value="(v) => emit('update:typeFilter', v)"
     />
     <USelect
-      :model-value="statusFilter"
-      :items="statusFilterItems"
-      class="w-40"
-      @update:model-value="(v) => emit('update:statusFilter', v)"
+      :model-value="activeFilter"
+      :items="ACTIVE_ITEMS"
+      class="w-36"
+      @update:model-value="(v) => emit('update:activeFilter', v)"
+    />
+    <USelect
+      :model-value="lockedFilter"
+      :items="LOCKED_ITEMS"
+      class="w-36"
+      @update:model-value="(v) => emit('update:lockedFilter', v)"
     />
   </div>
 </template>
@@ -25,11 +31,31 @@
 <script setup>
 defineProps({
   searchQuery: { type: String, required: true },
-  roleFilter: { type: String, required: true },
-  statusFilter: { type: String, required: true },
-  roleFilterItems: { type: Array, required: true },
-  statusFilterItems: { type: Array, required: true },
+  typeFilter: { type: String, required: true },
+  activeFilter: { type: String, required: true },
+  lockedFilter: { type: String, required: true },
 })
 
-const emit = defineEmits(['update:searchQuery', 'update:roleFilter', 'update:statusFilter'])
+const emit = defineEmits([
+  'update:searchQuery',
+  'update:typeFilter',
+  'update:activeFilter',
+  'update:lockedFilter',
+])
+
+const TYPE_ITEMS = [
+  { label: 'همه کاربران', value: 'ALL' },
+  { label: 'کارکنان', value: 'STAFF' },
+  { label: 'مشتریان', value: 'CUSTOMER' },
+]
+const ACTIVE_ITEMS = [
+  { label: 'فعال و غیرفعال', value: 'all' },
+  { label: 'فعال', value: 'true' },
+  { label: 'غیرفعال', value: 'false' },
+]
+const LOCKED_ITEMS = [
+  { label: 'قفل و بازشده', value: 'all' },
+  { label: 'قفل‌شده', value: 'true' },
+  { label: 'بدون قفل', value: 'false' },
+]
 </script>

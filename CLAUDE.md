@@ -159,7 +159,7 @@ pages/
 stores/           ← Pinia stores
 server/
 app.vue           ← root: font-dana + dir="rtl" wrapper
-app.config.ts     ← Nuxt UI overrides (toast RTL, modal slots, input min-h)
+app.config.ts     ← Nuxt UI overrides (toast RTL, modal slots, input min-h, badge min text size)
 nuxt.config.ts    ← runtimeConfig, PWA, i18n
 DESIGN_SYSTEM.md  ← visual source of truth ← always read before building UI
 ```

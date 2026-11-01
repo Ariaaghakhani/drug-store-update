@@ -241,6 +241,7 @@ const colorMap = {
 // fallback: 'primary'
 ```
 > ⚠ The color map above uses raw Tailwind color names (legacy). For new badges use valid tokens: `success`, `info`, `warning`, `error`, `primary`.
+- **Minimum text size:** `text-xs` (12px) at every badge size. `app.config.ts` overrides Nuxt UI's `xs`/`sm` (8px/10px), so `size` only changes padding below `md`.
 - Discount badge: `color="error" variant="solid"` → `{n}٪ تخفیف`.
 - Prescription flag: `color="warning" variant="solid"` with `i-heroicons-document-text` → `نسخه‌دار`, positioned `absolute top-3 left-3` (LTR-left = visual left in RTL).
 
