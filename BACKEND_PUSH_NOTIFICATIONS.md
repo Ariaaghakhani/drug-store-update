@@ -1,7 +1,9 @@
 # Push notifications + in-app inbox — backend contract
 
-Status (2026-10-29): **frontend implemented** against this contract. **Backend not written yet.** Local branch
-`agk/push-notifications` exists in PouyanPlatform (off `main` @ #428), with no changes on it.
+Status (2026-10-31): **frontend implemented** against this contract. **Backend partly written, not merged**: PouyanPlatform
+branch `agk/push-notifications` has the REST API, FCM sender and inbox, but of the hook points in §3 only the customer
+order updates (`OrderPlacedEvent`, `OrderCustomerUpdateEvent`) send anything. Tickets, prescriptions, returns, wallet,
+stock alerts, low stock and every staff recipient are not wired yet.
 
 Delivery: Firebase Cloud Messaging (FCM) **web push**, data-only messages. Every notification is also stored
 in a per-user inbox, so users who deny permission, or whose browser or server can't reach Google, still see it in

@@ -33,7 +33,12 @@ function loadFirebase(config) {
           appId: config.appId,
         })
       return { messaging: messaging.getMessaging(app), getToken: messaging.getToken, deleteToken: messaging.deleteToken }
-    })().catch(() => null)
+    })().catch((error) => {
+      console.warn('[Push] Firebase failed to load:', error)
+      // Not remembered, so "تلاش دوباره" can recover without a reload
+      firebasePromise = null
+      return null
+    })
   }
   return firebasePromise
 }
@@ -132,8 +137,9 @@ export const usePushNotifications = () => {
     if (!supported.value || permission.value !== 'granted' || optedOut.value) return
     try {
       await register()
-    } catch {
+    } catch (error) {
       // Firebase unreachable or blocked: the inbox poll still covers this browser
+      console.warn('[Push] Device registration failed:', error)
     }
   }
 
