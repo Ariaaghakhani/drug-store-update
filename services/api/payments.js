@@ -13,7 +13,7 @@ export default (apiCaller) => ({
   },
 
   // ========== PAYMENT ==========
-  // returnOrigin = this site's origin; BACK redirects the browser to {returnOrigin}/checkout/redirect after the bank
+  // returnOrigin = this site's origin; BACK redirects the browser to {returnOrigin}/checkout/result?status&orderId|walletTopUp&paymentToken after the bank (/checkout/redirect is only the pre-gateway interstitial)
   payOrder(orderId, gateway, returnOrigin) {
     return apiCaller.post(`api/payment/order/${orderId}`, {
       params: { gateway, returnOrigin },
@@ -24,7 +24,7 @@ export default (apiCaller) => ({
     return apiCaller.post('api/payment/request', config)
   },
 
-  // Full PaymentResultDTO for the /checkout/redirect landing page, keyed by the `paymentToken` query param
+  // Full PaymentResultDTO for the /checkout/result landing page, keyed by the `paymentToken` query param
   getPaymentResult(paymentToken) {
     return apiCaller.get(`api/payment/result/${encodeURIComponent(paymentToken)}`)
   },
