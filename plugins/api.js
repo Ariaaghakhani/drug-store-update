@@ -59,6 +59,8 @@ export const apiCaller = (apiCallerInstances, nuxtApp) => {
     } catch (error) {
       const canRetryWithRefresh =
         import.meta.client &&
+        // No access token = logged out: a refresh here would sign the user back in from the cookie
+        cachedToken?.value &&
         error?.response?.status === 401 &&
         !isRetry &&
         instance === 'default' &&

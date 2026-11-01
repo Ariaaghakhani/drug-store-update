@@ -107,6 +107,10 @@
               </UButton>
             </UDropdownMenu>
           </div>
+
+          <div v-if="listTotal > PAGE_SIZE" class="flex justify-center pt-2">
+            <UPagination v-model:page="pageNumber" :total="listTotal" :items-per-page="PAGE_SIZE" />
+          </div>
         </div>
 
         <div v-else key="empty" class="text-center py-16">
@@ -186,6 +190,8 @@ const failureReasonOptions = Object.entries(FAILURE_REASON_LABELS).map(([value, 
   value,
 }))
 
+const PAGE_SIZE = 20
+
 const app = useNuxtApp()
 const toast = useAppToast()
 
@@ -193,6 +199,8 @@ const search = ref('')
 const statusFilter = ref('all')
 const isLoading = ref(true)
 const orders = ref([])
+const listTotal = ref(0) // matches of the current search/status; totalCount below is every order in the store
+const pageNumber = ref(1) // UPagination is 1-based; BACK is 0-based
 const statusCatalog = ref([])
 const totalCount = ref(0)
 const statusCounts = ref({})
@@ -352,25 +360,34 @@ function confirmDeliveryFailed() {
 async function fetchOrders() {
   isLoading.value = true
   try {
-    const body = { data: { query: search.value || undefined, page: 0, size: 20 } }
+    const body = { data: { query: search.value || undefined, page: pageNumber.value - 1, size: PAGE_SIZE } }
     const response =
       statusFilter.value === 'all'
         ? await app.$api.orders.searchOrders(body)
         : await app.$api.orders.searchOrdersByStatus(statusFilter.value, body)
     orders.value = response.data.data?.content ?? []
+    listTotal.value = response.data.data?.totalElements ?? 0
   } catch (error) {
     console.log(error)
     orders.value = []
+    listTotal.value = 0
   } finally {
     isLoading.value = false
   }
 }
 
-watch(statusFilter, () => fetchOrders())
+const reloadFromFirstPage = () => {
+  if (pageNumber.value === 1) fetchOrders()
+  else pageNumber.value = 1
+}
+
+watch(pageNumber, () => fetchOrders())
+
+watch(statusFilter, reloadFromFirstPage)
 
 watch(search, () => {
   if (searchDebounce) clearTimeout(searchDebounce)
-  searchDebounce = setTimeout(() => fetchOrders(), 300)
+  searchDebounce = setTimeout(reloadFromFirstPage, 300)
 })
 
 onMounted(async () => {

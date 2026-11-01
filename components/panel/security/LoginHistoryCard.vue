@@ -21,7 +21,7 @@
       <UCard v-else key="content" :ui="{ body: 'p-0' }">
         <div class="flex items-center gap-2 px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800">
           <UIcon name="i-heroicons-clock" class="w-4 h-4 text-brand-500 flex-shrink-0" />
-          <h3 class="text-sm font-medium text-gray-900 dark:text-white">تاریخچه ورود</h3>
+          <h3 class="text-sm font-medium text-gray-900 dark:text-white">آخرین ورودها</h3>
         </div>
         <div v-if="!history?.length" class="text-center py-10">
           <p class="text-sm text-gray-500 dark:text-gray-400">تاریخچه‌ای برای نمایش وجود ندارد</p>
@@ -42,18 +42,6 @@
             <p class="text-[11px] text-gray-400 dark:text-gray-500 flex-shrink-0">{{ formatTime(entry.occurredAt) }}</p>
           </div>
         </div>
-        <div v-if="hasMore" class="px-4 sm:px-6 py-3 border-t border-gray-100 dark:border-gray-800">
-          <UButton
-            block
-            color="neutral"
-            variant="soft"
-            size="sm"
-            :loading="loadingMore"
-            @click="emit('load-more')"
-          >
-            نمایش بیشتر
-          </UButton>
-        </div>
       </UCard>
     </Transition>
   </div>
@@ -62,12 +50,8 @@
 <script setup>
 defineProps({
   loading: Boolean,
-  loadingMore: Boolean,
-  hasMore: Boolean,
   history: Array,
 })
-
-const emit = defineEmits(['load-more'])
 
 const ACTION_LABELS = {
   PASSWORD: 'ورود با رمز',

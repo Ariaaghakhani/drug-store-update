@@ -16,10 +16,7 @@
       />
       <LoginHistoryCard
         :loading="pending"
-        :loading-more="loadingMoreHistory"
-        :has-more="loginHistoryPage + 1 < loginHistoryTotalPages"
         :history="loginHistory"
-        @load-more="loadMoreLoginHistory"
       />
       <SecurityAlertsCard
         :loading="pending"
@@ -55,35 +52,10 @@ const showPasswordModal = ref(false)
 
 const activeSessions = ref([])
 const loginHistory = ref([])
-const loginHistoryPage = ref(0)
-const loginHistoryTotalPages = ref(0)
-const loadingMoreHistory = ref(false)
 const securityNotifications = ref([])
 const savingNotificationId = ref(null)
 
 const extractErrorMessage = (error, fallback) => error?.response?.data?.message ?? fallback
-
-const DEVICE_ICONS = {
-  Windows: 'i-heroicons-computer-desktop',
-  macOS: 'i-heroicons-computer-desktop',
-  Linux: 'i-heroicons-computer-desktop',
-  Android: 'i-heroicons-device-phone-mobile',
-  iOS: 'i-heroicons-device-phone-mobile',
-  App: 'i-heroicons-device-phone-mobile',
-}
-
-const mapSession = (session) => ({
-  id: session.id,
-  current: session.current,
-  icon: DEVICE_ICONS[session.device] ?? 'i-heroicons-question-mark-circle',
-  device: session.device ?? 'نامشخص',
-  browser: session.browser ?? 'نامشخص',
-  location: session.location ?? 'نامشخص',
-  ip: session.ip ?? 'نامشخص',
-  lastActive: session.lastActiveAt
-    ? new Date(session.lastActiveAt).toLocaleString('fa-IR')
-    : '',
-})
 
 const fetchSessions = async () => {
   try {
@@ -94,26 +66,12 @@ const fetchSessions = async () => {
   }
 }
 
-const fetchLoginHistory = async (page = 0) => {
+const fetchLoginHistory = async () => {
   try {
-    const response = await app.$api.auth.getLoginHistory({ params: { page, size: 20 } })
-    const content = response.data.data?.content ?? []
-    loginHistory.value = page === 0 ? content : [...loginHistory.value, ...content]
-    const totalElements = response.data.data?.totalElements ?? 0
-    loginHistoryTotalPages.value = Math.ceil(totalElements / 20)
-    loginHistoryPage.value = page
+    const response = await app.$api.auth.getLoginHistory({ params: { page: 0, size: LOGIN_HISTORY_SIZE } })
+    loginHistory.value = response.data.data?.content ?? []
   } catch {
     loginHistory.value = []
-    loginHistoryTotalPages.value = 0
-  }
-}
-
-const loadMoreLoginHistory = async () => {
-  loadingMoreHistory.value = true
-  try {
-    await fetchLoginHistory(loginHistoryPage.value + 1)
-  } finally {
-    loadingMoreHistory.value = false
   }
 }
 
@@ -180,7 +138,7 @@ const handleDeleteAccount = () => {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchSessions(), fetchLoginHistory(0), fetchSecurityNotifications()])
+  await Promise.all([fetchSessions(), fetchLoginHistory(), fetchSecurityNotifications()])
   pending.value = false
 })
 

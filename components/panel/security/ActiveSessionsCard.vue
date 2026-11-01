@@ -31,12 +31,15 @@
             <UIcon name="i-heroicons-computer-desktop" class="w-4 h-4 text-brand-500 flex-shrink-0" />
             <h3 class="text-sm font-medium text-gray-900 dark:text-white">جلسات فعال</h3>
           </div>
-          <UButton variant="soft" color="error" size="sm" icon="i-heroicons-arrow-right-on-rectangle" @click="emit('revoke-all')">
+          <UButton v-if="sessions?.length" variant="soft" color="error" size="sm" icon="i-heroicons-arrow-right-on-rectangle" @click="emit('revoke-all')">
             خروج از همه دستگاه‌ها
           </UButton>
         </div>
 
-        <div class="divide-y divide-gray-100 dark:divide-gray-800">
+        <div v-if="!sessions?.length" class="text-center py-10">
+          <p class="text-sm text-gray-500 dark:text-gray-400">جلسه فعالی وجود ندارد</p>
+        </div>
+        <div v-else class="divide-y divide-gray-100 dark:divide-gray-800">
           <div
             v-for="session in sessions"
             :key="session.id"
