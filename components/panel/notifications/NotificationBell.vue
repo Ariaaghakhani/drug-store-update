@@ -1,6 +1,6 @@
 <template>
   <UPopover v-model:open="open" :content="{ align: 'end', sideOffset: 8 }">
-    <UChip :show="unread > 0" :text="badgeText" color="error" size="3xl" inset>
+    <UChip :show="unread > 0" color="error" size="md" inset>
       <UButton
         color="neutral"
         variant="ghost"
@@ -80,8 +80,6 @@ const { unread, recent, recentLoading, loadRecent, markRead, markAllRead } = use
 
 const open = ref(false)
 const markingAll = ref(false)
-
-const badgeText = computed(() => (unread.value > 99 ? '۹۹+' : unread.value.toLocaleString('fa-IR')))
 
 watch(open, (isOpen) => {
   if (isOpen) loadRecent()

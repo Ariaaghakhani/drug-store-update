@@ -40,7 +40,12 @@
             v-for="ticket in tickets"
             :key="ticket.id"
             :to="`/panel/tickets/${ticket.id}`"
-            class="flex items-center gap-4 px-4 py-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+            class="flex items-center gap-4 px-4 py-4 rounded-xl border hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+            :class="
+              hasNewMessage(ticket, isStaff)
+                ? 'border-brand-200 dark:border-brand-800 bg-brand-50/50 dark:bg-brand-900/10'
+                : 'border-gray-100 dark:border-gray-800'
+            "
           >
             <div
               class="w-11 h-11 rounded-xl bg-brand-50 dark:bg-brand-900/20 flex items-center justify-center flex-shrink-0"
@@ -61,6 +66,9 @@
                 <UBadge :color="ticketPriorityMeta(ticket.priority).color" variant="subtle" size="xs">
                   {{ ticketPriorityMeta(ticket.priority).label }}
                 </UBadge>
+                <UBadge v-if="hasNewMessage(ticket, isStaff)" color="primary" variant="solid" size="xs">
+                  پیام جدید
+                </UBadge>
               </div>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 {{ ticket.ticketNumber }} · {{ TICKET_CATEGORY_LABELS[ticket.category] ?? '' }}
@@ -68,11 +76,6 @@
                 · {{ formatDate(ticket.lastMessageAt || ticket.createdAt) }}
               </p>
             </div>
-            <UIcon
-              v-if="ticket.lastMessageFromSupport && !isStaff && ticket.status !== 'CLOSED'"
-              name="i-heroicons-chat-bubble-left-ellipsis"
-              class="w-5 h-5 text-brand-500 dark:text-brand-400 flex-shrink-0"
-            />
           </NuxtLink>
 
           <div v-if="totalPages > 1" class="flex justify-center pt-2">
@@ -136,6 +139,8 @@ const app = useNuxtApp()
 const toast = useAppToast()
 const { getUserRole } = useUserPanelTabs()
 const isStaff = computed(() => getUserRole() !== 'customer')
+const { hasNewMessage } = useSeenTickets()
+const { unread } = useNotifications()
 
 const loading = ref(true)
 const tickets = ref([])
@@ -158,8 +163,8 @@ const formatDate = (value) => {
   return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('fa-IR')
 }
 
-async function fetchTickets() {
-  loading.value = true
+async function fetchTickets({ silent = false } = {}) {
+  if (!silent) loading.value = true
   try {
     const params = { page: pageNumber.value - 1, size: PAGE_SIZE }
     if (statusFilter.value !== 'all') params.status = statusFilter.value
@@ -169,6 +174,7 @@ async function fetchTickets() {
     totalElements.value = page?.totalElements ?? 0
     totalPages.value = page?.totalPages ?? 0
   } catch {
+    if (silent) return
     tickets.value = []
     totalElements.value = 0
     totalPages.value = 0
@@ -180,7 +186,11 @@ async function fetchTickets() {
 watch(statusFilter, () => {
   pageNumber.value === 1 ? fetchTickets() : (pageNumber.value = 1)
 })
-watch(pageNumber, fetchTickets)
+watch(pageNumber, () => fetchTickets())
+// A new inbox item may be a reply on a listed ticket: refresh in place so its mark shows without a reload
+watch(unread, (now, before) => {
+  if (now > before) fetchTickets({ silent: true })
+})
 onMounted(fetchTickets)
 
 // ---------- create (customers) ----------
