@@ -31,7 +31,7 @@
               <tr class="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
                 <th class="text-start text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3">نام کاربر</th>
                 <th class="text-start text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3">شماره موبایل</th>
-                <th class="text-start text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3">نقش</th>
+                <th v-if="!isCustomerList" class="text-start text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3">نقش</th>
                 <th class="text-start text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3">وضعیت</th>
                 <th class="text-start text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3">آخرین ورود</th>
                 <th class="px-6 py-3" />
@@ -59,7 +59,7 @@
                 <td class="px-6 py-4">
                   <span class="text-sm font-mono tabular-nums text-gray-600 dark:text-gray-400" dir="ltr">{{ user.phone }}</span>
                 </td>
-                <td class="px-6 py-4">
+                <td v-if="!isCustomerList" class="px-6 py-4">
                   <div class="flex flex-wrap gap-1">
                     <UBadge
                       v-for="role in user.roleBadges"
@@ -117,13 +117,17 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   users: { type: Array, required: true },
   pending: { type: Boolean, required: true },
   pageSize: { type: Number, required: true },
+  // Customers have no staff roles to show, so their list drops the role column
+  variant: { type: String, default: 'staff', validator: (v) => ['staff', 'customer'].includes(v) },
 })
 
 const emit = defineEmits(['roles', 'set-active', 'set-locked'])
+
+const isCustomerList = computed(() => props.variant === 'customer')
 
 const statusOf = (user) => {
   if (user.isLocked) return { label: 'قفل‌شده', dot: 'bg-error' }

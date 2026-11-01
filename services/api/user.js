@@ -94,12 +94,14 @@ export default (apiCaller) => ({
     return apiCaller.post('api/roles/get', config)
   },
 
+  // body RoleDTO {name, description, type?} → RoleDTO (201). BACK uppercases the name; no permissions yet
   createRole(config) {
-    return apiCaller.post('api/roles/create', config)
+    return apiCaller.post('api/roles', config)
   },
 
+  // body {id, roleDTO: {name, description, type}} → RoleDTO. Built-in roles can't be renamed
   updateRole(config) {
-    return apiCaller.post('api/roles/update', config)
+    return apiCaller.put('api/roles', config)
   },
 
   deleteRole(config) {
@@ -142,17 +144,32 @@ export default (apiCaller) => ({
   },
 
   // ========== ENDPOINT PERMISSIONS ==========
+  // GET, no body → every endpoint BACK knows: [{id, endpoint, httpMethod, nameFa, nameEn, module, action}] (a bare array,
+  // not wrapped in ApiResponse)
   listEndpointPermissions(config) {
-    return apiCaller.post('api/endpoint-permissions/list', config)
+    return apiCaller.get('api/admin/endpoint-permissions', config)
   },
 
   // ========== ROLE ENDPOINT PERMISSIONS ==========
-  assignEndpointToRole(config) {
-    return apiCaller.post('api/role-endpoint-permissions/assign', config)
+  // body {id: roleId} → [{id, roleId, endpointPermissionId}] (the role's own grants)
+  listRoleEndpointPermissions(config) {
+    return apiCaller.post('api/role-endpoint-permissions/by-role', config)
   },
 
+  // body {roleId, endpointPermissionIds: number[]?, modules: string[]?} → bulk grant; every id must be within the
+  // caller's own access, otherwise 403 and nothing is granted
+  grantRoleEndpointsBulk(config) {
+    return apiCaller.post('api/role-endpoint-permissions/bulk', config)
+  },
+
+  // body {roleId, endpointPermissionId}
+  assignEndpointToRole(config) {
+    return apiCaller.post('api/role-endpoint-permissions', config)
+  },
+
+  // body {id}: the role-endpoint row id (from listRoleEndpointPermissions), not the endpoint id
   removeEndpointFromRole(config) {
-    return apiCaller.post('api/role-endpoint-permissions/remove', config)
+    return apiCaller.post('api/role-endpoint-permissions/delete', config)
   },
 
   // ========== PASSWORD POLICIES ==========
