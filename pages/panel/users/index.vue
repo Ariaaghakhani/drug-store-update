@@ -18,23 +18,45 @@
               مدیریت <span class="text-brand-500">کاربران</span>
             </h1>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              {{ totalCount.toLocaleString('fa-IR') }} کاربر
+              {{ totalCount.toLocaleString('fa-IR') }} {{ isCustomerTab ? 'مشتری' : 'کارمند' }}
             </p>
           </div>
         </div>
-        <UButton
+        <div class="flex items-center gap-2 flex-wrap">
+          <UButton
+            v-if="canManageRoles"
+            to="/panel/users/roles"
+            color="neutral"
+            variant="outline"
+            icon="i-heroicons-shield-check"
+            size="lg"
+          >
+            مدیریت نقش‌ها
+          </UButton>
+          <UButton
+            v-if="!isCustomerTab"
+            color="primary"
+            icon="i-heroicons-plus"
+            size="lg"
+            @click="showCreateModal = true"
+          >
+            افزودن کارمند
+          </UButton>
+        </div>
+      </div>
+
+      <div class="px-6 pt-3 border-b border-gray-100 dark:border-gray-800">
+        <UTabs
+          v-model="typeFilter"
+          :items="TAB_ITEMS"
+          :content="false"
+          variant="link"
           color="primary"
-          icon="i-heroicons-plus"
-          size="lg"
-          @click="showCreateModal = true"
-        >
-          افزودن کارمند
-        </UButton>
+        />
       </div>
 
       <UsersFilters
         v-model:search-query="searchQuery"
-        v-model:type-filter="typeFilter"
         v-model:active-filter="activeFilter"
         v-model:locked-filter="lockedFilter"
       />
@@ -42,6 +64,7 @@
         :users="users"
         :pending="pending"
         :page-size="PAGE_SIZE"
+        :variant="isCustomerTab ? 'customer' : 'staff'"
         @roles="onEditRoles"
         @set-active="onSetActive"
         @set-locked="onSetLocked"
@@ -95,8 +118,15 @@ const totalCount = ref(0)
 const pending = ref(true)
 const currentPage = ref(1) // UPagination is 1-based; BACK is 0-based
 
+// Staff and customers are separate lists, each with its own table
+const TAB_ITEMS = [
+  { label: 'کارکنان', value: 'STAFF', icon: 'i-heroicons-identification' },
+  { label: 'مشتریان', value: 'CUSTOMER', icon: 'i-heroicons-users' },
+]
+
 const searchQuery = ref('')
-const typeFilter = ref('ALL')
+const typeFilter = ref('STAFF')
+const isCustomerTab = computed(() => typeFilter.value === 'CUSTOMER')
 const activeFilter = ref('all')
 const lockedFilter = ref('all')
 
@@ -139,10 +169,31 @@ watch(searchQuery, () => {
   searchTimer = setTimeout(reloadFromFirstPage, SEARCH_DELAY_MS)
 })
 watch([typeFilter, activeFilter, lockedFilter], reloadFromFirstPage)
+// A stale search or filter from the other list would just look like an empty table
+watch(typeFilter, () => {
+  searchQuery.value = ''
+  activeFilter.value = 'all'
+  lockedFilter.value = 'all'
+})
 watch(currentPage, () => fetchUsers())
 onBeforeUnmount(() => clearTimeout(searchTimer))
 
+// Only someone holding READ on BACK's ROLE module (the super user) sees the role manager link; a failed check hides it
+const canManageRoles = ref(false)
+
+async function fetchRoleGrant() {
+  try {
+    const response = await app.$api.auth.getMyPermissions({
+      data: { allowed: true, modules: ['ROLE'], actions: ['READ'] },
+    })
+    canManageRoles.value = (response.data.data ?? []).some((grant) => grant.allowed !== false)
+  } catch {
+    canManageRoles.value = false
+  }
+}
+
 onMounted(async () => {
+  fetchRoleGrant()
   // Roles first, so the first render's role labels are already resolved
   await loadRoles()
   await fetchUsers()

@@ -8,12 +8,6 @@
       @update:model-value="(v) => emit('update:searchQuery', v)"
     />
     <USelect
-      :model-value="typeFilter"
-      :items="TYPE_ITEMS"
-      class="w-36"
-      @update:model-value="(v) => emit('update:typeFilter', v)"
-    />
-    <USelect
       :model-value="activeFilter"
       :items="ACTIVE_ITEMS"
       class="w-36"
@@ -31,23 +25,16 @@
 <script setup>
 defineProps({
   searchQuery: { type: String, required: true },
-  typeFilter: { type: String, required: true },
   activeFilter: { type: String, required: true },
   lockedFilter: { type: String, required: true },
 })
 
 const emit = defineEmits([
   'update:searchQuery',
-  'update:typeFilter',
   'update:activeFilter',
   'update:lockedFilter',
 ])
 
-const TYPE_ITEMS = [
-  { label: 'همه کاربران', value: 'ALL' },
-  { label: 'کارکنان', value: 'STAFF' },
-  { label: 'مشتریان', value: 'CUSTOMER' },
-]
 const ACTIVE_ITEMS = [
   { label: 'فعال و غیرفعال', value: 'all' },
   { label: 'فعال', value: 'true' },
