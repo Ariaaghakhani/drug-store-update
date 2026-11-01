@@ -88,7 +88,7 @@ watch(open, (isOpen) => {
 async function openNotification(notification) {
   open.value = false
   markRead(notification)
-  if (notification.link) await navigateTo(notification.link)
+  if (notification.link) await navigateTo(notificationLink(notification.link))
 }
 
 async function readAll() {

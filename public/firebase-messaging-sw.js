@@ -20,7 +20,9 @@ const parsePayload = (event) => {
 
 // Only same-site paths: a push must never send the user to another origin
 const safeLink = (link) =>
-  typeof link === 'string' && link.startsWith('/') && !link.startsWith('//') ? link : FALLBACK_LINK
+  typeof link === 'string' && link.startsWith('/') && !link.startsWith('//')
+    ? link.replace(/^\/admin\/tickets\//, '/panel/tickets/') // see notificationLink in utils/notificationMeta.js
+    : FALLBACK_LINK
 
 const siteWindows = async () => {
   const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
