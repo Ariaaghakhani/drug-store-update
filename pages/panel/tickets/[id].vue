@@ -184,6 +184,7 @@ const app = useNuxtApp()
 const toast = useAppToast()
 const { getUserRole } = useUserPanelTabs()
 const isStaff = computed(() => getUserRole() !== 'customer')
+const { markSeen } = useSeenTickets()
 
 const loading = ref(true)
 const ticket = ref(null)
@@ -207,6 +208,7 @@ async function fetchTicket() {
     const response = await app.$api.ticket.getTicket(isStaff.value, route.params.id)
     ticket.value = response.data.data ?? null
     newStatus.value = ticket.value?.status ?? null
+    markSeen(ticket.value)
   } catch {
     ticket.value = null
   } finally {

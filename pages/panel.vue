@@ -405,6 +405,8 @@ const handleLogout = async () => {
   try {
     // Unregister this browser's push token while the access token is still valid
     await push.disable()
+    // Revokes this device's refresh cookie; BACK identifies the session from the cookie, and a failure mustn't block logout
+    await app.$api.auth.logout().catch(() => {})
     notifications.reset()
     app.$auth.reset()
     toast.add({

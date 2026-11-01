@@ -16,6 +16,10 @@ export const notificationTypeMeta = (type) =>
     tile: 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
   }
 
+// BACK saved /admin/tickets/{id} on staff ticket notifications, but this app's route is /panel/tickets/{id}. Rows already
+// in the inbox keep the old link, so it's corrected where a notification is opened (public/firebase-messaging-sw.js too).
+export const notificationLink = (link) => link?.replace(/^\/admin\/tickets\//, '/panel/tickets/')
+
 // "۵ دقیقه پیش" style relative time for recent items, falling back to a Persian date after a week
 export const notificationTime = (value) => {
   const date = new Date(value)

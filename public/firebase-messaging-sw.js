@@ -3,9 +3,9 @@
 // at '/'. It deliberately does not load the Firebase SDK: BACK sends data-only messages
 // ({type, title, body, link, tag}) and this worker shows them itself, so nothing depends on a CDN.
 //
-// - A tab of the site is visible → the push goes to that tab (plugins/notifications.client.js shows a toast and
-//   refreshes the bell) instead of an OS notification.
-// - Otherwise → an OS notification; clicking it focuses an open tab and asks it to route to `link`, or opens one.
+// - Every push → an OS notification; clicking it focuses an open tab and asks it to route to `link`, or opens one.
+// - A tab of the site is visible → that tab also gets it (plugins/notifications.client.js shows a toast and refreshes
+//   the bell).
 
 const ICON = '/seo/pwa-192x192.png'
 const FALLBACK_LINK = '/panel/notifications'
@@ -20,7 +20,9 @@ const parsePayload = (event) => {
 
 // Only same-site paths: a push must never send the user to another origin
 const safeLink = (link) =>
-  typeof link === 'string' && link.startsWith('/') && !link.startsWith('//') ? link : FALLBACK_LINK
+  typeof link === 'string' && link.startsWith('/') && !link.startsWith('//')
+    ? link.replace(/^\/admin\/tickets\//, '/panel/tickets/') // see notificationLink in utils/notificationMeta.js
+    : FALLBACK_LINK
 
 const siteWindows = async () => {
   const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
@@ -31,6 +33,8 @@ self.addEventListener('install', () => self.skipWaiting())
 
 self.addEventListener('push', (event) => {
   const payload = parsePayload(event)
+  // TEMP: push debugging, remove before merging
+  console.log('[Push SW] push event received', payload)
   const data = payload.data || {}
   const message = {
     title: data.title || payload.notification?.title || 'کپسول',
@@ -43,10 +47,9 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     (async () => {
       const visible = (await siteWindows()).filter((client) => client.visibilityState === 'visible')
-      if (visible.length) {
-        visible.forEach((client) => client.postMessage({ source: 'capsule-push', kind: 'received', ...message }))
-        return
-      }
+      // TEMP: push debugging, remove before merging
+      console.log('[Push SW] visible tabs:', visible.length, visible.length ? '→ toast + system notification' : '→ system notification')
+      visible.forEach((client) => client.postMessage({ source: 'capsule-push', kind: 'received', ...message }))
       await self.registration.showNotification(message.title, {
         body: message.body,
         icon: ICON,

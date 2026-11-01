@@ -129,7 +129,7 @@ onMounted(() => {
 
 async function openNotification(notification) {
   markRead(notification)
-  if (notification.link) await navigateTo(notification.link)
+  if (notification.link) await navigateTo(notificationLink(notification.link))
 }
 
 async function readAll() {

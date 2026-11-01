@@ -105,7 +105,8 @@ async function turnOn() {
   try {
     const ok = await push.enable()
     if (ok) toast.success('اعلان‌ها روشن شد')
-  } catch {
+  } catch (error) {
+    console.warn('[Push] Enabling failed:', error)
     toast.error('روشن کردن اعلان‌ها ناموفق بود', 'دسترسی به سرویس اعلان برقرار نشد')
   }
 }
