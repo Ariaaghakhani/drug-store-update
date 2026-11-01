@@ -163,6 +163,18 @@
             </li>
             <li class="flex items-center gap-3">
               <UIcon
+                name="i-heroicons-map-pin"
+                class="w-5 h-5 text-teal-400 flex-shrink-0"
+              />
+              <NuxtLink
+                to="/contact"
+                class="text-sm text-gray-400 hover:text-teal-400 transition-colors"
+              >
+                نقشه و مسیریابی
+              </NuxtLink>
+            </li>
+            <li class="flex items-center gap-3">
+              <UIcon
                 name="i-heroicons-clock"
                 class="w-5 h-5 text-teal-400 flex-shrink-0"
               />

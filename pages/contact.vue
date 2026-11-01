@@ -14,54 +14,64 @@
       </div>
 
       <UCard v-else>
-        <form class="space-y-4" @submit.prevent="submit">
-          <UFormField label="نام و نام خانوادگی" :error="errors.fullName">
-            <UInput v-model="form.fullName" maxlength="100" class="w-full" />
+        <form class="space-y-4" novalidate @submit.prevent="submit">
+          <UFormField label="نام و نام خانوادگی" required :error="errors.fullName">
+            <UInput v-model="form.fullName" maxlength="100" class="w-full" @update:model-value="clearError('fullName')" />
           </UFormField>
           <div class="grid sm:grid-cols-2 gap-4">
-            <UFormField label="شماره موبایل">
-              <UInput v-model="form.phone" inputmode="tel" dir="ltr" class="w-full" />
+            <UFormField label="شماره موبایل" :error="errors.phone">
+              <UInput v-model="form.phone" inputmode="tel" dir="ltr" class="w-full" @update:model-value="clearError('phone', 'email')" />
             </UFormField>
-            <UFormField label="ایمیل">
-              <UInput v-model="form.email" type="email" dir="ltr" maxlength="100" class="w-full" />
+            <UFormField label="ایمیل" :error="errors.email">
+              <UInput v-model="form.email" type="email" dir="ltr" maxlength="100" class="w-full" @update:model-value="clearError('phone', 'email')" />
             </UFormField>
           </div>
-          <UFormField label="موضوع" :error="errors.subject">
-            <UInput v-model="form.subject" maxlength="200" class="w-full" />
+          <UFormField label="موضوع" required :error="errors.subject">
+            <UInput v-model="form.subject" maxlength="200" class="w-full" @update:model-value="clearError('subject')" />
           </UFormField>
-          <UFormField label="پیام" :error="errors.message">
-            <UTextarea v-model="form.message" :rows="6" class="w-full" />
+          <UFormField label="پیام" required :error="errors.message">
+            <UTextarea v-model="form.message" :rows="6" maxlength="5000" class="w-full" @update:model-value="clearError('message')" />
           </UFormField>
           <!-- Honeypot: the backend `website` field must stay empty; hidden from real users -->
           <input v-model="form.website" type="text" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+          <p class="text-xs text-gray-500 dark:text-gray-400">وارد کردن حداقل یکی از شماره موبایل یا ایمیل الزامی است.</p>
           <UButton type="submit" block color="primary" :loading="sending">ارسال پیام</UButton>
         </form>
       </UCard>
+
+      <StoreLocationCard class="mt-8" />
     </div>
   </UContainer>
 </template>
 
 <script setup>
+import { validateContactForm, normalizeIranianMobile } from '@/utils/validations.js'
+
 const app = useNuxtApp()
 const toast = useAppToast()
 
 const form = reactive({ fullName: '', phone: '', email: '', subject: '', message: '', website: '' })
-const errors = reactive({ fullName: '', subject: '', message: '' })
+// Errors stay empty (no red outline) until a submit attempt; each field's error clears as the user edits it
+const errors = reactive({})
 const sending = ref(false)
 const sent = ref(false)
 
+function clearError(...keys) {
+  keys.forEach((key) => delete errors[key])
+}
+
 async function submit() {
-  errors.fullName = form.fullName.trim() ? '' : 'نام را وارد کنید'
-  errors.subject = form.subject.trim() ? '' : 'موضوع را وارد کنید'
-  errors.message = form.message.trim() ? '' : 'پیام را وارد کنید'
-  if (errors.fullName || errors.subject || errors.message) return
+  const result = validateContactForm(form)
+  Object.keys(errors).forEach((key) => delete errors[key])
+  Object.assign(errors, result.errors)
+  if (!result.isValid) return
 
   sending.value = true
   try {
     await app.$api.storefront.sendContactMessage({
       data: {
         fullName: form.fullName.trim(),
-        phone: form.phone.trim() || undefined,
+        phone: normalizeIranianMobile(form.phone) || undefined,
         email: form.email.trim() || undefined,
         subject: form.subject.trim(),
         message: form.message.trim(),
