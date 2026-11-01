@@ -4,12 +4,12 @@
 // (module names are BACK's `@EndpointInfo(module = …)`). `always: true` menus show for every logged-in user.
 // Optional `flag`: a StoreProfileDTO boolean (GET /api/store-profile) that must be true for the menu to show.
 // To add a menu: add an entry here (+ its page under pages/panel/) with the BACK module(s) guarding its endpoints.
-// Every entry must have a page, or it links to a 404. Not built yet, so not listed: inventory (BACK modules INVENTORY,
-// WAREHOUSE), reports (REPORT), settings (STORE_PROFILE, SYSTEM_SETTINGS, MY_ORGANIZATION), analytics, finance.
+// Every entry must have a page, or it links to a 404. Not built yet, so not listed: reports (REPORT), settings (STORE_PROFILE, SYSTEM_SETTINGS, MY_ORGANIZATION), analytics, finance.
 export const PANEL_MENUS = [
   { key: 'dashboard', label: 'داشبورد', icon: 'i-heroicons-rectangle-group', to: '/panel/dashboard', modules: ['DASHBOARD'], always: true },
   { key: 'users', label: 'مدیریت کاربران', icon: 'i-heroicons-users', to: '/panel/users', modules: ['USER_MANAGEMENT'] },
   { key: 'products', label: 'مدیریت محصولات', icon: 'i-heroicons-cube', to: '/panel/products', modules: ['GOODS'] },
+  { key: 'inventory', label: 'انبار', icon: 'i-heroicons-archive-box', to: '/panel/inventory', modules: ['INVENTORY', 'WAREHOUSE'] },
   { key: 'orders', label: 'سفارشات', icon: 'i-heroicons-shopping-bag', to: '/panel/orders', modules: ['ORDER'] },
   { key: 'tickets', label: 'تیکت‌ها', icon: 'i-heroicons-lifebuoy', to: '/panel/tickets', modules: ['TICKET'] },
   { key: 'wishlist', label: 'علاقه‌مندی‌ها', icon: 'i-heroicons-heart', to: '/panel/wishlist', flag: 'wishlistEnabled' },
@@ -38,6 +38,7 @@ export const FALLBACK_MENUS_BY_ROLE = {
     { key: 'dashboard', label: 'داشبورد مدیریت', icon: 'i-heroicons-home' },
     { key: 'users' },
     { key: 'products' },
+    { key: 'inventory' },
     { key: 'orders', label: 'مدیریت سفارشات', badge: 5 },
     { key: 'tickets' },
     { key: 'notifications' },
@@ -47,6 +48,7 @@ export const FALLBACK_MENUS_BY_ROLE = {
     { key: 'dashboard', label: 'داشبورد مدیریت', icon: 'i-heroicons-home' },
     { key: 'users' },
     { key: 'products' },
+    { key: 'inventory' },
     { key: 'orders', label: 'مدیریت سفارشات', badge: 5 },
     { key: 'tickets' },
     { key: 'notifications' },
