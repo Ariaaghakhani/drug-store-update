@@ -242,7 +242,7 @@ const colorMap = {
 ```
 > ⚠ The color map above uses raw Tailwind color names (legacy). For new badges use valid tokens: `success`, `info`, `warning`, `error`, `primary`.
 - **Minimum text size:** `text-xs` (12px) at every badge size. `app.config.ts` overrides Nuxt UI's `xs`/`sm` (8px/10px), so `size` only changes padding below `md`.
-- Discount badge: `color="error" variant="solid"` → `{n}٪ تخفیف`.
+- Discount badge: `color="error" variant="solid"` → `{n}٪ تخفیف`, placed on the product image (bottom-start), never beside the price.
 - Prescription flag: `color="warning" variant="solid"` with `i-heroicons-document-text` → `نسخه‌دار`, positioned `absolute top-3 left-3` (LTR-left = visual left in RTL).
 
 #### Badge contrast rules (light mode, white backgrounds)
@@ -261,13 +261,16 @@ Soft/outline variants use the `*-bg` tint tokens so the pill shape is visible on
 
 ### Product card (`ProductCard.vue`)
 
-Wrapped in `UCard` with `group hover:shadow-xl transition-all duration-300 h-full flex flex-col`. Prop `product` shape:
+Wrapped in `UCard` with `group hover:shadow-xl transition-all duration-300 h-full flex flex-col`; the whole card is a `NuxtLink` to `/medications/{linkId ?? id}` (the button inside stops the click). Build `product` with `utils/storefrontGoods.js::toProductCard`. Prop `product` shape:
 
 ```ts
 interface Product {
   id: string | number
+  linkId?: number            // product-page id (the model for a product with variants)
+  image?: string             // real photo; absent → cube placeholder
+  hasVariants?: boolean      // price prefixed "از", CTA becomes "انتخاب گزینه‌ها" (opens the product page)
   nameFa: string            // primary display name
-  nameEn?: string           // sub-label, LTR
+  nameEn?: string           // not shown on the card (the Persian name only)
   brandTitle?: string       // top-right xs, bold
   category?: string         // top-left xs, brand-600, uppercase tracking-wider
   price: number             // toLocaleString('fa-IR') + ' تومان'
@@ -279,17 +282,30 @@ interface Product {
   badge?: string            // see color map
   isPrescriptionRequired?: boolean  // orange "نسخه‌دار" flag
   minOrderQuantity?: number  // >1 → blue info "حداقل سفارش: N عدد"
-  expiryDate?: string       // within 3 months → orange "نزدیک به انقضا"
+  expiryLabel?: string      // from BACK ("کمتر از یک ماه") → warning notice with exclamation icon
 }
 ```
 
-Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, cube placeholder) → brand+category row → `nameFa` (text-lg bold, line-clamp-2) → `nameEn` (xs gray) → rating → spacer → price block → fixed `min-h-[24px]` notice slot → block primary add-to-cart.
+Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, `object-cover`, cube placeholder when none) → brand+category row (`h-4`, truncate) → `nameFa` (`text-lg` bold, `line-clamp-2`, `h-12`) → rating (`h-6`) → price (`text-xl font-black`, `h-7`, `whitespace-nowrap`) → original price (struck) + saved amount (`h-6`) → notice slot (`h-6`) → block primary add-to-cart. **Every row is a fixed-height slot that stays empty when the product lacks that detail, so all cards have the same height and their price/notice/button line up** — never make a row conditional (`v-if` on the row itself); put the `v-if` on its content. **Price type:** the amount is `font-black text-gray-900 dark:text-white` (discounted or not); the unit "تومان" and the "از" prefix are smaller and `font-medium`, same color. **Discounted price:** the old price is struck through in muted gray with `text-xs text-error` "{n} تومان صرفه‌جویی" beside it, and the `error solid` "{n}٪ تخفیف" badge sits on the image (`absolute bottom-3 start-3`, clear of the Rx badge top-start and the label badge top-end). The product page uses the same pattern (price block `text-3xl`, badge `size="lg"` on the main image, saved amount below the old price).
+
+### Storefront listing patterns (`/medications`, `/brands/[id]`, `/near-expiry`, home)
+
+- **Section header (home):** `text-2xl lg:text-3xl font-black` title with the section's BACK-supplied name, end-aligned `UButton color="neutral" variant="soft" trailing-icon="i-heroicons-arrow-left"` "مشاهده همه". Every second section sits on `bg-gray-50 dark:bg-gray-900/50 rounded-3xl px-6 lg:px-12`.
+- **Product grid:** `ProductGrid` — `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6` (3 columns max beside the filter panel), skeleton cards `h-96 rounded-xl` through the `sk` transition, then the empty state (large gray icon + bold heading + muted line, optional neutral soft "clear filters" action).
+- **Filter card (`SearchFilters`):** the standard panel card — header strip with `i-heroicons-adjustments-horizontal` + "فیلترها" and a `neutral soft sm` "حذف همه (n)" at the end; `divide-y` groups of `px-4 sm:px-6 py-4`, group title `text-sm font-bold`, `UCheckbox` rows with the option count `text-xs text-gray-500` at the end, long lists `max-h-56 overflow-y-auto`. Below `lg:` it collapses behind a `block neutral soft` "فیلترها (n)" button. Layout: `grid lg:grid-cols-4`, filters `lg:col-span-1` (right in RTL), results `lg:col-span-3`.
+- **Sort:** `USelect w-48` end-aligned above the grid, next to a `text-sm` "n محصول یافت شد". The search form's "جستجو" button is the page's one primary action.
+- **Category row (home):** the `CategoriesCarousel` circles from the category table above, fed by the store's category tree; hidden entirely when the tree isn't available. In the filter card, categories are a single-choice `UCheckbox` list (subcategories indented `ms-5`).
+- **Brand tile:** `w-36 h-28 rounded-xl bg-white dark:bg-gray-800 border`, `hover:border-brand-300`, logo `max-h-12 object-contain` (or `i-heroicons-building-storefront`) over a `text-sm font-bold` name; strip scrolls horizontally with the scrollbar hidden.
+- **Brand header:** `w-24 h-24 rounded-xl` logo tile + two-tone `font-black` title ("محصولات <brand>") + `text-sm` product count + description.
+- **Variant picker (product page):** `UButton color="neutral"` per variant — `solid` when selected, `outline` otherwise, `disabled` when out of stock; CTA reads "ابتدا گزینه را انتخاب کنید" while none is chosen. Gallery = `aspect-square` main image + `w-16 h-16 rounded-lg` thumbnails, active one `border-brand-500`.
+- **Specs / pharmacy info:** specs in a `UCard :ui="{ body: 'p-0' }"` `dl` with `divide-y`, label `w-40 text-gray-500`; each info section (روش مصرف, هشدارها, عوارض, نگهداری, ترکیبات) is its own `UCard` with a `font-bold` title and `whitespace-pre-line` text (never `v-html`).
+- **Reviews:** summary `UCard` — big `text-5xl font-black` average with 5 `text-yellow-400` stars and "از n نظر", beside five bars (`h-2 rounded-full bg-gray-100`, fill `bg-yellow-400`); rating filter chips are `UButton size="sm" color="neutral"` (`solid` active / `soft` idle); each review is a `UCard`. **Store reply / answer callout:** `rounded-xl bg-brand-50 dark:bg-brand-900/20 p-4` with a `text-xs font-bold text-brand-600 dark:text-brand-400` label ("پاسخ فروشگاه"). Load more = `neutral soft` "نمایش … بیشتر".
 
 ### Header (`Header.vue`)
 - Sticky, `bg-white/50 backdrop-blur-sm dark:bg-gray-900`, height `h-16 lg:h-20`.
 - Logo: always use `components/BrandLogo.vue` (props `size`, `showName`, `textClass`, `forceDark`) — never inline the SVG. Mark = circle (`#2C7A7B` light / `#14B8A6` dark) with a 45°-rotated capsule: white half + `#9EDEDE` (brand-200) half. Wordmark = "کپسول" only (Persian, no Latin text) in `text-brand-500 dark:text-brand-400`, `font-black`. Static assets: `public/logo.svg`, `public/favicon.svg`, `public/seo/pwa-*.png`.
 - Desktop nav items with optional dropdown menus (`UDropdownMenu`, `dir="rtl"`). Nav data lives in `navItems` (داروها, سلامت و تندرستی, محصولات سلامت, درباره ما).
-- Actions: search, cart (with count badge `bg-red-500` top-left), dark toggle, profile, "تماس با پشتیبانی" `UButton`.
+- Actions: search (`HeaderSearch`: `w-10 h-10` icon → `rounded-2xl` panel `sm:w-96` with `shadow-xl`, `lg` input, up to 5 result rows `p-2 rounded-xl hover:bg-teal-50` with a `w-12 h-12 rounded-lg` thumbnail, then a `neutral soft block` CTA to `/medications`), cart (with count badge `bg-red-500` top-left), dark toggle, profile, "تماس با پشتیبانی" `UButton`.
 - Mobile: hamburger → full-screen slide-down menu; cart → teleported dropdown.
 - Hover convention: `hover:text-teal-500 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950`.
 
@@ -386,8 +402,10 @@ Routes (from `pages/`):
 
 ```
 /                       Home (Hero, Categories, Featured, Popular, Chatbot)
-/medications            Product listing (search, category filter, pagination)
-/medications/[id]       Product detail
+/medications            Product listing (URL-driven search, filters, sort, pagination)
+/medications/[id]       Product detail (gallery, variants, specs, related, reviews, Q&A)
+/brands/[id]            Brand page
+/near-expiry            Near-expiry goods (only when the store tracks expiry)
 /cart                   Cart + order summary
 /login                  Auth (phone → OTP → password / register / reset)
 /about                  About
@@ -417,7 +435,7 @@ Layouts: `default.vue` (storefront), `panel.vue` (dashboard shell), `auth.vue` (
 ## 9. Backend / config notes
 
 - `runtimeConfig.public.BACKEND_URL` (ngrok dev) and `CMS_URL` (Strapi) in `nuxt.config.ts`.
-- Product list: `app.$api.products.fetchProductsList({ data: { page, rows } })` — 0-based page index, response at `response.data.data.content` with `totalElements` / `totalPages`.
+- Product list: `app.$api.search.searchGoods({ data: GoodsSearchRequestDTO })` (`POST api/elastic/search`) — 0-based `page`, response at `response.data.data.content` with `totalElements` / `totalPages`; one hit per product (variants grouped).
 - Auth token in `localStorage['auth.local']`; `$auth` plugin guards `/panel`.
 - PWA enabled (`@vite-pwa/nuxt`): name "دارو پلاس", `theme_color: #2C7A7B`, standalone.
 

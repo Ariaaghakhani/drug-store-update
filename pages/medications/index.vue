@@ -2,330 +2,242 @@
   <UContainer>
     <div class="py-12">
       <!-- Page Header -->
-      <div class="mb-12">
-        <h1
-          class="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white mb-4"
-        >
-          همه <span class="text-brand-500">داروها</span>
+      <div class="mb-8">
+        <h1 class="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white mb-4">
+          <template v-if="state.search">
+            نتایج <span class="text-brand-500">جستجو</span>
+          </template>
+          <template v-else>
+            همه <span class="text-brand-500">داروها</span>
+          </template>
         </h1>
         <p class="text-lg text-gray-600 dark:text-gray-400">
-          جستجو و انتخاب از میان هزاران دارو و محصول بهداشتی
+          <template v-if="state.search">برای «{{ state.search }}»</template>
+          <template v-else>جستجو و انتخاب از میان داروها و محصولات بهداشتی</template>
         </p>
       </div>
 
-      <!-- Filters and Search -->
-      <div class="mb-8 flex flex-col md:flex-row gap-4">
+      <!-- Search + sort -->
+      <form class="mb-8 flex flex-col md:flex-row gap-4" @submit.prevent="submitSearch">
         <UInput
-          v-model="searchQuery"
+          v-model="searchInput"
           placeholder="جستجو در داروها..."
           size="xl"
           icon="i-heroicons-magnifying-glass"
           class="flex-1"
         />
-        <UButton
-          size="xl"
-          color="primary"
-          icon="i-heroicons-adjustments-horizontal"
-        >
-          فیلترها
+        <UButton type="submit" size="xl" color="primary" icon="i-heroicons-magnifying-glass">
+          جستجو
         </UButton>
-      </div>
+      </form>
 
-      <!-- Categories -->
-      <div class="mb-8 flex flex-wrap gap-3">
-        <UButton
-          v-for="category in categories"
-          :key="category.value"
-          :color="selectedCategory === category.value ? 'primary' : 'white'"
-          :variant="selectedCategory === category.value ? 'solid' : 'outline'"
-          @click="handleCategoryChange(category.value)"
-        >
-          {{ category.label }}
-        </UButton>
-      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        <!-- Filters -->
+        <aside class="lg:col-span-1 space-y-4">
+          <UButton
+            color="neutral"
+            variant="soft"
+            block
+            class="lg:hidden"
+            icon="i-heroicons-adjustments-horizontal"
+            @click="showFilters = !showFilters"
+          >
+            {{ showFilters ? 'بستن فیلترها' : 'فیلترها' }}
+            <span v-if="activeCount > 0">({{ activeCount.toLocaleString('fa-IR') }})</span>
+          </UButton>
 
-      <!-- Results Count -->
-      <div v-if="!pending && totalElements > 0" class="mb-6">
-        <p class="text-sm text-gray-600 dark:text-gray-400">
-          نمایش {{ filteredProducts.length }} محصول از {{ totalElements }} محصول
-        </p>
-      </div>
+          <div :class="showFilters ? 'block' : 'hidden lg:block'">
+            <SearchFilters
+              :state="state"
+              :facets="facets"
+              :brands="brands"
+              :loading="filtersLoading"
+              @change="go"
+            />
+          </div>
+        </aside>
 
-      <!-- Loading State -->
-      <div
-        v-if="pending"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-      >
-        <USkeleton v-for="i in 12" :key="i" class="h-80 w-full" />
-      </div>
+        <!-- Results -->
+        <section class="lg:col-span-3 space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <p class="text-sm text-gray-600 dark:text-gray-400 min-h-5">
+              <template v-if="!loading && !failed">
+                {{ totalElements.toLocaleString('fa-IR') }} محصول یافت شد
+              </template>
+            </p>
+            <USelect
+              :model-value="state.sort || 'DEFAULT'"
+              :items="sortItems"
+              class="w-48"
+              @update:model-value="changeSort"
+            />
+          </div>
 
-      <!-- Products Grid -->
-      <div
-        v-else-if="filteredProducts.length > 0"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-      >
-        <NuxtLink
-          v-for="product in filteredProducts"
-          :key="product.id"
-          :to="`/medications/${product.id}`"
-        >
-          <ProductCard
-            :product="transformProduct(product)"
-            @add-to-cart="handleAddToCart"
-          />
-        </NuxtLink>
-      </div>
+          <!-- Failed load: never show as "no results" -->
+          <div v-if="failed" class="text-center py-20">
+            <UIcon
+              name="i-heroicons-exclamation-triangle"
+              class="w-20 h-20 text-gray-300 dark:text-gray-600 mx-auto mb-4"
+            />
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              دریافت محصولات ناموفق بود
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">
+              اتصال به سرور برقرار نشد. لطفاً دوباره تلاش کنید
+            </p>
+            <UButton color="neutral" variant="soft" icon="i-heroicons-arrow-path" @click="refresh()">
+              تلاش دوباره
+            </UButton>
+          </div>
 
-      <!-- Empty State -->
-      <div
-        v-if="!pending && filteredProducts.length === 0"
-        class="text-center py-20"
-      >
-        <UIcon
-          name="i-heroicons-magnifying-glass"
-          class="w-20 h-20 text-gray-300 mx-auto mb-4"
-        />
-        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-          محصولی یافت نشد
-        </h3>
-        <p class="text-gray-600 dark:text-gray-400">
-          لطفاً کلمات کلیدی دیگری را امتحان کنید
-        </p>
-      </div>
+          <ProductGrid
+            v-else
+            class="transition-opacity"
+            :class="refreshing ? 'opacity-50' : ''"
+            :products="products"
+            :loading="loading"
+            :skeleton-count="PAGE_SIZE"
+            grid-class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
+            @add-to-cart="addToCart"
+          >
+            <template v-if="activeCount > 0 || state.search" #empty-action>
+              <UButton class="mt-6" color="neutral" variant="soft" @click="go({ ...emptySearchState() })">
+                پاک کردن جستجو و فیلترها
+              </UButton>
+            </template>
+          </ProductGrid>
 
-      <!-- Pagination -->
-      <div v-if="!pending && totalPages > 1" class="flex justify-center mt-12">
-        <UPagination
-          v-model:page="currentPage"
-          :total="totalElements"
-          :page-count="pageSize"
-          :max="7"
-          :ui="{
-            wrapper: 'flex items-center gap-1',
-            rounded: 'first:rounded-s-md last:rounded-e-md',
-          }"
-          @update:page="handlePageChange"
-        />
+          <div v-if="!loading && !failed && totalPages > 1" class="flex justify-center pt-6">
+            <UPagination
+              :page="state.page"
+              :total="totalElements"
+              :items-per-page="PAGE_SIZE"
+              @update:page="setPage"
+            />
+          </div>
+        </section>
       </div>
     </div>
   </UContainer>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useCartStore } from '~/stores/cart'
+import { computed, ref, watch } from 'vue'
 
-// Head metadata
-useHead({
-  title: 'همه داروها | داروخانه آنلاین',
+const PAGE_SIZE = 12
+
+const route = useRoute()
+const router = useRouter()
+const { $api } = useNuxtApp()
+const { addToCart } = useAddToCart()
+
+// The URL is the single source of truth: every search/filter/sort/page change is a route change.
+const state = computed(() => parseSearchQuery(route.query))
+const activeCount = computed(() => activeFilterCount(state.value))
+
+const go = (next, { replace = false } = {}) => {
+  const location = { path: '/medications', query: buildSearchQuery(next) }
+  return replace ? router.replace(location) : router.push(location)
+}
+
+// ---------- search box ----------
+// Search as you type: the results follow the input after a short pause. Typing replaces the history entry (one back
+// press leaves the page, not every keystroke); Enter / the button search at once.
+const SEARCH_DEBOUNCE_MS = 350
+const searchInput = ref('')
+let searchTimer = null
+
+const cancelPendingSearch = () => {
+  clearTimeout(searchTimer)
+  searchTimer = null
+}
+
+// the URL changed (back button, hero search, "clear") → mirror it, but never rewrite what the user is mid-typing
+watch(
+  () => state.value.search,
+  (value) => {
+    if (searchInput.value.trim() !== value) searchInput.value = value
+  },
+  { immediate: true }
+)
+
+watch(searchInput, (value) => {
+  const text = value.trim()
+  cancelPendingSearch()
+  if (text === state.value.search) return
+  searchTimer = setTimeout(() => go({ ...state.value, search: text, page: 1 }, { replace: true }), SEARCH_DEBOUNCE_MS)
 })
 
-// Composables
-const cartStore = useCartStore()
-const toast = useAppToast()
-const app = useNuxtApp()
+const submitSearch = () => {
+  cancelPendingSearch()
+  go({ ...state.value, search: searchInput.value.trim(), page: 1 })
+}
 
-// Reactive state
-const searchQuery = ref('')
-const selectedCategory = ref('all')
-const currentPage = ref(1)
-const pageSize = ref(12)
-const products = ref([])
-const totalElements = ref(0)
-const totalPages = ref(0)
-const pending = ref(false)
+onBeforeUnmount(cancelPendingSearch)
 
-// Categories
-const categories = ref([
-  { label: 'همه', value: 'all' },
-  { label: 'مسکن‌ها', value: 'pain' },
-  { label: 'مکمل‌ها', value: 'supplements' },
-  { label: 'سلامت قلب', value: 'heart' },
-  { label: 'دیابت', value: 'diabetes' },
-  { label: 'آلرژی', value: 'allergies' },
+// ---------- sort ----------
+// RELEVANCE only means something with a search text; without one BACK sorts newest-first
+const sortItems = computed(() => [
+  { label: 'پیش‌فرض', value: 'DEFAULT' },
+  ...SORT_OPTIONS.filter((option) => option.value !== 'RELEVANCE' || state.value.search),
 ])
 
-// Helper Methods
-const isInStock = (product) => {
-  if (!product) return false
+const changeSort = (value) => go({ ...state.value, sort: value === 'DEFAULT' ? '' : value, page: 1 })
 
-  if (product.expiryDate) {
+// ---------- results ----------
+const searchRequest = computed(() => toSearchRequest(state.value, { size: PAGE_SIZE }))
+
+const { data: results, status, error, refresh } = useAsyncData(
+  'storefront-search',
+  async () => (await $api.search.searchGoods({ data: searchRequest.value })).data.data,
+  { server: false, watch: [searchRequest] }
+)
+
+const fetching = computed(() => status.value === 'idle' || status.value === 'pending')
+// skeletons only for the first load; a re-search keeps the previous results on screen (dimmed) until the new ones land
+const loading = computed(() => fetching.value && !results.value)
+const refreshing = computed(() => fetching.value && Boolean(results.value))
+const failed = computed(() => Boolean(error.value) && !fetching.value)
+const products = computed(() => (results.value?.content ?? []).map((doc) => toProductCard(doc)))
+const totalElements = computed(() => results.value?.totalElements ?? 0)
+const totalPages = computed(() => results.value?.totalPages ?? 0)
+
+const setPage = (page) => {
+  go({ ...state.value, page })
+  if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// ---------- filters ----------
+const showFilters = ref(false)
+
+const { data: brands } = useAsyncData(
+  'storefront-filter-brands',
+  async () => (await $api.storefront.listBrands({ params: { limit: 30 } })).data.data ?? [],
+  { server: false, default: () => [] }
+)
+
+// Facet counts follow the active query but not its page or sort, so those two don't refetch them.
+const facetsKey = computed(() => JSON.stringify(toSearchRequest({ ...state.value, sort: '' }, { withPaging: false })))
+
+const { data: facets, status: facetsStatus } = useAsyncData(
+  'storefront-facets',
+  async () => {
     try {
-      const expiryDate = new Date(product.expiryDate)
-      return expiryDate > new Date()
+      const body = toSearchRequest({ ...state.value, sort: '' }, { withPaging: false })
+      return (await $api.search.searchGoodsFacets({ data: body })).data.data ?? []
     } catch {
-      return true
+      return [] // filters are optional; the list still works without them
     }
-  }
-  return true
-}
+  },
+  { server: false, default: () => [], watch: [facetsKey] }
+)
 
-const getBadge = (product) => {
-  if (!product) return null
+// Only the very first load shows skeletons; later refreshes keep the panel in place so it doesn't flicker
+const filtersLoading = computed(
+  () => (facetsStatus.value === 'idle' || facetsStatus.value === 'pending') && facets.value.length === 0
+)
 
-  if (product.discountPercent && product.discountPercent > 20) {
-    return 'تخفیف ویژه'
-  }
-  if (product.rating && product.rating >= 4.8) {
-    return 'محبوب'
-  }
-  if (product.viewsCount && product.viewsCount > 1000) {
-    return 'پرفروش'
-  }
-  return null
-}
-
-const transformProduct = (product) => {
-  if (!product) return null
-
-  const originalPrice = product.discountPercent
-    ? Math.round(product.price / (1 - product.discountPercent / 100))
-    : null
-
-  return {
-    id: product.id || 0,
-    nameFa: product.nameFa || 'نام محصول',
-    nameEn: product.nameEn || '',
-    description: product.description || '',
-    category: product.categoryTitles?.[0] || 'سایر',
-    price: product.price || 0,
-    originalPrice: originalPrice,
-    discountPercent: product.discountPercent || null,
-    rating: product.rating || 0,
-    reviewCount: product.viewsCount || 0,
-    image: `/images/products/${product.goodCode || 'default'}.jpg`,
-    inStock: isInStock(product),
-    badge: getBadge(product),
-    isPrescriptionRequired: product.isPrescriptionRequired || false,
-    brandTitle: product.brandTitle || '',
-    expiryDate: product.expiryDate || null,
-    minOrderQuantity: product.minOrderQuantity || 1,
-  }
-}
-
-const updateCategoriesFromProducts = () => {
-  if (!products.value || products.value.length === 0) return
-
-  const uniqueCategories = new Set()
-
-  products.value.forEach((product) => {
-    if (product.categoryTitles && product.categoryTitles.length > 0) {
-      product.categoryTitles.forEach((cat) => uniqueCategories.add(cat))
-    }
-  })
-
-  if (uniqueCategories.size === 0) return
-
-  const dynamicCategories = Array.from(uniqueCategories).map((cat) => ({
-    label: cat,
-    value: cat.toLowerCase(),
-  }))
-
-  categories.value = [{ label: 'همه', value: 'all' }, ...dynamicCategories]
-}
-
-const fetchProducts = async () => {
-  pending.value = true
-
-  const config = {
-    data: {
-      page: currentPage.value - 1, // Backend expects 0-based index
-      rows: pageSize.value,
-    },
-  }
-
-  try {
-    const response = await app.$api.products.fetchProductsList(config)
-    const data = response?.data?.data
-
-    products.value = data?.content || []
-    totalElements.value = data?.totalElements || 0
-    totalPages.value = data?.totalPages || 0
-
-    // Dynamically populate categories from products (only on first load)
-    if (currentPage.value === 1) {
-      updateCategoriesFromProducts()
-    }
-
-    // Scroll to top after page change
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  } catch (error) {
-    console.error('Error fetching products:', error)
-    toast.error('خطا در دریافت اطلاعات', 'لطفاً دوباره تلاش کنید')
-    products.value = []
-  } finally {
-    pending.value = false
-  }
-}
-
-const handlePageChange = async (page) => {
-  currentPage.value = page
-  await fetchProducts()
-}
-
-const handleCategoryChange = async (category) => {
-  selectedCategory.value = category
-  currentPage.value = 1 // Reset to first page when category changes
-  await fetchProducts()
-}
-
-const handleAddToCart = (product) => {
-  if (!product) return
-
-  // Store handles the logic and returns the quantity added
-  const quantityAdded = cartStore.addItem(product)
-
-  // Show appropriate success toast based on quantity added
-  if (quantityAdded > 1) {
-    toast.success(
-      'به سبد خرید اضافه شد',
-      `${product.nameFa} - ${quantityAdded} عدد (حداقل سفارش)`
-    )
-  } else {
-    toast.success('به سبد خرید اضافه شد', product.nameFa || 'محصول')
-  }
-}
-
-// Computed properties
-const filteredProducts = computed(() => {
-  if (!products.value || products.value.length === 0) return []
-
-  let filtered = products.value
-
-  // Filter by category (client-side filtering)
-  if (selectedCategory.value !== 'all') {
-    filtered = filtered.filter((p) => {
-      if (!p.categoryTitles || p.categoryTitles.length === 0) return false
-
-      return p.categoryTitles.some((cat) =>
-        cat.toLowerCase().includes(selectedCategory.value.toLowerCase())
-      )
-    })
-  }
-
-  // Filter by search (client-side filtering)
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase().trim()
-    filtered = filtered.filter((p) => {
-      const nameFa = (p.nameFa || '').toLowerCase()
-      const nameEn = (p.nameEn || '').toLowerCase()
-      const brandTitle = (p.brandTitle || '').toLowerCase()
-      const description = (p.description || '').toLowerCase()
-
-      return (
-        nameFa.includes(query) ||
-        nameEn.includes(query) ||
-        brandTitle.includes(query) ||
-        description.includes(query)
-      )
-    })
-  }
-
-  return filtered
-})
-
-// Initial load
-onMounted(() => {
-  fetchProducts()
+useHead({
+  title: computed(() => (state.value.search ? `جستجوی ${state.value.search} | داروخانه آنلاین` : 'همه داروها | داروخانه آنلاین')),
 })
 </script>

@@ -8,9 +8,17 @@ export default (apiCaller) => ({
     return apiCaller.post('api/search', config)
   },
 
-  // ========== GOODS SEARCH (Elasticsearch) ==========
+  // ========== GOODS SEARCH (Elasticsearch, public) ==========
+  // Verified against BACK's GoodsSearchController. config.data is GoodsSearchRequestDTO {keyword, categoryId, brand,
+  // brandIds, tagName, inStock, onSale, timedOffer, attributes: [{attributeId, optionIds|min|max|booleanValue|text}],
+  // sort, page (0-based), size}; → PageResponse<GoodsDocument>. One result per model unless expandVariants is true.
   searchGoods(config) {
-    return apiCaller.post('api/goods-search', config)
+    return apiCaller.post('api/elastic/search', config)
+  },
+
+  // Same body → AttributeFacetDTO[] {attributeId, name, type, unit, options: [{optionId, value, count}], trueCount, falseCount, min, max}
+  searchGoodsFacets(config) {
+    return apiCaller.post('api/elastic/search/facets', config)
   },
 
   // ========== ORDER SEARCH (Elasticsearch) ==========

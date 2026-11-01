@@ -1,27 +1,37 @@
 <template>
-  <section class="py-12">
-    <div class="relative">
+  <section v-if="status !== 'unavailable'" class="py-12">
+    <!-- Loading -->
+    <div v-if="status === 'loading' || status === 'idle'" class="flex gap-4 overflow-hidden">
+      <USkeleton v-for="i in 8" :key="i" class="h-32 w-28 shrink-0 rounded-xl" />
+    </div>
+
+    <!-- Failed (a 401/403 means the store hasn't opened categories to guests — that hides the section instead) -->
+    <div v-else-if="status === 'failed'" class="flex items-center justify-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5" />
+      <span>دسته‌بندی‌ها بارگذاری نشد</span>
+      <UButton color="neutral" variant="soft" size="sm" @click="load(true)">تلاش دوباره</UButton>
+    </div>
+
+    <div v-else class="relative">
       <!-- Navigation Buttons -->
       <button
         v-if="canScrollPrev"
-        class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        type="button"
+        aria-label="قبلی"
+        class="absolute start-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         @click="scrollPrev"
       >
-        <UIcon
-          name="i-heroicons-chevron-right-20-solid"
-          class="w-6 h-6 text-gray-700 dark:text-gray-300"
-        />
+        <UIcon name="i-heroicons-chevron-right-20-solid" class="w-6 h-6 text-gray-700 dark:text-gray-300" />
       </button>
 
       <button
         v-if="canScrollNext"
-        class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        type="button"
+        aria-label="بعدی"
+        class="absolute end-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         @click="scrollNext"
       >
-        <UIcon
-          name="i-heroicons-chevron-left-20-solid"
-          class="w-6 h-6 text-gray-700 dark:text-gray-300"
-        />
+        <UIcon name="i-heroicons-chevron-left-20-solid" class="w-6 h-6 text-gray-700 dark:text-gray-300" />
       </button>
 
       <!-- Carousel Container -->
@@ -31,259 +41,71 @@
         @scroll="handleScroll"
       >
         <div class="flex gap-4 pb-2">
-          <!-- Category Cards -->
-          <div
+          <NuxtLink
             v-for="category in categories"
             :key="category.id"
-            class="flex-shrink-0 w-20 sm:w-40"
+            :to="`/medications?categoryId=${category.id}`"
+            class="shrink-0 w-20 sm:w-40 p-4 rounded-xl bg-white dark:bg-transparent hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-all group"
           >
-            <button
-              class="w-full p-4 rounded-xl bg-white dark:bg-transparent hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-all group"
-              :class="
-                selectedCategory?.id === category.id
-                  ? ' bg-brand-50 dark:bg-brand-900/0'
-                  : ' hover:border-brand-300'
-              "
-              @click="selectCategory(category)"
-            >
-              <span class="flex flex-col items-center gap-3">
-                <!-- Icon -->
-                <span
-                  class="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-colors"
-                  :class="
-                    selectedCategory?.id === category.id
-                      ? 'bg-brand-500'
-                      : 'bg-brand-100 dark:bg-brand-900 group-hover:bg-brand-200'
-                  "
-                >
-                  <UIcon
-                    :name="category.icon"
-                    class="w-7 h-7 transition-colors"
-                    :class="
-                      selectedCategory?.id === category.id
-                        ? 'text-white'
-                        : 'text-brand-600 dark:text-brand-400'
-                    "
-                  />
-                </span>
-                <!-- Text -->
-                <span
-                  class="text-sm font-medium text-center line-clamp-2"
-                  :class="
-                    selectedCategory?.id === category.id
-                      ? 'text-brand-600 dark:text-brand-400'
-                      : 'text-gray-700 dark:text-gray-300'
-                  "
-                >
-                  {{ category.name }}
-                </span>
+            <span class="flex flex-col items-center gap-3">
+              <span
+                class="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center bg-brand-100 dark:bg-brand-900 group-hover:bg-brand-200 transition-colors"
+              >
+                <UIcon :name="categoryIcon(category.name)" class="w-7 h-7 text-brand-600 dark:text-brand-400" />
               </span>
-            </button>
-          </div>
+              <span class="text-sm font-medium text-center line-clamp-2 text-gray-700 dark:text-gray-300">
+                {{ category.name }}
+              </span>
+            </span>
+          </NuxtLink>
         </div>
-      </div>
-
-      <!-- Dots Indicator -->
-      <div class="flex justify-center gap-2 mt-6">
-        <div
-          v-for="(dot, index) in totalDots"
-          :key="index"
-          class="w-2 h-2 rounded-full transition-all"
-          :class="
-            currentDot === index
-              ? 'bg-brand-500 w-6'
-              : 'bg-gray-300 dark:bg-gray-600'
-          "
-        />
       </div>
     </div>
   </section>
 </template>
 
-<script>
-import { defineComponent } from 'vue'
+<script setup>
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 
-export default defineComponent({
-  name: 'CategoriesCarousel',
+// Home category row from the store's category tree (top level only). Hidden unless BACK returns categories to guests.
+const { tree, status, load } = useStoreCategories()
 
-  data() {
-    return {
-      selectedCategory: null,
-      canScrollPrev: false,
-      canScrollNext: true,
-      currentDot: 0,
-      containerWidth: 0,
-      categories: [
-        {
-          id: 1,
-          name: 'مسکن و ضد درد',
-          icon: 'i-heroicons-heart',
-          slug: 'pain-relief',
-        },
-        {
-          id: 2,
-          name: 'ویتامین و مکمل',
-          icon: 'i-heroicons-beaker',
-          slug: 'vitamins',
-        },
-        {
-          id: 3,
-          name: 'قلب و عروق',
-          icon: 'mdi:heart-pulse',
-          slug: 'cardiovascular',
-        },
-        {
-          id: 4,
-          name: 'گوارش',
-          icon: 'i-heroicons-sparkles',
-          slug: 'digestive',
-        },
-        {
-          id: 5,
-          name: 'پوست و مو',
-          icon: 'i-heroicons-user',
-          slug: 'skin-hair',
-        },
-        {
-          id: 6,
-          name: 'اعصاب و روان',
-          icon: 'mdi:brain',
-          slug: 'mental-health',
-        },
-        {
-          id: 7,
-          name: 'تنفسی',
-          icon: 'mdi:lungs',
-          slug: 'respiratory',
-        },
-        {
-          id: 8,
-          name: 'کودکان',
-          icon: 'mdi:baby-face-outline',
-          slug: 'children',
-        },
-        {
-          id: 9,
-          name: 'زنان',
-          icon: 'mdi:gender-female',
-          slug: 'women',
-        },
-        {
-          id: 10,
-          name: 'دیابت',
-          icon: 'mdi:water',
-          slug: 'diabetes',
-        },
-        {
-          id: 11,
-          name: 'آنتی بیوتیک',
-          icon: 'i-heroicons-shield-check',
-          slug: 'antibiotics',
-        },
-        {
-          id: 12,
-          name: 'چشم و بینایی',
-          icon: 'i-heroicons-eye',
-          slug: 'eye-care',
-        },
-      ],
-    }
-  },
+const categories = computed(() => tree.value)
 
-  computed: {
-    totalDots() {
-      // Use reactive containerWidth to ensure re-computation on resize
-      const width = this.containerWidth || 1
-      const itemsPerView = Math.floor(width / 152) // 144px width + 16px gap
-      return Math.max(
-        1,
-        Math.ceil(this.categories.length / Math.max(1, itemsPerView))
-      )
-    },
-  },
+const carouselContainer = ref(null)
+const canScrollPrev = ref(false)
+const canScrollNext = ref(true)
 
-  mounted() {
-    this.updateContainerWidth()
-    this.handleScroll()
-    window.addEventListener('resize', this.handleResize)
-  },
+// RTL: scrollLeft is 0 at the start (right edge) and negative when scrolling left — don't "fix" this to LTR math
+const handleScroll = () => {
+  const container = carouselContainer.value
+  if (!container) return
+  const scrollLeft = Math.abs(container.scrollLeft)
+  const maxScroll = container.scrollWidth - container.clientWidth
+  canScrollPrev.value = scrollLeft > 10
+  canScrollNext.value = scrollLeft < maxScroll - 10
+}
 
-  beforeUnmount() {
-    window.removeEventListener('resize', this.handleResize)
-  },
+const scrollPrev = () => {
+  // in RTL, scrolling right (prev) means positive scrollLeft
+  carouselContainer.value?.scrollBy({ left: carouselContainer.value.clientWidth, behavior: 'smooth' })
+  setTimeout(handleScroll, 500)
+}
 
-  methods: {
-    scrollPrev() {
-      const container = this.$refs.carouselContainer
-      if (container) {
-        const scrollAmount = container.clientWidth
-        // In RTL, scrolling right (prev) means positive scrollLeft
-        container.scrollBy({ left: scrollAmount, behavior: 'smooth' })
-        // Update state after smooth scroll completes
-        setTimeout(() => {
-          this.handleScroll()
-        }, 500)
-      }
-    },
+const scrollNext = () => {
+  carouselContainer.value?.scrollBy({ left: -carouselContainer.value.clientWidth, behavior: 'smooth' })
+  setTimeout(handleScroll, 500)
+}
 
-    scrollNext() {
-      const container = this.$refs.carouselContainer
-      if (container) {
-        const scrollAmount = container.clientWidth
-        // In RTL, scrolling left (next) means negative scrollLeft
-        container.scrollBy({ left: -scrollAmount, behavior: 'smooth' })
-        // Update state after smooth scroll completes
-        setTimeout(() => {
-          this.handleScroll()
-        }, 500)
-      }
-    },
-
-    handleScroll() {
-      const container = this.$refs.carouselContainer
-      if (container) {
-        // In RTL, scrollLeft is 0 at the start (right) and negative when scrolling left
-        const scrollLeft = Math.abs(container.scrollLeft)
-        const maxScroll = container.scrollWidth - container.clientWidth
-
-        // Can scroll prev (right) if we've scrolled away from the start
-        this.canScrollPrev = scrollLeft > 10
-        // Can scroll next (left) if we haven't reached the end
-        this.canScrollNext = scrollLeft < maxScroll - 10
-
-        // Calculate current dot
-        if (maxScroll > 0) {
-          const scrollPercentage = scrollLeft / maxScroll
-          this.currentDot = Math.round(scrollPercentage * (this.totalDots - 1))
-        } else {
-          this.currentDot = 0
-        }
-      }
-    },
-
-    updateContainerWidth() {
-      const container = this.$refs.carouselContainer
-      if (container) {
-        this.containerWidth = container.clientWidth
-      }
-    },
-
-    handleResize() {
-      this.updateContainerWidth()
-      this.handleScroll()
-    },
-
-    selectCategory(category) {
-      this.selectedCategory = category
-      // Navigate to medications page with category filter
-      this.$router.push(`/medications?category=${category.slug}`)
-    },
-  },
+// the row only exists once the categories have loaded
+watch(categories, () => nextTick(handleScroll), { immediate: true })
+if (import.meta.client) window.addEventListener('resize', handleScroll)
+onBeforeUnmount(() => {
+  if (import.meta.client) window.removeEventListener('resize', handleScroll)
 })
 </script>
 
 <style scoped>
-/* Hide scrollbar */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
