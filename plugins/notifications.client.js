@@ -12,7 +12,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     if (message?.source !== 'capsule-push') return
 
     if (message.kind === 'open') {
-      if (isSafeLink(message.link)) nuxtApp.runWithContext(() => navigateTo(message.link))
+      if (isSafeLink(message.link)) nuxtApp.runWithContext(() => navigateTo(notificationLink(message.link)))
       return
     }
 
@@ -25,7 +25,7 @@ export default defineNuxtPlugin((nuxtApp) => {
           icon: 'i-heroicons-bell',
           color: 'primary',
           actions: isSafeLink(message.link)
-            ? [{ label: 'مشاهده', color: 'primary', variant: 'soft', onClick: () => navigateTo(message.link) }]
+            ? [{ label: 'مشاهده', color: 'primary', variant: 'soft', onClick: () => navigateTo(notificationLink(message.link)) }]
             : undefined,
         })
       })
