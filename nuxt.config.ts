@@ -82,6 +82,9 @@ export default defineNuxtConfig({
       // BACKEND_URL: 'https://lanelle-unbronzed-carpologically.ngrok-free.dev/',
       BACKEND_URL: 'http://localhost:8081',
       CMS_URL: 'https://ancient-balance-34dc5d8db0.strapiapp.com',
+      // One deployment = one store. Sent as `X-Tenant` on every backend request (storefront + its staff panel).
+      // Set per deployment via NUXT_PUBLIC_TENANT_ID; empty = header omitted (backend falls back to Origin/SYSTEM).
+      TENANT_ID: '',
       // Firebase web app config for push (Project settings → General → Your apps; vapidKey: Cloud Messaging →
       // Web Push certificates). Public values, not secrets. Override per environment with NUXT_PUBLIC_FIREBASE_*
       // (e.g. NUXT_PUBLIC_FIREBASE_API_KEY, NUXT_PUBLIC_FIREBASE_VAPID_KEY). Empty = push UI hidden, inbox still works.

@@ -141,6 +141,12 @@ export default defineNuxtPlugin((nuxtApp) => {
         // 'ngrok-skip-browser-warning': '69420',
       }
 
+      // Runs on server and client, so SSR fetches carry the tenant too. Same value as the JWT's tenant
+      // (one deployment = one store), so it never conflicts with an authenticated session.
+      if (runtimeConfig.public.TENANT_ID) {
+        headers['X-Tenant'] = runtimeConfig.public.TENANT_ID
+      }
+
       // Add token on client side
       if (import.meta.client && cachedToken?.value) {
         headers['Authorization'] = `Bearer ${cachedToken.value}` // Added Bearer prefix too
