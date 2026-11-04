@@ -31,8 +31,8 @@
         </form>
 
         <div class="mt-3 space-y-1 min-h-14">
-          <!-- Nothing typed yet -->
-          <p v-if="!text" class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+          <!-- Nothing typed yet, or too short for BACK to suggest -->
+          <p v-if="text.length < MIN_CHARS" class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
             نام دارو یا محصول را بنویسید
           </p>
 
@@ -41,20 +41,8 @@
             <USkeleton v-for="i in 3" :key="i" class="h-14 w-full rounded-xl" />
           </template>
 
-          <!-- Failed -->
-          <div v-else-if="failed" class="text-center py-4">
-            <UIcon
-              name="i-heroicons-exclamation-triangle"
-              class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2"
-            />
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">جستجو ناموفق بود</p>
-            <UButton color="neutral" variant="soft" size="sm" icon="i-heroicons-arrow-path" @click="search(text)">
-              تلاش دوباره
-            </UButton>
-          </div>
-
           <!-- Nothing found -->
-          <div v-else-if="results.length === 0" class="text-center py-4">
+          <div v-else-if="results.length === 0 && !failed" class="text-center py-4">
             <UIcon
               name="i-heroicons-magnifying-glass"
               class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2"
@@ -64,11 +52,11 @@
           </div>
 
           <!-- Top 5 -->
-          <template v-else>
+          <template v-else-if="results.length > 0">
             <NuxtLink
               v-for="product in results"
               :key="product.id"
-              :to="`/medications/${product.linkId}`"
+              :to="`/medications/${product.groupId ?? product.id}`"
               class="flex items-center gap-3 p-2 rounded-xl hover:bg-teal-50 dark:hover:bg-teal-950 transition-colors"
               :class="loading ? 'opacity-60' : ''"
               @click="close"
@@ -77,8 +65,8 @@
                 class="w-12 h-12 shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center"
               >
                 <img
-                  v-if="product.image"
-                  :src="product.image"
+                  v-if="product.imageUrl"
+                  :src="product.imageUrl"
                   :alt="product.nameFa"
                   loading="lazy"
                   class="w-full h-full object-cover"
@@ -88,14 +76,8 @@
               <div class="min-w-0 flex-1">
                 <p class="text-sm font-bold text-gray-900 dark:text-white line-clamp-1">{{ product.nameFa }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
-                  {{ product.brandTitle }}
+                  {{ product.brand }}
                 </p>
-              </div>
-              <div class="text-end shrink-0">
-                <p v-if="product.inStock" class="text-sm font-black text-brand-500 dark:text-brand-400">
-                  <span v-if="product.hasVariants" class="text-xs font-medium">از </span>{{ formatPrice(product.price) }}
-                </p>
-                <p v-else class="text-xs font-medium text-error">ناموجود</p>
               </div>
             </NuxtLink>
           </template>
@@ -103,7 +85,7 @@
 
         <!-- CTA: always below the list (results, nothing found, or failed) -->
         <UButton
-          v-if="text"
+          v-if="text.length >= MIN_CHARS"
           :to="ctaTo"
           color="neutral"
           variant="soft"
@@ -112,7 +94,7 @@
           trailing-icon="i-heroicons-arrow-left"
           @click="close"
         >
-          {{ results.length > 0 ? 'مشاهده همه نتایج' : 'مشاهده همه محصولات' }}
+          {{ results.length > 0 || failed ? 'مشاهده همه نتایج' : 'مشاهده همه محصولات' }}
         </UButton>
       </div>
     </Transition>
@@ -122,15 +104,17 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-// Navbar search: the icon opens a panel with an input; typing (debounced) calls POST api/elastic/search for the top 5
-// matches, each linking to its product page, with a CTA to the full listing underneath.
-const DEBOUNCE_MS = 350
+// Navbar search: the icon opens a panel with an input; typing (debounced) calls the light GET api/elastic/suggest (one
+// suggestion per product, typo/prefix tolerant), each linking to its product page, with a CTA to the full listing
+// underneath. BACK suggests nothing under 2 characters and rate-limits it (429), so errors stay silent: the list just
+// empties and the CTA still opens the listing.
+const DEBOUNCE_MS = 300
+const MIN_CHARS = 2
 const LIMIT = 5
 
 const { $api } = useNuxtApp()
 const route = useRoute()
 const router = useRouter()
-const { formatPrice } = useFormat()
 
 const root = ref(null)
 const input = ref(null)
@@ -142,7 +126,9 @@ const failed = ref(false)
 
 const text = computed(() => query.value.trim())
 // with results: the full result list for this text; with none: the plain listing
-const ctaTo = computed(() => (results.value.length > 0 ? { path: '/medications', query: { search: text.value } } : '/medications'))
+const ctaTo = computed(() =>
+  results.value.length > 0 || failed.value ? { path: '/medications', query: { search: text.value } } : '/medications'
+)
 
 let timer = null
 let requestId = 0 // a slow older response must not replace a newer one
@@ -152,9 +138,9 @@ const search = async (value) => {
   loading.value = true
   failed.value = false
   try {
-    const response = await $api.search.searchGoods({ data: { keyword: value, page: 0, size: LIMIT } })
+    const response = await $api.search.suggestGoods({ params: { q: value } })
     if (id !== requestId) return
-    results.value = (response.data.data?.content ?? []).map((doc) => toProductCard(doc))
+    results.value = (response.data.data ?? []).slice(0, LIMIT)
   } catch {
     if (id !== requestId) return
     results.value = []
@@ -166,7 +152,7 @@ const search = async (value) => {
 
 watch(text, (value) => {
   clearTimeout(timer)
-  if (!value) {
+  if (value.length < MIN_CHARS) {
     requestId++ // drop anything still in flight
     results.value = []
     loading.value = false

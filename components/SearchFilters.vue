@@ -43,14 +43,17 @@
       <div v-if="categoryItems.length > 0" class="px-4 sm:px-6 py-4 space-y-3">
         <h3 class="text-sm font-bold text-gray-900 dark:text-white">دسته‌بندی</h3>
         <div class="space-y-2 max-h-56 overflow-y-auto">
-          <UCheckbox
-            v-for="item in categoryItems"
-            :key="item.id"
-            :label="item.name"
-            :class="item.depth > 0 ? 'ms-5' : ''"
-            :model-value="state.categoryId === item.id"
-            @update:model-value="update({ categoryId: $event === true ? item.id : null })"
-          />
+          <div v-for="item in categoryItems" :key="item.id" class="flex items-center justify-between gap-2">
+            <UCheckbox
+              :label="item.name"
+              :class="item.depth > 0 ? 'ms-5' : ''"
+              :model-value="state.categoryId === item.id"
+              @update:model-value="update({ categoryId: $event === true ? item.id : null })"
+            />
+            <span v-if="item.count != null" class="text-xs text-gray-500 dark:text-gray-400">
+              {{ Number(item.count).toLocaleString('fa-IR') }}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -148,6 +151,8 @@ const props = defineProps({
   facets: { type: Array, default: () => [] },
   // StorefrontBrandDTO[] from GET api/storefront/brands
   brands: { type: Array, default: () => [] },
+  // {id, name, count}[] from POST api/elastic/search/summary — used when the category tree isn't readable (guests)
+  categories: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
 })
 
@@ -162,12 +167,13 @@ const clearAll = () => update({ categoryId: null, inStock: false, onSale: false,
 
 // top-level categories with their direct children underneath, flattened for a single-choice checkbox list
 const { tree: categoryTree } = useStoreCategories()
-const categoryItems = computed(() =>
-  categoryTree.value.flatMap((root) => [
+const categoryItems = computed(() => {
+  if (categoryTree.value.length === 0) return props.categories.map((c) => ({ id: c.id, name: c.name, depth: 0, count: c.count }))
+  return categoryTree.value.flatMap((root) => [
     { id: root.id, name: root.name, depth: 0 },
     ...(root.children ?? []).map((child) => ({ id: child.id, name: child.name, depth: 1 })),
   ])
-)
+})
 
 const toggleBrand = (id, on) => {
   const next = props.state.brandIds.filter((b) => b !== id)

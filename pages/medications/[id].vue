@@ -339,7 +339,7 @@ const fetchProduct = async () => {
   notFound.value = false
 
   try {
-    const response = await app.$api.goods.getGoods({ id: route.params.id })
+    const response = await app.$api.goods.getGoods({ data: { id: Number(route.params.id) } })
     const data = response?.data?.data
 
     if (!data) {

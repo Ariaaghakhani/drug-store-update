@@ -51,6 +51,7 @@
               :state="state"
               :facets="facets"
               :brands="brands"
+              :categories="summaryCategories"
               :loading="filtersLoading"
               @change="go"
             />
@@ -80,10 +81,10 @@
               class="w-20 h-20 text-gray-300 dark:text-gray-600 mx-auto mb-4"
             />
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              دریافت محصولات ناموفق بود
+              {{ searchUnavailable ? 'سرویس جستجو موقتاً در دسترس نیست' : 'دریافت محصولات ناموفق بود' }}
             </h3>
             <p class="text-gray-600 dark:text-gray-400 mb-6">
-              اتصال به سرور برقرار نشد. لطفاً دوباره تلاش کنید
+              {{ searchUnavailable ? 'کمی بعد دوباره تلاش کنید' : 'اتصال به سرور برقرار نشد. لطفاً دوباره تلاش کنید' }}
             </p>
             <UButton color="neutral" variant="soft" icon="i-heroicons-arrow-path" @click="refresh()">
               تلاش دوباره
@@ -101,6 +102,16 @@
             @add-to-cart="addToCart"
           >
             <template v-if="activeCount > 0 || state.search" #empty-action>
+              <!-- BACK's "did you mean": only offered when the search found nothing -->
+              <UButton
+                v-if="correction"
+                class="mt-6 me-2"
+                color="primary"
+                icon="i-heroicons-light-bulb"
+                @click="go({ ...state, search: correction, page: 1 })"
+              >
+                منظورتان «{{ correction }}» بود؟
+              </UButton>
               <UButton class="mt-6" color="neutral" variant="soft" @click="go({ ...emptySearchState() })">
                 پاک کردن جستجو و فیلترها
               </UButton>
@@ -198,6 +209,10 @@ const fetching = computed(() => status.value === 'idle' || status.value === 'pen
 const loading = computed(() => fetching.value && !results.value)
 const refreshing = computed(() => fetching.value && Boolean(results.value))
 const failed = computed(() => Boolean(error.value) && !fetching.value)
+// 503 search.goods.index.unavailable: the search index isn't ready, not a connection problem
+const searchUnavailable = computed(
+  () => error.value?.response?.status === 503 || error.value?.response?.data?.errorCode === 'search.goods.index.unavailable'
+)
 const products = computed(() => (results.value?.content ?? []).map((doc) => toProductCard(doc)))
 const totalElements = computed(() => results.value?.totalElements ?? 0)
 const totalPages = computed(() => results.value?.totalPages ?? 0)
@@ -230,6 +245,43 @@ const { data: facets, status: facetsStatus } = useAsyncData(
     }
   },
   { server: false, default: () => [], watch: [facetsKey] }
+)
+
+// Category counts for the filter panel (BACK's category tree is login-only, this summary is public). Built without the
+// category/brand filters so the list stays complete while one is picked; failure just hides the group.
+const summaryKey = computed(() =>
+  JSON.stringify(toSearchRequest({ ...state.value, sort: '', categoryId: null, brandIds: [] }, { withPaging: false }))
+)
+
+const { data: summaryCategories } = useAsyncData(
+  'storefront-summary-categories',
+  async () => {
+    try {
+      const body = toSearchRequest({ ...state.value, sort: '', categoryId: null, brandIds: [] }, { withPaging: false })
+      return (await $api.search.searchGoodsSummary({ data: body })).data.data?.categories ?? []
+    } catch {
+      return []
+    }
+  },
+  { server: false, default: () => [], watch: [summaryKey] }
+)
+
+// "Did you mean …?" for a text search that found nothing (BACK: empty `suggestion` = nothing to offer)
+const noResults = computed(() => Boolean(state.value.search) && !fetching.value && !failed.value && totalElements.value === 0)
+
+const { data: correction } = useAsyncData(
+  'storefront-search-correction',
+  async () => {
+    if (!noResults.value) return ''
+    try {
+      const response = await $api.search.getSearchCorrection({ params: { keyword: state.value.search } })
+      const suggestion = response.data.data?.suggestion ?? ''
+      return suggestion && suggestion !== state.value.search ? suggestion : ''
+    } catch {
+      return ''
+    }
+  },
+  { server: false, default: () => '', watch: [noResults, () => state.value.search] }
 )
 
 // Only the very first load shows skeletons; later refreshes keep the panel in place so it doesn't flicker
