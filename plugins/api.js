@@ -117,6 +117,12 @@ export const apiCaller = (apiCallerInstances, nuxtApp) => {
 export default defineNuxtPlugin((nuxtApp) => {
   const runtimeConfig = useRuntimeConfig()
 
+  // Without X-Tenant the backend falls back to Origin/SYSTEM, which usually has no goods: the storefront
+  // would load "fine" but empty. Say so loudly in dev instead of failing silently.
+  if (import.meta.dev && !runtimeConfig.public.TENANT_ID) {
+    console.warn('[api] NUXT_PUBLIC_TENANT_ID is empty: requests carry no X-Tenant header and will resolve to the SYSTEM tenant. Set it in .env (see .env.example).')
+  }
+
   const onResponse = ({ response }) => {
     if (response?.ok) {
       response._data = {
@@ -139,6 +145,12 @@ export default defineNuxtPlugin((nuxtApp) => {
       // Set headers directly in options
       const headers = {
         // 'ngrok-skip-browser-warning': '69420',
+      }
+
+      // Runs on server and client, so SSR fetches carry the tenant too. Same value as the JWT's tenant
+      // (one deployment = one store), so it never conflicts with an authenticated session.
+      if (runtimeConfig.public.TENANT_ID) {
+        headers['X-Tenant'] = runtimeConfig.public.TENANT_ID
       }
 
       // Add token on client side
