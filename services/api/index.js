@@ -20,6 +20,8 @@ import organization from '@/services/api/organization.js'
 import search from '@/services/api/search.js'
 import medical from '@/services/api/medical.js'
 import attachment from '@/services/api/attachment.js'
+import crm from '@/services/api/crm.js'
+import contentAdmin from '@/services/api/contentAdmin.js'
 import settings from '@/services/api/settings.js'
 import audit from '@/services/api/audit.js'
 import dynamic from '@/services/api/dynamic.js'
@@ -84,6 +86,10 @@ export default (apiCaller, apiInstances) => ({
 
   // ========== CMS (Blog) ==========
   blog: blog(apiCaller),
+
+  // ========== CRM (store customers) ==========
+  crm: crm(apiCaller),
+  contentAdmin: contentAdmin(apiCaller),
 
   // ========== PANEL ROUTES ==========
   address: address(apiCaller),

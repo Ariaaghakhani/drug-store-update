@@ -1,0 +1,82 @@
+<!-- components/panel/reviews/ReviewReplyModal.vue -->
+<template>
+  <PanelFormModal
+    :open="open"
+    :title="review?.storeReply ? 'ویرایش پاسخ فروشگاه' : 'پاسخ به نظر'"
+    icon="i-heroicons-chat-bubble-bottom-center-text"
+    submit-label="ثبت پاسخ"
+    width="lg"
+    :loading="saving"
+    @update:open="emit('update:open', $event)"
+    @submit="submit"
+  >
+    <p v-if="serverError" class="text-sm text-error" role="alert">{{ serverError }}</p>
+
+    <div v-if="review?.comment" class="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
+      <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">نظر مشتری</p>
+      <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">{{ review.comment }}</p>
+    </div>
+
+    <UFormField label="متن پاسخ" required :error="error" help="متن ساده، حداکثر ۱۰۰۰ نویسه. پس از ثبت، همراه نظر در سایت نمایش داده می‌شود">
+      <UTextarea v-model="reply" :rows="4" :maxlength="REPLY_MAX" class="w-full" />
+    </UFormField>
+  </PanelFormModal>
+</template>
+
+<script setup>
+// Writes the store's public reply to one review. The parent replaces the row from the `saved` payload.
+import PanelFormModal from '@/components/panel/PanelFormModal.vue'
+import { apiErrorMessage, errorStatus } from '~/utils/apiError.js'
+
+const props = defineProps({
+  open: { type: Boolean, required: true },
+  // GoodsReviewAdminDTO being answered
+  review: { type: Object, default: null },
+})
+
+const emit = defineEmits(['update:open', 'saved'])
+
+const app = useNuxtApp()
+const toast = useAppToast()
+
+const REPLY_MAX = 1000
+const reply = ref('')
+const error = ref('')
+const serverError = ref('')
+const saving = ref(false)
+
+// Every open starts from the reply already stored (edit) or empty (first reply)
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (!isOpen) return
+    reply.value = props.review?.storeReply ?? ''
+    error.value = ''
+    serverError.value = ''
+  }
+)
+
+const submit = async () => {
+  if (saving.value) return
+  const text = reply.value.trim()
+  if (!text) {
+    error.value = 'متن پاسخ را وارد کنید'
+    return
+  }
+  error.value = ''
+  serverError.value = ''
+  saving.value = true
+  try {
+    const res = await app.$api.contentAdmin.replyReview(props.review.id, { data: { reply: text } })
+    toast.success('پاسخ ثبت شد')
+    emit('saved', res.data.data)
+    emit('update:open', false)
+  } catch (e) {
+    // The modal stays open; the message is shown here rather than as a toast
+    if (errorStatus(e) === 400) serverError.value = apiErrorMessage(e, 'متن پاسخ نامعتبر است')
+    else toast.error(apiErrorMessage(e, 'ثبت پاسخ ناموفق بود'))
+  } finally {
+    saving.value = false
+  }
+}
+</script>

@@ -61,8 +61,8 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [x] C4. Shipping methods CRUD (`admin/shipping-methods`)
 - [x] C5. Store payment gateways (`admin/payment-gateways`)
 - [x] C6. Wallet administration (`admin/wallets*`)
-- [ ] C7. Store customers (CRUD, import, export)
-- [ ] C8. Review moderation (`admin/reviews*`) and Q&A moderation (`admin/questions*`)
+- [x] C7. Store customers (CRUD, import, export)
+- [x] C8. Review moderation (`admin/reviews*`) and Q&A moderation (`admin/questions*`)
 - [ ] C9. Blog administration: posts, tags, comments
 - [ ] C10. Contact messages + contact settings
 - [ ] C11. About us, terms (+acceptances), return policy admin
@@ -106,3 +106,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - B2 (2026-11-11, Haiku): checkout discount code, gateways, wallet payment, terms; cart total no longer adds placeholder shipping. eslint 0 errors + build OK; not exercised against the dev backend. Follow-up: fixed 500,000 free-shipping hint in pages/cart.vue (~line 236) should become method-driven.
 - C1 (2026-11-11, Haiku): staff returns list/detail (approve/reject/cancel/receive/refund), order refunds card, cancel paid order, staff-created return. eslint 0 errors + build OK; not exercised against the dev backend.
 - C2 (2026-11-11, Haiku): purchase orders list/new/detail/receive + supplier quick-create; old PO wrappers had wrong paths and were rewritten. eslint clean + build OK; not exercised against the dev backend.
+- C7+C8 (2026-11-11, Haiku): store customers (list/form/import/export) and staff review + Q&A moderation inside the existing reviews/questions pages. eslint clean + build OK; not exercised against the dev backend.
