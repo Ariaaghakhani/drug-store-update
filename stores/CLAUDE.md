@@ -12,7 +12,7 @@ Centralized Pinia client-state layer for the storefront: shopping cart, AI chatb
 - `user.js` — `useUserStore` (id `userStore`), setup-style store. Owns `currentUser`. Persists to `localStorage` key `user.data`, with cross-tab sync via a `storage` event listener plus a 500ms same-tab polling fallback.
 
 ## Public surface
-- **cart.js** — state: `items[]`, `isOpen`. Getters: `itemCount`, `subtotal`, `total` (adds flat $5.99 shipping unless subtotal > 50), `hasItems`. Actions: `loadCartItems()`/`loadFromStorage()`, `addItem(product)`, `removeItem(id)`, `updateQuantity(id, qty)`, `incrementQuantity(id)`, `decrementQuantity(id)`, `clearCart()`, `toggleCart()/openCart()/closeCart()`, `saveToStorage()`.
+- **cart.js** — state: `items[]`, `isOpen`. Getters: `itemCount`, `subtotal`, `total` (items total only, same as `subtotal`; no shipping, no discount, since the checkout quote prices those — changed 2026-11-11, the old flat $5.99 placeholder is gone), `hasItems`. Actions: `loadCartItems()`/`loadFromStorage()`, `addItem(product)`, `removeItem(id)`, `updateQuantity(id, qty)`, `incrementQuantity(id)`, `decrementQuantity(id)`, `clearCart()`, `toggleCart()/openCart()/closeCart()`, `saveToStorage()`.
 - **chat.js** — state: `currentSession`, `sessions[]`, `isOpen`, `isTyping`, `isMinimized`. Getters: `currentMessages`, `hasMessages`, `sessionCount`. Actions: `initSession()`, `sendMessage(content)`, `generateAIResponse(msg)`, `getContextualResponse(msg)`, `clearCurrentSession()`, `toggleChat()/minimizeChat()/maximizeChat()/closeChat()`, `saveToStorage()/loadFromStorage()`.
 - **globalStore.js** — no usable surface.
 - **products.js** — state: `products`, `categoryItems`. Actions: `getById(id)`, `addProduct(data)`, `updateProduct(updated)`, `removeProduct(id)`. Consumed by `pages/panel/products/*.vue`, `pages/medications/index.vue`, `components/FeaturedProducts.vue`, `components/HeroSection.vue`.
@@ -35,4 +35,4 @@ Centralized Pinia client-state layer for the storefront: shopping cart, AI chatb
 - `chat.js`'s "AI" responses are hardcoded keyword matching with a fake delay, not a real API/LLM call.
 - `products.js` and `roles.ts` data is in-memory only — a page refresh discards any admin edits.
 
-Last synced: 209e98b
+Last synced: 2026-11-11 (cart.js total = items total, B2 follow-up)

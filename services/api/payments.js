@@ -12,6 +12,11 @@ export default (apiCaller) => ({
     return apiCaller.post('api/checkout/quote', config)
   },
 
+  // Public, no login. GET params {amount (Rial, the quote total)} → AvailablePaymentGatewayDTO[] {gateway, eligible (null = no check; false = hide), title, description}
+  listGateways(config) {
+    return apiCaller.get('api/payment/gateways', config)
+  },
+
   // ========== PAYMENT ==========
   // returnOrigin = this site's origin; BACK redirects the browser to {returnOrigin}/checkout/result?status&orderId|walletTopUp&paymentToken after the bank (/checkout/redirect is only the pre-gateway interstitial)
   payOrder(orderId, gateway, returnOrigin) {

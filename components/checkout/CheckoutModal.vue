@@ -50,7 +50,7 @@
               {{ orderPlaced.orderId?.toLocaleString('fa-IR') }}
             </p>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              مبلغ سفارش هنگام تحویل دریافت می‌شود
+              {{ orderPlaced.paidByWallet ? 'مبلغ سفارش از کیف پول پرداخت شد' : 'مبلغ سفارش هنگام تحویل دریافت می‌شود' }}
             </p>
           </div>
           <UButton color="primary" to="/account" @click="closeCheckoutModal">
@@ -235,11 +235,13 @@
               </p>
               <div class="grid grid-cols-2 gap-2">
                 <button
+                  :disabled="noGatewayAvailable"
                   :class="[
                     'py-3 rounded-xl border-2 text-xs font-medium transition-colors',
                     paymentMethod === 'ONLINE'
                       ? 'border-brand-500 bg-brand-500/5 dark:bg-brand-500/10 text-brand-500'
                       : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600',
+                    noGatewayAvailable ? 'opacity-50 cursor-not-allowed' : '',
                   ]"
                   @click="paymentMethod = 'ONLINE'"
                 >
@@ -260,8 +262,35 @@
               </div>
             </div>
 
+            <p v-if="noGatewayAvailable" class="text-error text-xs">
+              درگاه پرداختی فعال نیست
+            </p>
+
+            <div
+              v-if="walletOffered"
+              class="space-y-2"
+            >
+              <div
+                :class="[
+                  'flex items-center justify-between gap-3 px-4 py-3 rounded-xl border-2 transition-colors',
+                  walletActive
+                    ? 'bg-brand-500/5 dark:bg-brand-500/10 border-brand-500/40'
+                    : 'border-gray-200 dark:border-gray-700',
+                ]"
+              >
+                <span class="text-sm text-gray-700 dark:text-gray-300 select-none">
+                  پرداخت از کیف پول (موجودی {{ formatPrice(walletBalance) }})
+                </span>
+                <USwitch v-model="useWallet" size="lg" :ui="SWITCH_UI" />
+              </div>
+              <div v-if="walletActive" class="space-y-1 px-1 text-xs text-gray-600 dark:text-gray-400">
+                <p>پرداخت از کیف پول: {{ formatPrice(walletCovered) }}</p>
+                <p v-if="onlineRest > 0">باقی‌مانده با درگاه: {{ formatPrice(onlineRest) }}</p>
+              </div>
+            </div>
+
             <UFormField
-              v-if="paymentMethod === 'ONLINE'"
+              v-if="gatewayRequired && gatewayItems.length"
               label="درگاه پرداخت"
               name="gateway"
             >
@@ -271,6 +300,34 @@
                 class="w-full"
               />
             </UFormField>
+            <USkeleton v-else-if="gatewayRequired && !gatewaysLoaded" class="h-10 w-full rounded-xl" />
+
+            <div v-if="!quote?.discountCode" class="space-y-2">
+              <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                کد تخفیف
+              </p>
+              <div class="flex items-start gap-2">
+                <UInput
+                  v-model="discountInput"
+                  dir="ltr"
+                  :maxlength="50"
+                  placeholder="کد تخفیف"
+                  class="flex-1 min-w-0"
+                  @keydown.enter.prevent="applyDiscountCode"
+                />
+                <UButton
+                  color="neutral"
+                  variant="outline"
+                  :disabled="!discountInput.trim() || isQuoting"
+                  @click="applyDiscountCode"
+                >
+                  اعمال
+                </UButton>
+              </div>
+              <p v-if="quote?.discountCodeError" class="text-error text-xs">
+                {{ quote.discountCodeError }}
+              </p>
+            </div>
 
             <div
               class="space-y-2 rounded-xl bg-gray-50 dark:bg-gray-800/60 p-4 text-sm"
@@ -284,6 +341,25 @@
                 <div class="flex justify-between text-gray-600 dark:text-gray-400">
                   <span>جمع کالاها</span>
                   <span>{{ formatPrice(quote.itemsTotal) }}</span>
+                </div>
+                <div
+                  v-if="quote.discountCode"
+                  class="flex justify-between text-gray-600 dark:text-gray-400"
+                >
+                  <span class="flex items-center gap-2">
+                    تخفیف کد
+                    <bdi dir="ltr">{{ quote.discountCode }}</bdi>
+                    <UButton
+                      size="xs"
+                      color="error"
+                      variant="link"
+                      :disabled="isQuoting"
+                      @click="removeDiscountCode"
+                    >
+                      حذف کد
+                    </UButton>
+                  </span>
+                  <span class="text-success">−{{ formatPrice(quote.discountAmount) }}</span>
                 </div>
                 <div class="flex justify-between text-gray-600 dark:text-gray-400">
                   <span>هزینه ارسال</span>
@@ -311,6 +387,7 @@
             </div>
 
             <label
+              v-if="termsRequired !== false"
               class="flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-colors"
               :class="
                 acceptedTerms
@@ -346,7 +423,9 @@
                 quote?.shippingCovered === false ||
                 (deliveryMethod === 'DELIVERY' && !selectedAddressId) ||
                 (selectedMethod?.slotsEnabled && !selectedSlotStart) ||
-                Boolean(courierPhoneError)
+                Boolean(courierPhoneError) ||
+                noGatewayAvailable ||
+                (gatewayRequired && !gateway)
               "
               @click="confirmCheckout"
             >
@@ -365,6 +444,7 @@
 import { useCartStore } from '~/stores/cart'
 import { useUserStore } from '~/stores/user'
 import { isValidPhoneNumber, normalizeIranianMobile } from '~/utils/validations.js'
+import { GATEWAY_LABELS } from '~/utils/paymentMeta.js'
 
 const props = defineProps({
   open: { type: Boolean, required: true },
@@ -422,22 +502,63 @@ const canCashOnDelivery = computed(() =>
 )
 const payShippingOnDelivery = ref(false)
 const paymentMethod = ref('ONLINE')
-const gateway = ref('MOCK')
-const acceptedTerms = ref(false)
 
-const gatewayOptions = [
-  { label: 'آزمایشی (Mock)', value: 'MOCK' },
-  { label: 'زرین‌پال', value: 'ZARINPAL' },
-]
-
-const gatewayItems = gatewayOptions.map((g) => ({ ...g }))
-
+// Store gateways (GET api/payment/gateways, amount = quote total). eligible=false hides a gateway; default = first
+const gatewayList = ref([])
+const gatewaysLoaded = ref(false)
+const gateway = ref(null)
+let latestGateways = 0
+let gatewayTimer = null
+const gatewayItems = computed(() =>
+  gatewayList.value.map((g) => ({
+    label: g.title || GATEWAY_LABELS[g.gateway] || g.gateway,
+    value: g.gateway,
+  }))
+)
 const selectedGatewayObj = computed({
-  get: () => gatewayItems.find((g) => g.value === gateway.value) ?? gatewayItems[0],
+  get: () => gatewayItems.value.find((g) => g.value === gateway.value) ?? null,
   set: (val) => {
-    gateway.value = val?.value ?? 'MOCK'
+    gateway.value = val?.value ?? null
   },
 })
+
+// Discount: what the quotes send (`appliedDiscountRequest`) and the text in the input
+const discountInput = ref('')
+const appliedDiscountRequest = ref('')
+
+// Wallet: the switch, and the store flag + the quote balance decide whether it is offered
+const { walletEnabled } = useStoreProfile()
+const useWallet = ref(false)
+
+// Terms: null = not known yet (checkbox shown), false = nothing pending (hidden), true = required
+const termsRequired = ref(null)
+let latestTerms = 0
+const acceptedTerms = ref(false)
+
+const total = computed(() => Number(quote.value?.total ?? 0))
+const walletBalance = computed(() => Number(quote.value?.walletBalance ?? 0))
+// Offered for online payment with a balance; the switch hides when the method or the balance goes away
+const walletOffered = computed(
+  () => walletEnabled.value && paymentMethod.value === 'ONLINE' && walletBalance.value > 0
+)
+const walletActive = computed(() => walletOffered.value && useWallet.value)
+const walletCovered = computed(() => (walletActive.value ? Math.min(walletBalance.value, total.value) : 0))
+const onlineRest = computed(() =>
+  paymentMethod.value === 'ONLINE' ? Math.max(total.value - walletCovered.value, 0) : 0
+)
+// The gateway is needed only when something is left to pay online
+const gatewayRequired = computed(() => onlineRest.value > 0)
+// The wallet alone can pay the whole quote, so no gateway is needed even when the store has none
+const walletCoversTotal = computed(
+  () => Boolean(quote.value) && walletEnabled.value && total.value > 0 && walletBalance.value >= total.value
+)
+const noGatewayAvailable = computed(
+  () => gatewaysLoaded.value && !gatewayItems.value.length && !walletCoversTotal.value
+)
+
+const SWITCH_UI = {
+  base: 'data-[state=checked]:bg-brand-500 dark:data-[state=checked]:bg-brand-400 data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-gray-600',
+}
 
 const addressItems = computed(() =>
   addresses.value.map((a) => ({
@@ -495,6 +616,7 @@ async function fetchQuote() {
     const response = await app.$api.payments.quote({
       data: {
         items: checkoutItems.value,
+        discountCode: appliedDiscountRequest.value || null,
         ...quoteShippingFields(),
       },
     })
@@ -537,24 +659,94 @@ async function loadMethods() {
   }
 }
 
-// Opening: addresses, a first quote for the items total, the methods, then the quote for the default method
+// Gateways follow the quote total (the store's eligibility depends on the amount); a failed call = no gateways
+async function loadGateways() {
+  const request = ++latestGateways
+  try {
+    const response = await app.$api.payments.listGateways({
+      params: quote.value ? { amount: Math.round(total.value) } : {},
+    })
+    if (request !== latestGateways) return
+    gatewayList.value = (response.data.data ?? []).filter((g) => g.eligible !== false)
+    if (!gatewayItems.value.some((g) => g.value === gateway.value)) {
+      gateway.value = gatewayItems.value[0]?.value ?? null
+    }
+  } catch {
+    if (request !== latestGateways) return
+    gatewayList.value = []
+    gateway.value = null
+  } finally {
+    if (request === latestGateways) gatewaysLoaded.value = true
+  }
+}
+
+// Pending terms decide whether the checkbox is needed. A failed call keeps it (and sends acceptedTerms)
+async function loadTerms() {
+  const request = ++latestTerms
+  termsRequired.value = null
+  try {
+    const response = await app.$api.auth.getPendingTerms()
+    if (request !== latestTerms) return
+    const list = response.data.data
+    termsRequired.value = !Array.isArray(list) || list.length > 0
+  } catch {
+    if (request !== latestTerms) return
+    termsRequired.value = true
+  }
+}
+
+// «اعمال»: the code goes into the next quote; a rejected code comes back as quote.discountCodeError
+async function applyDiscountCode() {
+  const code = discountInput.value.trim()
+  if (!code || isQuoting.value) return
+  appliedDiscountRequest.value = code
+  await fetchQuote()
+}
+
+// «حذف کد»: clears the input and re-quotes without a code
+async function removeDiscountCode() {
+  discountInput.value = ''
+  appliedDiscountRequest.value = ''
+  await fetchQuote()
+}
+
+// Opening: addresses, terms, a first quote for the items total, the methods, the quote for the default method, then the gateways
 watch(
   () => props.open,
   async (isOpen) => {
     if (!isOpen) {
       ready = false
       clearTimeout(quoteTimer)
+      clearTimeout(gatewayTimer)
       return
     }
     orderPlaced.value = null
     ready = false
+    gatewaysLoaded.value = false
+    loadTerms()
     await loadAddresses()
     await fetchQuote()
     await loadMethods()
     await fetchQuote()
+    await loadGateways()
     ready = props.open
   }
 )
+
+// Debounced: a new total (shipping, discount, wallet choice) re-asks the gateways for the new amount
+watch(
+  () => quote.value?.total,
+  () => {
+    if (!ready) return
+    clearTimeout(gatewayTimer)
+    gatewayTimer = setTimeout(loadGateways, 300)
+  }
+)
+
+// The wallet is only offered for online payment: switching to cash on delivery drops the choice
+watch(walletOffered, (offered) => {
+  if (!offered) useWallet.value = false
+})
 
 watch(selectedAddressId, () => {
   if (ready) loadMethods()
@@ -608,7 +800,10 @@ async function loadSlots() {
   }
 }
 
-onBeforeUnmount(() => clearTimeout(quoteTimer))
+onBeforeUnmount(() => {
+  clearTimeout(quoteTimer)
+  clearTimeout(gatewayTimer)
+})
 
 function deliveryWindow(method) {
   if (method.expressMinutes) {
@@ -629,7 +824,7 @@ function closeCheckoutModal() {
 }
 
 async function confirmCheckout() {
-  if (!acceptedTerms.value) {
+  if (termsRequired.value !== false && !acceptedTerms.value) {
     toast.add({
       title: 'برای ادامه باید قوانین و شرایط را بپذیرید',
       icon: 'i-heroicons-exclamation-circle',
@@ -661,6 +856,11 @@ async function confirmCheckout() {
     return
   }
 
+  if (gatewayRequired.value && !gateway.value) {
+    toast.add({ title: 'لطفاً یک درگاه پرداخت انتخاب کنید', icon: 'i-heroicons-exclamation-circle', color: 'error' })
+    return
+  }
+
   isSubmittingCheckout.value = true
   try {
     const response = await app.$api.payments.checkout({
@@ -679,7 +879,11 @@ async function confirmCheckout() {
         payShippingOnDelivery: payShippingOnDelivery.value,
         paymentMethod: paymentMethod.value,
         gateway: gateway.value,
-        acceptedTerms: acceptedTerms.value,
+        // Only an accepted code is on the quote; a rejected one is never sent
+        discountCode: quote.value?.discountCode || null,
+        useWallet: walletActive.value,
+        // Omitted when no terms are pending (the checkbox is hidden then)
+        ...(termsRequired.value !== false ? { acceptedTerms: true } : {}),
         returnOrigin: window.location.origin,
       },
     })
@@ -693,17 +897,18 @@ async function confirmCheckout() {
         query: {
           url: result.paymentUrl,
           gateway: gateway.value,
-          amount: quote.value?.total,
+          // The gateway only charges what the wallet did not cover
+          amount: Number(result.amount ?? total.value) - Number(result.walletAmount ?? 0),
         },
       })
       return
     }
 
-    if (result?.cashOnDelivery) {
+    if (result?.cashOnDelivery || result?.paidByWallet) {
       orderPlaced.value = result
       cartStore.clearCart()
       toast.add({
-        title: 'سفارش شما با موفقیت ثبت شد',
+        title: result.paidByWallet ? 'سفارش شما با پرداخت از کیف پول ثبت شد' : 'سفارش شما با موفقیت ثبت شد',
         icon: 'i-heroicons-check-circle',
         color: 'success',
       })

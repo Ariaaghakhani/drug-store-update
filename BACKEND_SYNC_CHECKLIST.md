@@ -42,7 +42,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 
 ## B. Storefront / customer
 - [x] B1. Checkout: shipping methods + pickup slots (`GET shipping/methods`, `/{id}/slots`) in `cart.vue`
-- [ ] B2. Checkout: discount code, wallet payment (`useWallet`), gateways list (`GET payment/gateways`)
+- [x] B2. Checkout: discount code, wallet payment (`useWallet`), gateways list (`GET payment/gateways`)
 - [x] B3. My orders: `GET orders/my`, order items, invoice PDF (`invoices/pdf`)
 - [x] B4. Customer returns: returnable items, request, photos, list/detail, cancel, tracking code
 - [x] B5. Reviews: write/list/delete mine (`reviews/my*`) on product page + panel
@@ -103,3 +103,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - C4 (2026-11-11, Haiku, plan V2 steps S0+C4a-c): shipping admin list/form/rates/slots/hours; shared panel utils (money, enumMeta, apiError, PanelFormModal etc.) landed in f086051. eslint clean + build OK; not exercised against the dev backend.
 - C5+C3 (2026-11-11, Haiku): payment gateways under /panel/settings (shell + tabs) and discount codes admin (list + form). eslint clean + build OK; not exercised against the dev backend.
 - C6+B1 (2026-11-11, Haiku): wallet admin (list/detail/adjust) and checkout shipping methods + slots (CheckoutModal extracted from cart.vue). eslint clean + build OK; not exercised against the dev backend. Follow-up: stores/cart.js `total` still adds placeholder shipping.
+- B2 (2026-11-11, Haiku): checkout discount code, gateways, wallet payment, terms; cart total no longer adds placeholder shipping. eslint 0 errors + build OK; not exercised against the dev backend. Follow-up: fixed 500,000 free-shipping hint in pages/cart.vue (~line 236) should become method-driven.

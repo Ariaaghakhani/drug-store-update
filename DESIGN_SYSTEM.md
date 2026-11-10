@@ -310,9 +310,16 @@ Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, `object-cover
 - Hover convention: `hover:text-teal-500 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950`.
 
 ### Cart dropdown / cart page (`cart.vue`)
-- Free-shipping threshold: **500,000 تومان**; below it, shipping = **59,900 تومان**, else رایگان.
-- Order summary card: subtotal, shipping, bold total in `text-brand-300` 2xl.
+- No shipping figure in the cart: the «هزینه ارسال» row reads «در مرحله‌ی بعد محاسبه می‌شود» (muted `text-xs`), and «جمع کل» is the items total only (`cartStore.total` = `subtotal`, no shipping, no discount).
+- Real shipping (method cost, free-shipping threshold, pickup), discounts and the payable total come from the checkout quote, see "Checkout modal" below.
+- Order summary card: items total («جمع محصولات»), shipping row, bold total in `text-brand-300` 2xl.
+- The cart's free-shipping hint («تا ارسال رایگان») still uses a fixed 500,000 تومان; real thresholds are per shipping method at checkout.
 - Empty state: centered `i-heroicons-shopping-cart` (w-24, gray-300) + "سبد خرید شما خالی است" + CTA to `/medications`.
+
+### Checkout modal (`components/checkout/CheckoutModal.vue`)
+- Discount code: `UInput dir="ltr"` + `UButton color="neutral" variant="outline"` «اعمال». A rejected code shows its reason as `text-error text-xs` under the input (never a toast). An accepted code shows a summary row: «تخفیف کد» + the code in `<bdi dir="ltr">`, a `UButton size="xs" color="error" variant="link"` «حذف کد», and the amount prefixed with "−" in `text-success`.
+- Wallet: a bordered row (`rounded-xl border-2`) with the label «پرداخت از کیف پول (موجودی …)» and a `USwitch size="lg"` using the brand `:ui` override (same as panel toggles). Covered and remaining amounts are `text-xs` lines under it.
+- No gateway: `text-error text-xs` «درگاه پرداختی فعال نیست»; the online method button is disabled with `opacity-50 cursor-not-allowed`.
 
 ### Chatbot (`ChatbotWidget.vue`)
 - Floating `UButton` bottom-right (`fixed bottom-8 right-8`); opens a `rounded-2xl` panel.
