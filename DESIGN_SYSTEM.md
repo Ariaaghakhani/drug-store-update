@@ -387,6 +387,12 @@ Wrapped in `UCard :ui="{ body: 'p-0' }"` with `overflow-x-auto`. `<thead>` uses 
 ### Metric card grid (admin)
 `grid grid-cols-2 lg:grid-cols-4 gap-4`. Each `UCard :ui="{ body: 'p-4' }"` holds `flex items-center gap-3`: icon container (`w-10 h-10 rounded-xl`) + div with `text-xs text-gray-500` label above `text-xl font-black` value formatted with `.toLocaleString('fa-IR')`.
 
+**Panel form modal / confirm:** `components/panel/PanelFormModal.vue` (title row with an optional `w-5 h-5 text-brand-500` icon, `form` body with `space-y-4 font-dana`, footer = `neutral soft` cancel + one `primary` submit; `width` `md|lg|2xl`; the submit button points at the form with `form=`, so Enter and the button share one path) and `components/panel/PanelConfirmDialog.vue` (message + optional note `UTextarea` labelled by `noteLabel`; `noteRequired` disables confirm while the note is blank; the note resets on each open). Both are `dismissible="!loading"`. Destructive confirms pass `confirmColor="error"`.
+
+**Money input:** `components/panel/MoneyInput.vue` (v-model Number|null, `UFormField` label «… (ریال)», `UInput inputmode="numeric" dir="ltr"`). Staff screens only (CONV A: amounts are Rial, shown as sent). Persian or Latin digits and `,`/`٬` separators are accepted; bad text shows «فقط عدد» and emits null. The help line under the field is `formatMoney()` («۱٬۲۰۰٬۰۰۰ ریال»). Read the value through `utils/money.js` (`parseMoney`, `formatMoney`), never `.toLocaleString` on its own.
+
+**Section tabs:** `components/panel/PanelSectionTabs.vue` (horizontal `NuxtLink` pills, route-driven active state; `exact` for an index tab). Active = `bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400`; inactive = `text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800`. Use it to switch sub-pages inside one panel section, not as a page title.
+
 ### Empty / loading / error states
 - **Empty (cart/search):** centered large gray icon + bold heading + muted line + CTA.
 - **Loading grid:** `USkeleton` ×12, `h-80 w-full`, in the product grid columns.
