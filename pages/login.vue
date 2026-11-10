@@ -54,11 +54,13 @@
             <Transition name="fade" mode="out-in">
               <component
                 :is="currentStepComponent"
+                ref="stepRef"
                 v-bind="currentStepProps"
                 @update:phone-number="phoneNumber = $event"
                 @update:password="loginPassword = $event"
                 @update:error="passwordError = $event"
                 @update:digits="otpDigits = $event"
+                @update:captcha="captcha = $event"
                 @update:form="registerForm = $event"
                 @submit="handleCurrentStepSubmit"
                 @switch-to-otp="switchToOtp"
@@ -126,6 +128,37 @@ const resetPasswordForm = ref({
 // Track previous step for better navigation
 const previousStep = ref(null)
 
+// Captcha (B8b): one model for every captcha-bearing request. The field lives in the step that sends the
+// request (password, register, reset-password, OTP resend) and stays hidden unless the backend asks for it.
+const CAPTCHA_ERROR_MESSAGE = 'کد امنیتی نادرست است'
+const CAPTCHA_ERROR_CODES = ['captcha.required', 'captcha.invalid']
+const captcha = ref({ captchaId: null, captchaAnswer: null })
+const captchaError = ref('')
+const stepRef = ref(null)
+const captchaProps = computed(() => ({
+  phoneNumber: phoneNumber.value,
+  captcha: captcha.value,
+  captchaError: captchaError.value,
+}))
+
+const clearCaptcha = () => {
+  captcha.value = { captchaId: null, captchaAnswer: null }
+}
+
+// Challenges are single-use, so every failed captcha-bearing request gets a fresh one. A captcha.* error also
+// shows the inline message and opens the field first (the OTP step mounts it on demand).
+// Returns true when the failure was a captcha error, so the caller can skip its own error text.
+const handleCaptchaFailure = async (error) => {
+  const isCaptchaError = CAPTCHA_ERROR_CODES.includes(error?.response?.data?.errorCode)
+  if (isCaptchaError) {
+    captchaError.value = CAPTCHA_ERROR_MESSAGE
+    await stepRef.value?.openCaptcha?.()
+    stepRef.value?.captcha?.force()
+  }
+  await stepRef.value?.captcha?.reset()
+  return isCaptchaError
+}
+
 // Step Configuration
 const stepComponents = {
   phone: PhoneStep,
@@ -170,6 +203,7 @@ const currentStepProps = computed(() => {
     case 'password':
       return {
         ...baseProps,
+        ...captchaProps.value,
         password: loginPassword.value,
         error: passwordError.value,
       }
@@ -177,6 +211,7 @@ const currentStepProps = computed(() => {
     case 'otp-login':
       return {
         ...baseProps,
+        ...captchaProps.value,
         digits: otpDigits.value,
         error: otpError.value,
         timer: resendTimer.value,
@@ -186,6 +221,7 @@ const currentStepProps = computed(() => {
     case 'otp-register':
       return {
         ...baseProps,
+        ...captchaProps.value,
         digits: otpDigits.value,
         error: otpError.value,
         timer: resendTimer.value,
@@ -195,6 +231,7 @@ const currentStepProps = computed(() => {
     case 'forgot-password-otp':
       return {
         ...baseProps,
+        ...captchaProps.value,
         digits: otpDigits.value,
         error: otpError.value,
         timer: resendTimer.value,
@@ -202,10 +239,10 @@ const currentStepProps = computed(() => {
       }
 
     case 'register':
-      return { ...baseProps, form: registerForm.value }
+      return { ...baseProps, ...captchaProps.value, form: registerForm.value }
 
     case 'reset-password':
-      return { ...baseProps, form: resetPasswordForm.value }
+      return { ...baseProps, ...captchaProps.value, form: resetPasswordForm.value }
 
     default:
       return baseProps
@@ -274,6 +311,7 @@ const handlePhoneSubmit = async () => {
 const handlePasswordSubmit = async () => {
   isLoading.value = true
   passwordError.value = ''
+  captchaError.value = ''
 
   try {
     const response = await app.$api.auth.login({
@@ -282,11 +320,14 @@ const handlePasswordSubmit = async () => {
         password: loginPassword.value,
         phone: phoneNumber.value,
         loginType: 'PASSWORD',
+        ...captcha.value,
       },
     })
     await finalizeLogin(response.data.data)
   } catch (error) {
     console.log(error)
+    // A captcha error is shown under the captcha, not as a wrong password
+    if (await handleCaptchaFailure(error)) return
     passwordError.value = 'رمز عبور نادرست است.'
   } finally {
     isLoading.value = false
@@ -377,13 +418,16 @@ const handleForgotPasswordOtpSubmit = async () => {
 
 const handleRegisterSubmit = async () => {
   isLoading.value = true
+  captchaError.value = ''
 
   try {
     const response = await app.$api.auth.sendRegisterOtp({
       data: {
         phone: phoneNumber.value,
+        ...captcha.value,
       },
     })
+    clearCaptcha()
     toast.success(
       response.data.message,
       '',
@@ -391,7 +435,8 @@ const handleRegisterSubmit = async () => {
     )
     currentStep.value = 'otp-register'
     startResendTimer()
-  } catch {
+  } catch (error) {
+    if (await handleCaptchaFailure(error)) return
     toast.error(
       'خطا در ثبت‌نام',
       'لطفا دوباره تلاش کنید.',
@@ -404,16 +449,20 @@ const handleRegisterSubmit = async () => {
 
 const handleResetPasswordSubmit = async () => {
   isLoading.value = true
+  captchaError.value = ''
 
   try {
     await app.$api.auth.forgotPasswordOtp({
       data: {
         phone: phoneNumber.value,
+        ...captcha.value,
       },
     })
+    clearCaptcha()
     currentStep.value = 'forgot-password-otp'
     startResendTimer()
-  } catch {
+  } catch (error) {
+    if (await handleCaptchaFailure(error)) return
     toast.error(
       'خطا در ارسال کد یک‌بار مصرف',
       'لطفا دوباره تلاش کنید',
@@ -462,14 +511,17 @@ const switchToOtp = async () => {
 
   // Send OTP for the first time
   isLoading.value = true
+  captchaError.value = ''
   try {
     await app.$api.auth.login({
       data: {
         phone: phoneNumber.value,
         username: phoneNumber.value,
         loginType: 'OTP',
+        ...captcha.value,
       },
     })
+    clearCaptcha()
 
     otpSent.value = true
     otpSessionActive.value = true
@@ -477,7 +529,8 @@ const switchToOtp = async () => {
     currentStep.value = 'otp-login'
     startResendTimer()
     toast.success('کد تایید ارسال شد', '', 'i-heroicons-check-circle')
-  } catch {
+  } catch (error) {
+    if (await handleCaptchaFailure(error)) return
     toast.error('خطا در ارسال کد تایید', '', 'i-heroicons-x-circle')
   } finally {
     isLoading.value = false
@@ -527,15 +580,16 @@ const handleResendOtp = async () => {
   if (isLoading.value) return
 
   isLoading.value = true
+  captchaError.value = ''
   try {
     // Determine which OTP endpoint to call based on current step
     if (currentStep.value === 'forgot-password-otp') {
       await app.$api.auth.forgotPasswordOtp({
-        data: { phone: phoneNumber.value },
+        data: { phone: phoneNumber.value, ...captcha.value },
       })
     } else if (currentStep.value === 'otp-register') {
       await app.$api.auth.sendRegisterOtp({
-        data: { phone: phoneNumber.value },
+        data: { phone: phoneNumber.value, ...captcha.value },
       })
     } else {
       await app.$api.auth.login({
@@ -543,16 +597,20 @@ const handleResendOtp = async () => {
           phone: phoneNumber.value,
           username: phoneNumber.value,
           loginType: 'OTP',
+          ...captcha.value,
         },
       })
     }
 
+    clearCaptcha()
+    stepRef.value?.closeCaptcha?.()
     otpSessionActive.value = true
     startResendTimer()
     resetOtpDigits()
 
     toast.success('کد تایید مجدد ارسال شد', '', 'i-heroicons-check-circle')
-  } catch {
+  } catch (error) {
+    if (await handleCaptchaFailure(error)) return
     toast.error(
       'خطا در ارسال مجدد کد',
       'لطفا دوباره تلاش کنید',
@@ -614,6 +672,8 @@ const resetOtpState = () => {
 }
 
 const resetAll = () => {
+  captchaError.value = ''
+  clearCaptcha()
   loginPassword.value = ''
   passwordError.value = ''
   otpDigits.value = ['', '', '', '', '']
