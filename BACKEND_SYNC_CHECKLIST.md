@@ -11,8 +11,10 @@ this repo.
 3. Implement: wrapper in `services/api/<domain>.js` (register in `index.js` if new), then the screen/page. Follow
    `CLAUDE.md` conventions (JS `<script setup>`, logical RTL props, valid Nuxt UI colors, `fa-IR` numbers, skeletons).
 4. Update the touched modules' `CLAUDE.md` in the same change, and `DESIGN_SYSTEM.md` if a new pattern appears.
-5. Run `npx eslint` on touched files and `npm run build`; fix failures.
-6. Tick the item, add a one-line note, commit (one commit per item), then continue with the next.
+5. Test: `npx eslint` on touched files, `npm run build`, and exercise the screen against the dev backend when reachable
+   (else say so in the Done log). Fix failures before committing.
+6. Tick the item, add a one-line note (incl. what was tested), commit (one commit per item), `git push` the branch
+   (user authorised push per item on 2026-11-10), then continue with the next.
 7. Stop the loop and ask the user if an item needs a product/design decision or a backend answer. Record it under
    "Blocked".
 
