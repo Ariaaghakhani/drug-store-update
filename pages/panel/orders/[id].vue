@@ -5,14 +5,28 @@
       <h3 class="text-xl font-black text-gray-900 dark:text-white">
         جزئیات <span class="text-brand-500">سفارش</span>
       </h3>
-      <UButton
-        to="/panel/orders"
-        color="neutral"
-        variant="outline"
-        icon="i-heroicons-arrow-right"
-      >
-        بازگشت به سفارشات
-      </UButton>
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Customer only: staff keep the page as it was -->
+        <UButton
+          v-for="invoice in invoices"
+          :key="invoice.id"
+          color="neutral"
+          variant="outline"
+          icon="i-heroicons-arrow-down-tray"
+          :loading="downloadingId === invoice.id"
+          @click="downloadInvoice(invoice)"
+        >
+          دانلود فاکتور
+        </UButton>
+        <UButton
+          to="/panel/orders"
+          color="neutral"
+          variant="outline"
+          icon="i-heroicons-arrow-right"
+        >
+          بازگشت به سفارشات
+        </UButton>
+      </div>
     </div>
 
     <div class="relative">
@@ -69,6 +83,12 @@
                 <dt class="text-gray-500 dark:text-gray-400">تاریخ تحویل</dt>
                 <dd class="font-semibold text-gray-900 dark:text-white">
                   {{ formatDate(order.deliveredAt) }}
+                </dd>
+              </div>
+              <div v-if="invoices.length">
+                <dt class="text-gray-500 dark:text-gray-400">شماره فاکتور</dt>
+                <dd class="font-semibold text-gray-900 dark:text-white">
+                  {{ invoiceNumbers }}
                 </dd>
               </div>
             </dl>
@@ -173,9 +193,19 @@ const FULFILLMENT_PREPARING = { label: 'در حال آماده‌سازی', colo
 const route = useRoute()
 const app = useNuxtApp()
 const { formatPrice } = useFormat()
+const { getUserRole } = useUserPanelTabs()
+const { download } = useFileDownload()
 
 const loading = ref(true)
 const order = ref(null)
+
+// Invoices are shown to customers only (staff keep this page unchanged, so no extra call for them)
+const isCustomer = computed(() => getUserRole() === 'customer')
+const invoices = ref([])
+const downloadingId = ref(null)
+const invoiceNumbers = computed(() =>
+  invoices.value.map((invoice) => Number(invoice.invoiceNumber).toLocaleString('fa-IR')).join('، ')
+)
 
 const items = computed(() => order.value?.items ?? [])
 
@@ -210,6 +240,26 @@ const formatDate = (value) => {
   return date.toLocaleDateString('fa-IR')
 }
 
+// A failed invoice lookup just hides the download button; the order itself still renders
+async function fetchInvoices(orderId) {
+  if (!isCustomer.value) return
+  try {
+    const response = await app.$api.orders.byOrder({ data: { orderId } })
+    invoices.value = response.data.data ?? []
+  } catch {
+    invoices.value = []
+  }
+}
+
+const downloadInvoice = async (invoice) => {
+  downloadingId.value = invoice.id
+  try {
+    await download(app.$api.orders.downloadInvoicePdf(invoice.id), `invoice-${invoice.invoiceNumber}.pdf`)
+  } finally {
+    downloadingId.value = null
+  }
+}
+
 async function fetchOrder() {
   loading.value = true
   try {
@@ -220,6 +270,7 @@ async function fetchOrder() {
   } finally {
     loading.value = false
   }
+  if (order.value) fetchInvoices(order.value.id)
 }
 
 onMounted(fetchOrder)

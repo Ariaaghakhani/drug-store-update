@@ -19,6 +19,12 @@ export default (apiCaller) => ({
     return apiCaller.post('api/orders/by-person', config)
   },
 
+  // GET api/orders/my (verified 2026-11-10, OrderCustomerController): the caller's own orders from the token,
+  // 0-based page/size (max 100), newest first. List items carry no `items`; use getOrder for lines.
+  listMyOrders(config) {
+    return apiCaller.get('api/orders/my', config)
+  },
+
   byUser(config) {
     return apiCaller.post('api/orders/by-user', config)
   },
@@ -143,6 +149,13 @@ export default (apiCaller) => ({
 
   deleteInvoice(config) {
     return apiCaller.post('api/invoices/delete', config)
+  },
+
+  // POST api/invoices/pdf {id} (verified 2026-11-10, InvoiceController): application/pdf bytes. Customers get only
+  // their own invoices (default customer policy + OwnershipGuard). Blob response: the file is res.data, see
+  // composables/useFileDownload.js.
+  downloadInvoicePdf(id) {
+    return apiCaller.post('api/invoices/pdf', { data: { id }, responseType: 'blob' })
   },
 
   listPurchaseOrders(config) {

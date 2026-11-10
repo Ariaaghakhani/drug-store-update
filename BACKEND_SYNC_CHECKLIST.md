@@ -43,7 +43,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 ## B. Storefront / customer
 - [ ] B1. Checkout: shipping methods + pickup slots (`GET shipping/methods`, `/{id}/slots`) in `cart.vue`
 - [ ] B2. Checkout: discount code, wallet payment (`useWallet`), gateways list (`GET payment/gateways`)
-- [ ] B3. My orders: `GET orders/my`, order items, invoice PDF (`invoices/pdf`)
+- [x] B3. My orders: `GET orders/my`, order items, invoice PDF (`invoices/pdf`)
 - [ ] B4. Customer returns: returnable items, request, photos, list/detail, cancel, tracking code
 - [x] B5. Reviews: write/list/delete mine (`reviews/my*`) on product page + panel
 - [x] B6. Questions: ask/list/delete mine (`questions/my*`)
@@ -97,3 +97,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - B7 (2026-11-10, Haiku) PARTIAL: delete button for comments remembered in this browser (localStorage), since BlogCommentDTO has no `mine`; request filed as BACKEND_REQUESTS.md §3. A just-posted PENDING comment isn't listed so it gets the button only after approval. eslint + build OK; not exercised in a browser.
 - B5 (2026-11-10, Haiku): customer reviews — «نظر شما» block in ProductReviews (star picker, edit/delete, non-buyer hint), /panel/reviews «نظرهای من» (usePagedList), reviewMeta, wrappers. Customer sidebar entry has group '' (no lone heading). Staff moderation is C8. eslint clean + build OK; not exercised in a browser.
 - B6 (2026-11-10, Haiku): customer questions — ask form in ProductQuestions (anonymous/private switches), /panel/questions «پرسش‌های من», questionMeta, wrappers. No 202 branch (customer writes return 200). Staff moderation is C8. eslint clean + build OK; not exercised in a browser.
+- B3 (2026-11-10, Haiku): CustomerOrders now uses GET orders/my via usePagedList (status filter stays client-side, narrows the current page only); invoice number + «دانلود فاکتور» PDF download on the order page (first use of useFileDownload). eslint clean + build OK; not exercised in a browser. Follow-up for BACK: a status param on /api/orders/my.
