@@ -68,8 +68,8 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [x] C11. About us, terms (+acceptances), return policy admin
 - [x] C12. Store settings, password policy, my-organization
 - [x] C13. Attributes + category assignment, goods variants
-- [ ] C14. Goods import, goods-images import, opening-stock import
-- [ ] C15. Stock movements, top wishlist / stock alerts, search-query logs
+- [x] C14. Goods import, goods-images import, opening-stock import
+- [x] C15. Stock movements, top wishlist / stock alerts, search-query logs
 - [ ] C16. SMS account + SMS campaigns
 - [ ] C17. Prescriptions administration + insurances
 - [ ] C18. Reports (`report/*`), audit search, backups
@@ -111,3 +111,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - C10+C11 (2026-11-11, Haiku): contact messages + notify phones; about-us/return-policy/terms tabs + acceptances card on user page. eslint clean + build OK; not exercised against the dev backend.
 - C12 (2026-11-11, Haiku): settings editor, store type, password policy, organization + logo under /panel/settings tabs. eslint clean + build OK; not exercised against the dev backend.
 - C13 (2026-11-11, Haiku): attributes CRUD, category assignments, product variants (generate/create). eslint clean + build OK; not exercised against the dev backend. Note: products/new.vue still labels price «قیمت (تومان)» while staff money elsewhere is Rial.
+- C14+C15 (2026-11-11, Haiku): imports page (goods Excel, images, opening stock), stock movements, insights tabs (wishlist, stock alerts, search logs). eslint clean + build OK; not exercised against the dev backend. Note: crm.js doc comment calls the import body raw but it is ApiResponse-wrapped.

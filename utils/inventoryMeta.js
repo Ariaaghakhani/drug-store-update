@@ -8,6 +8,18 @@ export const ADJUSTMENT_REASON_META = {
   OTHER: { label: 'سایر', direction: 'either' },
 }
 
+// BACK's StockMovementType (kardex, /api/stock-movements). The sign of the movement's quantity gives its direction (+ in, - out).
+export const MOVEMENT_TYPE_META = {
+  OPENING: { label: 'موجودی اولیه', color: 'info' },
+  ADJUSTMENT: { label: 'تعدیل', color: 'warning' },
+  IMPORT: { label: 'ورود از فایل', color: 'info' },
+  RECEIPT: { label: 'رسید خرید', color: 'success' },
+  SALE: { label: 'فروش', color: 'neutral' },
+  RETURN: { label: 'مرجوعی', color: 'info' },
+  TRANSFER_OUT: { label: 'انتقال خروجی', color: 'warning' },
+  TRANSFER_IN: { label: 'انتقال ورودی', color: 'success' },
+}
+
 // Same low-stock condition as BACK's dashboard: available (onHand - reserved) at or below the reorder point
 export const isLowStock = (row) => row.rop != null && (row.availableQuantity ?? 0) <= row.rop
 
