@@ -116,11 +116,24 @@ export const apiCaller = (apiCallerInstances, nuxtApp) => {
 
 export default defineNuxtPlugin((nuxtApp) => {
   const runtimeConfig = useRuntimeConfig()
+  const toast = useToast()
 
   const onResponse = ({ response }) => {
     if (response?.ok) {
+      // A staff write bound to an approval workflow answers 202 `{ data: { pending, requestId, ... } }`:
+      // it was saved but will only run after approval, so `data` is NOT the saved record. Tell the
+      // user once here and flag the result so callers can skip their own "saved" toast/refresh.
+      const pending = response.status === 202 && response._data?.data?.pending === true
       response._data = {
         data: response._data,
+        ...(pending && { pending: true }),
+      }
+      if (pending && import.meta.client) {
+        toast.add({
+          title: response._data.data.message || 'ثبت شد و منتظر تأیید است',
+          color: 'info',
+          icon: 'i-heroicons-clock',
+        })
       }
     }
   }
