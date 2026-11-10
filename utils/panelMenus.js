@@ -6,7 +6,7 @@
 // Optional `group`: a key of GROUP_LABELS. The desktop sidebar (pages/panel.vue) renders a heading when the group
 // changes and a divider between grouped and ungrouped entries; entries without `group` render exactly as before.
 // To add a menu: add an entry here (+ its page under pages/panel/) with the BACK module(s) guarding its endpoints.
-// Every entry must have a page, or it links to a 404. Not built yet, so not listed: reports (REPORT), settings (STORE_PROFILE, SYSTEM_SETTINGS, MY_ORGANIZATION), analytics, finance.
+// Every entry must have a page, or it links to a 404. Not built yet, so not listed: reports (REPORT), analytics, finance. Settings (SYSTEM_SETTINGS, PAYMENT_GATEWAY, MY_ORGANIZATION) is listed from C5a and shows only its tabs the user can read.
 export const GROUP_LABELS = {
   sales: 'فروش و مشتریان',
   stock: 'کالا و انبار',
@@ -25,9 +25,11 @@ export const PANEL_MENUS = [
   { key: 'orders', label: 'سفارشات', icon: 'i-heroicons-shopping-bag', to: '/panel/orders', modules: ['ORDER'] },
   { key: 'tickets', label: 'تیکت‌ها', icon: 'i-heroicons-lifebuoy', to: '/panel/tickets', modules: ['TICKET'] },
   { key: 'returns', label: 'مرجوعی‌ها', icon: 'i-heroicons-arrow-uturn-left', to: '/panel/returns', modules: ['ORDER_RETURN'], group: 'sales' },
+  { key: 'discounts', label: 'کدهای تخفیف', icon: 'i-heroicons-ticket', to: '/panel/discounts', modules: ['DISCOUNT'], group: 'sales' },
   { key: 'shipping', label: 'روش‌های ارسال', icon: 'i-heroicons-truck', to: '/panel/shipping', modules: ['SHIPPING'], group: 'sales' },
   { key: 'reviews', label: 'نظرات', icon: 'i-heroicons-star', to: '/panel/reviews', modules: ['GOODS_REVIEW'], group: 'content' },
   { key: 'questions', label: 'پرسش و پاسخ', icon: 'i-heroicons-chat-bubble-left-right', to: '/panel/questions', modules: ['GOODS_QUESTION'], flag: 'goodsQuestionsEnabled', group: 'content' },
+  { key: 'settings', label: 'تنظیمات فروشگاه', icon: 'i-heroicons-cog-6-tooth', to: '/panel/settings', modules: ['SYSTEM_SETTINGS', 'PAYMENT_GATEWAY', 'MY_ORGANIZATION'], group: 'settings' },
   { key: 'wishlist', label: 'علاقه‌مندی‌ها', icon: 'i-heroicons-heart', to: '/panel/wishlist', flag: 'wishlistEnabled' },
   { key: 'wallet', label: 'کیف پول', icon: 'i-heroicons-wallet', to: '/panel/wallet', flag: 'walletEnabled' },
   { key: 'addresses', label: 'آدرس‌ها', icon: 'i-heroicons-map-pin', to: '/panel/address' },
@@ -70,7 +72,9 @@ export const FALLBACK_MENUS_BY_ROLE = {
     { key: 'inventory' },
     { key: 'orders', label: 'مدیریت سفارشات', badge: 5 },
     { key: 'tickets' },
+    { key: 'discounts' },
     { key: 'shipping' },
+    { key: 'settings' },
     { key: 'notifications' },
     { key: 'profile' },
   ],

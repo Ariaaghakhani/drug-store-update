@@ -28,6 +28,7 @@ import address from '~/services/api/panel/address.js'
 import ticket from '@/services/api/ticket.js'
 import returns from '@/services/api/returns.js'
 import shipping from '@/services/api/shipping.js'
+import commerceAdmin from '@/services/api/commerceAdmin.js'
 import storefront from '@/services/api/storefront.js'
 import notification from '@/services/api/notification.js'
 
@@ -45,6 +46,7 @@ export default (apiCaller, apiInstances) => ({
   payments: payments(apiCaller),
   returns: returns(apiCaller),
   shipping: shipping(apiCaller),
+  commerceAdmin: commerceAdmin(apiCaller),
 
   // ========== INVENTORY ==========
   inventory: inventory(apiCaller),

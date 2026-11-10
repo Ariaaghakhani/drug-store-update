@@ -57,9 +57,9 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 ## C. Panel (staff)
 - [ ] C1. Returns administration (`admin/returns*`, `admin/order-refunds/{id}/paid`)
 - [ ] C2. Purchase orders: submit / receive / close / cancel
-- [ ] C3. Discount codes CRUD
+- [x] C3. Discount codes CRUD
 - [x] C4. Shipping methods CRUD (`admin/shipping-methods`)
-- [ ] C5. Store payment gateways (`admin/payment-gateways`)
+- [x] C5. Store payment gateways (`admin/payment-gateways`)
 - [ ] C6. Wallet administration (`admin/wallets*`)
 - [ ] C7. Store customers (CRUD, import, export)
 - [ ] C8. Review moderation (`admin/reviews*`) and Q&A moderation (`admin/questions*`)
@@ -101,3 +101,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - B4a (2026-11-10, Haiku): returns wrappers (services/api/returns.js, staff flag), returnMeta, /panel/returns list + detail (cancel, tracking code, photos), menu entry. Money shown as تومان pending decision D1. Photos fetched via instances.default (same as tickets; bypasses 401 refresh). eslint clean + build OK; not exercised in a browser. B4b (request modal + photos) still to do.
 - B4b (2026-11-10, Haiku): ReturnRequestModal + ReturnPhotosField (≤5 images, 20 MB) + «درخواست مرجوعی» on delivered paid orders. Gap: no way to re-upload a photo from the detail page if one fails at creation (follow-up). eslint clean + build OK; not exercised in a browser.
 - C4 (2026-11-11, Haiku, plan V2 steps S0+C4a-c): shipping admin list/form/rates/slots/hours; shared panel utils (money, enumMeta, apiError, PanelFormModal etc.) landed in f086051. eslint clean + build OK; not exercised against the dev backend.
+- C5+C3 (2026-11-11, Haiku): payment gateways under /panel/settings (shell + tabs) and discount codes admin (list + form). eslint clean + build OK; not exercised against the dev backend.
