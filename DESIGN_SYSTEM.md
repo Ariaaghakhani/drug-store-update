@@ -328,6 +328,9 @@ Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, `object-cover
 - Mobile: fixed bottom nav (home / products / profile) + slide-up profile sheet.
 - Roles: customer / admin / owner (labels مشتری / مدیر / مالک).
 
+### Captcha field (public forms)
+- `components/CaptchaField.vue` (v-model `{captchaId, captchaAnswer}`): hidden unless the backend says a captcha is required; then the challenge image, a `dir="ltr"` answer `UInput` and a `ghost` refresh icon button. On a `captcha.*` error call `force()` + `reset()` and show «کد امنیتی نادرست است».
+
 ### Jalali date input (panel forms)
 - Use `components/panel/JalaliDateInput.vue` for every date field (v-model is a Gregorian ISO string; the user types `۱۴۰۵/۰۱/۰۱`, Persian or Latin digits). `dir="ltr"` text input in a `UFormField`, error text `تاریخ نامعتبر` on blur/Enter, optional clear `ghost` icon button; `withTime` adds `HH:mm`. Never use `<input type="date">` (Gregorian only).
 

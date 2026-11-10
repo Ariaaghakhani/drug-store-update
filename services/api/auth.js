@@ -113,4 +113,15 @@ export default (apiCaller) => ({
   getPasswordRules() {
     return apiCaller.get('api/auth/password-policy')
   },
+
+  // ========== CAPTCHA (public; verified: BACK CaptchaController, ApiResponse body, payload = res.data.data) ==========
+  // config.params {audience?, subject?} → CaptchaStatusDTO {audience, enabled, required, afterFailures}
+  getCaptchaStatus(config) {
+    return apiCaller.get('api/captcha/status', config)
+  },
+
+  // optional config.data {audience?} → CaptchaChallengeDTO {captchaId, image (data URI), audience, length, digitsOnly, expiresInSeconds}
+  createCaptcha(config) {
+    return apiCaller.post('api/captcha', config)
+  },
 })

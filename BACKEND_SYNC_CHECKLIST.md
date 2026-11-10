@@ -48,7 +48,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [ ] B5. Reviews: write/list/delete mine (`reviews/my*`) on product page + panel
 - [ ] B6. Questions: ask/list/delete mine (`questions/my*`)
 - [ ] B7. Blog: delete my comment (`DELETE blog/comments/{id}`)
-- [ ] B8. Captcha (`captcha/status`, `POST captcha`) on login/register/contact
+- [~] B8. Captcha (`captcha/status`, `POST captcha`) on login/register/contact
 - [x] B9. Password policy hint under password fields (`GET auth/password-policy`)
 - [x] B10. Province cities by slug (`locations/provinces/by-slug/{slug}/cities`) if still useful
 - [ ] B11. Customer prescriptions (only if `prescriptionEnabled`): options, send, list/detail/image, confirm, cancel,
@@ -92,3 +92,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - A4 (2026-11-10, Haiku): pending-terms dialog (usePendingTerms + TermsPendingDialog, mounted in app.vue; non-dismissible, htmlToText, errors swallowed). eslint + build OK; not exercised in a browser/dev backend (needs a user with a newly published terms version).
 - B9 (2026-11-10, Haiku): `usePasswordRules` + live rule list in RegisterStep/ResetPasswordStep/ChangePasswordModal (fallback min 8 if the call fails; policy cached per app load). eslint OK; not exercised in a browser.
 - B10 (2026-11-10, Haiku): wrapper only (`address.getCitiesBySlug`), no UI. Route verified in LocationController. eslint + build OK.
+- B8a (2026-11-10, Haiku): `CaptchaField` + auth wrappers + contact page. eslint: only 2 pre-existing no-dynamic-delete errors in contact.vue. B8b (login/register/forgot OTP) still to do.
