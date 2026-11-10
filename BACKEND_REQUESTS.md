@@ -82,6 +82,33 @@ No code change on the backend is expected for this item unless the check shows a
 
 ---
 
+## 3. REQUEST — `mine` flag on blog comments (B7 delete my comment) — PENDING
+
+Frontend date: 2026-11-10. Checked against `BlogCommentDTO`, `BlogCommentServiceImpl` and `BlogPublicController`.
+
+**خلاصه به فارسی:** کاربر فقط روی کامنت‌هایی که همین مرورگر ثبت کرده دکمه «حذف» می‌بیند. برای اینکه کامنت‌های خود کاربر
+(حتی در انتظار تأیید) از هر مرورگری قابل حذف باشند، لازم است BACK فیلد `mine` را اضافه کند.
+
+**Problem.** `DELETE /api/blog/comments/{id}` works (login; 200 with null data; another user's or unknown id → 404), and
+`POST /api/blog/posts/{slug}/comments` returns 201 with the new `BlogCommentDTO`, including its `id`. But the public list
+(`GET /api/blog/posts/{slug}/comments`) returns `BlogCommentDTO` with no way to tell whose comment is whose, and a
+caller's own PENDING comments are not returned at all. So the storefront can only show «حذف» on comments written in
+this browser (remembered ids in `localStorage` `blog-my-comments:<userId>`). Another device, a cleared browser, or
+a comment approved after the browser was reset gets no delete button.
+
+**Ask.**
+1. Add `mine: boolean` to `BlogCommentDTO` in the public list and in the add-comment response: `true` when the comment's
+   `userId` equals the caller's id (`false` for guests and for everyone else's comments). Replies follow the same rule.
+2. For a logged-in caller, also return the caller's own PENDING top-level comments and their replies in
+   `GET /api/blog/posts/{slug}/comments` (flagged `mine: true`, `status: PENDING`), so the author can see and delete them.
+   Other users' pending comments stay hidden.
+
+**Done when:** a logged-in customer sees their own pending and approved comments with `mine: true` on a fresh browser,
+and `DELETE` works on them. No frontend change is needed afterwards beyond reading the flag (the remembered-id
+fallback can then be removed).
+
+---
+
 ## Already confirmed fine (no action)
 
 - `/api/storefront/home`, `/api/storefront/brands[/{id}]`, `/api/storefront/goods/near-expiry`,

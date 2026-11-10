@@ -47,7 +47,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [ ] B4. Customer returns: returnable items, request, photos, list/detail, cancel, tracking code
 - [ ] B5. Reviews: write/list/delete mine (`reviews/my*`) on product page + panel
 - [ ] B6. Questions: ask/list/delete mine (`questions/my*`)
-- [ ] B7. Blog: delete my comment (`DELETE blog/comments/{id}`)
+- [~] B7. Blog: delete my comment (`DELETE blog/comments/{id}`)
 - [x] B8. Captcha (`captcha/status`, `POST captcha`) on login/register/contact
 - [x] B9. Password policy hint under password fields (`GET auth/password-policy`)
 - [x] B10. Province cities by slug (`locations/provinces/by-slug/{slug}/cities`) if still useful
@@ -94,3 +94,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - B10 (2026-11-10, Haiku): wrapper only (`address.getCitiesBySlug`), no UI. Route verified in LocationController. eslint + build OK.
 - B8a (2026-11-10, Haiku): `CaptchaField` + auth wrappers + contact page. eslint: only 2 pre-existing no-dynamic-delete errors in contact.vue. B8b (login/register/forgot OTP) still to do.
 - B8b (2026-11-10, Haiku): captcha on password login, login-OTP send, register send-otp, forgot-password send-otp (+resends; OTP step resend-only). Bodies verified against AuthServiceImpl; verify-otp untouched. eslint 0 errors, build OK; not exercised in a browser.
+- B7 (2026-11-10, Haiku) PARTIAL: delete button for comments remembered in this browser (localStorage), since BlogCommentDTO has no `mine`; request filed as BACKEND_REQUESTS.md §3. A just-posted PENDING comment isn't listed so it gets the button only after approval. eslint + build OK; not exercised in a browser.
