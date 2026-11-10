@@ -63,7 +63,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [x] C6. Wallet administration (`admin/wallets*`)
 - [x] C7. Store customers (CRUD, import, export)
 - [x] C8. Review moderation (`admin/reviews*`) and Q&A moderation (`admin/questions*`)
-- [ ] C9. Blog administration: posts, tags, comments
+- [x] C9. Blog administration: posts, tags, comments
 - [ ] C10. Contact messages + contact settings
 - [ ] C11. About us, terms (+acceptances), return policy admin
 - [ ] C12. Store settings, password policy, my-organization
@@ -107,3 +107,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - C1 (2026-11-11, Haiku): staff returns list/detail (approve/reject/cancel/receive/refund), order refunds card, cancel paid order, staff-created return. eslint 0 errors + build OK; not exercised against the dev backend.
 - C2 (2026-11-11, Haiku): purchase orders list/new/detail/receive + supplier quick-create; old PO wrappers had wrong paths and were rewritten. eslint clean + build OK; not exercised against the dev backend.
 - C7+C8 (2026-11-11, Haiku): store customers (list/form/import/export) and staff review + Q&A moderation inside the existing reviews/questions pages. eslint clean + build OK; not exercised against the dev backend.
+- C9 (2026-11-11, Haiku): blog admin (posts list/form/publish/images, tags tab, comments tab). eslint clean + build OK; not exercised against the dev backend.

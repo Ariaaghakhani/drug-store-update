@@ -6,7 +6,7 @@
 // Optional `group`: a key of GROUP_LABELS. The desktop sidebar (pages/panel.vue) renders a heading when the group
 // changes and a divider between grouped and ungrouped entries; entries without `group` render exactly as before.
 // To add a menu: add an entry here (+ its page under pages/panel/) with the BACK module(s) guarding its endpoints.
-// Every entry must have a page, or it links to a 404. Not built yet, so not listed: reports (REPORT), analytics, finance. Purchase orders (PURCHASE_ORDER) is listed from C2a, under the stock group. Settings (SYSTEM_SETTINGS, PAYMENT_GATEWAY, MY_ORGANIZATION) is listed from C5a and shows only its tabs the user can read. Customer wallets (WALLET, `/panel/wallets`) is listed from C6a. Store customers (STORE_CUSTOMER, STORE_CUSTOMER_ADMIN, `/panel/customers`) is listed from C7a.
+// Every entry must have a page, or it links to a 404. Not built yet, so not listed: reports (REPORT), analytics, finance. Purchase orders (PURCHASE_ORDER) is listed from C2a, under the stock group. Settings (SYSTEM_SETTINGS, PAYMENT_GATEWAY, MY_ORGANIZATION) is listed from C5a and shows only its tabs the user can read. Customer wallets (WALLET, `/panel/wallets`) is listed from C6a. Store customers (STORE_CUSTOMER, STORE_CUSTOMER_ADMIN, `/panel/customers`) is listed from C7a. The blog (BLOG_POST, BLOG_COMMENT, BLOG_TAG, `/panel/blog`) is listed from C9a, under the content group after questions.
 export const GROUP_LABELS = {
   sales: 'فروش و مشتریان',
   stock: 'کالا و انبار',
@@ -32,6 +32,7 @@ export const PANEL_MENUS = [
   { key: 'purchase-orders', label: 'سفارش‌های خرید', icon: 'i-heroicons-clipboard-document-list', to: '/panel/purchase-orders', modules: ['PURCHASE_ORDER'], group: 'stock' },
   { key: 'reviews', label: 'نظرات', icon: 'i-heroicons-star', to: '/panel/reviews', modules: ['GOODS_REVIEW'], group: 'content' },
   { key: 'questions', label: 'پرسش و پاسخ', icon: 'i-heroicons-chat-bubble-left-right', to: '/panel/questions', modules: ['GOODS_QUESTION'], flag: 'goodsQuestionsEnabled', group: 'content' },
+  { key: 'blog', label: 'وبلاگ', icon: 'i-heroicons-newspaper', to: '/panel/blog', modules: ['BLOG_POST', 'BLOG_COMMENT', 'BLOG_TAG'], group: 'content' },
   { key: 'settings', label: 'تنظیمات فروشگاه', icon: 'i-heroicons-cog-6-tooth', to: '/panel/settings', modules: ['SYSTEM_SETTINGS', 'PAYMENT_GATEWAY', 'MY_ORGANIZATION'], group: 'settings' },
   { key: 'wishlist', label: 'علاقه‌مندی‌ها', icon: 'i-heroicons-heart', to: '/panel/wishlist', flag: 'wishlistEnabled' },
   { key: 'wallet', label: 'کیف پول', icon: 'i-heroicons-wallet', to: '/panel/wallet', flag: 'walletEnabled' },
@@ -82,6 +83,7 @@ export const FALLBACK_MENUS_BY_ROLE = {
     { key: 'purchase-orders' },
     { key: 'reviews' },
     { key: 'questions' },
+    { key: 'blog' },
     { key: 'settings' },
     { key: 'notifications' },
     { key: 'profile' },
