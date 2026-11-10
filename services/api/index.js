@@ -12,6 +12,7 @@ import orders from '@/services/api/orders.js'
 import payments from '@/services/api/payments.js'
 import inventory from '@/services/api/inventory.js'
 import catalog from '@/services/api/catalog.js'
+import catalogAdmin from '@/services/api/catalogAdmin.js'
 import analytics from '@/services/api/analytics.js'
 import communication from '@/services/api/communication.js'
 import user from '@/services/api/user.js'
@@ -43,6 +44,7 @@ export default (apiCaller, apiInstances) => ({
   goods: goods(apiCaller),
   products: products(apiCaller), // Legacy alias
   catalog: catalog(apiCaller),
+  catalogAdmin: catalogAdmin(apiCaller),
 
   // ========== ORDERS & PAYMENTS ==========
   orders: orders(apiCaller),

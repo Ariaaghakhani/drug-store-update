@@ -106,6 +106,8 @@
       </div>
     </UCard>
 
+    <VariantsCard v-if="product?.isModel" :product="product" />
+
     <UCard v-else-if="!loading">
       <div class="flex flex-col items-center justify-center py-16 gap-3">
         <UIcon name="i-heroicons-cube" class="w-16 h-16 text-gray-300 dark:text-gray-700" />
@@ -119,6 +121,7 @@
 
 <script setup>
 import ProductImagesField from '@/components/panel/products/ProductImagesField.vue'
+import VariantsCard from '@/components/panel/products/VariantsCard.vue'
 
 definePageMeta({ layout: 'panel' })
 useHead({ title: 'ویرایش محصول | پنل مدیریت' })
