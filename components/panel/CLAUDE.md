@@ -4,7 +4,7 @@
 Presentational building blocks for the pharmacist/admin panel ([`pages/panel/*`](../../pages/panel/CLAUDE.md)): cards, tables, filter bars, and multi-step modals for addresses, orders, products, users, profile, and security settings. Almost all components here are "dumb" (props in, events out) — pages own data, loading state, and persistence.
 
 ## Key files
-**root** — `DeleteConfirmDialog.vue`: generic confirm-delete modal, reused by users/products pages.
+**root** — `DeleteConfirmDialog.vue`: generic confirm-delete modal, reused by users/products pages. `JalaliDateInput.vue` (**new 2026-11-10**): `v-model` ISO date (`YYYY-MM-DD`, or `…T HH:mm:ss` with `withTime`) shown as a Persian `۱۴۰۵/۰۱/۰۱` text input (Persian or Latin digits accepted); props `label`, `clearable`, `withTime`; validates on blur/Enter with `تاریخ نامعتبر` and emits only valid values (`''` when cleared). Conversion lives in `utils/jalali.js`.
 
 **address/** — `AddressCard.vue` (single address row, edit/delete/set-default), `AddressFormModal.vue` (add/edit modal, own form state + province/city cascading select), `AddressListCard.vue` (wraps `AddressCard` list with skeleton/empty/add-CTA).
 
@@ -51,4 +51,4 @@ Presentational building blocks for the pharmacist/admin panel ([`pages/panel/*`]
 - **Products admin is now server-paginated** (`page`/`size`/`totalPages`/`totalElements` from `GoodsController./filter`'s `PageResponse`, 1-based page), not client-side sliced like the old mock — `ProductsTable`/`ProductsFilters` themselves are unchanged (still dumb props-in/events-out), only `pages/panel/products/index.vue`'s data layer changed.
 - **`AddProductModal.vue` is not wired to `products/new.vue`** — that page has its own inline form (goodCode/nameFa/nameEn/brand/categoryIds/tagIds/price/expiryDate/images/isPrescriptionRequired fields posted straight to `createGoods`). Check before reusing `AddProductModal.vue` elsewhere; it still targets the old mock store shape.
 
-Last synced: 2026-10-27 (orders fulfillment actions + real stats, product brand picker + real image upload + real inStock badge, security panel wired for real except 2FA removal/delete-account — backend's answer to FRONTEND_API_TODO.md)
+Last synced: 2026-11-10 (JalaliDateInput.vue added, P3). Previous: 2026-10-27 (orders fulfillment actions + real stats, product brand picker + real image upload + real inStock badge, security panel wired for real except 2FA removal/delete-account — backend's answer to FRONTEND_API_TODO.md)

@@ -15,7 +15,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [x] P0. Grouped sidebar mechanism (`utils/panelMenus.js`, `useUserPanelTabs.js`, `pages/panel.vue`)
 - [x] P1. File download + blob responses (`plugins/api.js` responseType, `composables/useFileDownload.js`)
 - [ ] P2. `composables/usePagedList.js` + `components/panel/PanelEmptyState.vue`
-- [ ] P3. Jalali dates (`utils/jalali.js`, `components/panel/JalaliDateInput.vue`)
+- [x] P3. Jalali dates (`utils/jalali.js`, `components/panel/JalaliDateInput.vue`)
 
 ## Loop rules (one item per iteration)
 1. Pick the first unchecked item below.
@@ -87,3 +87,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - A3 (2026-11-10): audited flags; only gap was `variantsEnabled` (product-page variant picker) — now gated. Others already gated; wallet-at-checkout belongs to B2, prescription pages to B11. Tested: eslint (only pre-existing warnings) + `npm run build` OK.
 - P0 (2026-11-10, Haiku): grouped-sidebar mechanism (GROUP_LABELS + headings/dividers in desktop nav). No entry uses `group` yet so the sidebar is unchanged. Lint: only a pre-existing unused `roleBadgeColor` error in panel.vue. Build pending with P1.
 - P1 (2026-11-10, Haiku): `config.responseType` pass-through in plugins/api.js (+ cache-key suffix), `composables/useFileDownload.js` (download/previewUrl). Lint OK. First real use: B3 invoice PDF.
+- P3 (2026-11-10, Haiku): utils/jalali.js (Intl-based) + JalaliDateInput.vue. Node-verified: 1405/01/01→2026-03-21, 1403/12/30→2025-03-20, invalid days→null, 1400–1410 round-trip 0 mismatches. UInput blur/Enter not yet exercised in a browser (first consumer C3).
