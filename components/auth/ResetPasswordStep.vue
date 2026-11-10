@@ -40,6 +40,24 @@
             {{ localForm.errors.password }}
           </p>
         </div>
+        <ul aria-label="شرط‌های رمز عبور" class="mt-2 space-y-1">
+          <li
+            v-for="rule in ruleList"
+            :key="rule.text"
+            :class="[
+              'flex items-center gap-1.5 text-sm',
+              rule.met
+                ? 'text-success'
+                : 'text-error',
+            ]"
+          >
+            <UIcon
+              :name="rule.met ? 'i-heroicons-check-circle' : 'i-heroicons-x-circle'"
+              class="w-4 h-4 shrink-0"
+            />
+            {{ rule.text }}
+          </li>
+        </ul>
       </div>
 
       <!-- Password Confirmation -->
@@ -134,6 +152,10 @@ const localForm = computed({
 const showPassword = ref(false)
 const showPasswordConfirm = ref(false)
 
+const { ruleList, validate: validatePassword } = usePasswordRules(
+  computed(() => localForm.value.password)
+)
+
 const validateForm = () => {
   const errors = {
     password: '',
@@ -151,6 +173,11 @@ const validateForm = () => {
   } else if (localForm.value.password !== localForm.value.passwordConfirm) {
     errors.passwordConfirm = 'رمز عبور و تکرار آن یکسان نیستند'
   }
+
+  const policyError = localForm.value.password
+    ? validatePassword(localForm.value.password)
+    : ''
+  if (policyError) errors.password = policyError
 
   localForm.value.errors = errors
   return !errors.password && !errors.passwordConfirm

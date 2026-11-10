@@ -36,7 +36,7 @@ Global presentational and feature components for the public storefront shell (he
 - `auth/PhoneStep` — props `phoneNumber`, `loading`; emits `update:phoneNumber`, `submit`.
 - `auth/PasswordStep` — props `password`, `error`, `loading`; emits `update:password`, `update:error`, `submit`, `switchToOtp`, `forgotPassword`, `goBack`.
 - `auth/OtpStep` — props `digits` (array), `error`, `timer`, `loading`, `context` (`'login'|'register'|'forgot-password'`); emits `update:digits`, `update:error`, `submit`, `resend`, `switchToPassword`, `goBack`; exposes `focusFirst()` via `defineExpose`. "Switch to password" button only shown when `context === 'login'`.
-- `auth/RegisterStep` / `ResetPasswordStep` — prop `form: Object` (required, must contain an `errors` sub-object the component mutates directly), `loading`; emit `update:form`, `submit`, `goBack`.
+- `auth/RegisterStep` / `ResetPasswordStep` — prop `form: Object` (required, must contain an `errors` sub-object the component mutates directly), `loading`; emit `update:form`, `submit`, `goBack`. **B9 (2026-11-10)**: a live tick/cross list of the store's password rules sits under the password field (`composables/usePasswordRules.js`); the rules' `validate()` runs after the existing checks in submit validation and overrides `errors.password`.
 - `auth/AuthHero` — no props, decorative only, hidden below `md:`.
 - `dashboard/customer/*` — accept `loading: Boolean` + data props, emit `track`/`shop`/`viewAll`/`upload`/`add` (`order`, previously `RefillReminders.vue`'s emit, no longer exists — that component was removed).
 - `AdminDashboard`/`OwnerDashboard` — no props/emits; read their composables directly (see Key files).
@@ -63,6 +63,6 @@ Global presentational and feature components for the public storefront shell (he
 - `Header`'s cart dropdown position is computed manually in JS, not CSS/popper.
 - **`h-full` on a dashboard card chains up through `pages/panel.vue`'s `<NuxtPage class="h-full" />`** (which falls through onto the page's/dashboard component's root) into the sidebar-vs-main grid stretch — the sidebar nav is usually taller than the dashboard content, so an un-grounded `h-full` on a card makes it balloon to sidebar height with a huge blank area below its content (fixed on `OrderTracking.vue` 2026-10-28 after removing `RefillReminders.vue`'s 2-column grid, which had been accidentally "grounding" the chain by being its own auto-height container). Only add `h-full` to a card root when it's paired with a sibling inside its own grid/flex row to match heights against — never on a lone/full-width card.
 
-Last synced: 2026-11-10 (TermsPendingDialog.vue added; earlier 2026-10-28 — OrderTracking.vue's h-full removed — was ballooning to sidebar height with RefillReminders.vue gone)
+Last synced: 2026-11-10 (password policy hint in RegisterStep/ResetPasswordStep; TermsPendingDialog.vue added; earlier 2026-10-28 — OrderTracking.vue's h-full removed — was ballooning to sidebar height with RefillReminders.vue gone)
 
 - `InfoDocument.vue` (2026-10-29) — generic public text page shell: prop `documents: [{key,title,content,meta?}]`, `loading`, `emptyTitle`; skeleton/empty states; content is plain text (no `v-html`). Used by `terms.vue`/`privacy.vue`/`returns.vue`.

@@ -107,4 +107,10 @@ export default (apiCaller) => ({
   acceptPendingTerms() {
     return apiCaller.post('api/auth/me/terms/accept')
   },
+
+  // ========== PASSWORD POLICY (public, store-scoped via X-Tenant; verified: BACK PasswordPolicyPublicController, ApiResponse<PasswordPolicyDTO>, payload = res.data.data) ==========
+  // Payload: {minLength, maxLength, requireUppercase, requireLowercase, requireDigit, requireSpecialChar}. Admin side is user.getPasswordPolicy.
+  getPasswordRules() {
+    return apiCaller.get('api/auth/password-policy')
+  },
 })
