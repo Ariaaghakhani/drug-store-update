@@ -13,7 +13,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 
 ## Prerequisites (from the plan, section 2)
 - [x] P0. Grouped sidebar mechanism (`utils/panelMenus.js`, `useUserPanelTabs.js`, `pages/panel.vue`)
-- [ ] P1. File download + blob responses (`plugins/api.js` responseType, `composables/useFileDownload.js`)
+- [x] P1. File download + blob responses (`plugins/api.js` responseType, `composables/useFileDownload.js`)
 - [ ] P2. `composables/usePagedList.js` + `components/panel/PanelEmptyState.vue`
 - [ ] P3. Jalali dates (`utils/jalali.js`, `components/panel/JalaliDateInput.vue`)
 
@@ -86,3 +86,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - A2 (2026-11-10): stale "category tree 401 for guests" notes updated (storefront.js, useStoreCategories.js, services/api/CLAUDE.md, BACKEND_REQUESTS.md). Runtime behaviour unchanged.
 - A3 (2026-11-10): audited flags; only gap was `variantsEnabled` (product-page variant picker) — now gated. Others already gated; wallet-at-checkout belongs to B2, prescription pages to B11. Tested: eslint (only pre-existing warnings) + `npm run build` OK.
 - P0 (2026-11-10, Haiku): grouped-sidebar mechanism (GROUP_LABELS + headings/dividers in desktop nav). No entry uses `group` yet so the sidebar is unchanged. Lint: only a pre-existing unused `roleBadgeColor` error in panel.vue. Build pending with P1.
+- P1 (2026-11-10, Haiku): `config.responseType` pass-through in plugins/api.js (+ cache-key suffix), `composables/useFileDownload.js` (download/previewUrl). Lint OK. First real use: B3 invoice PDF.

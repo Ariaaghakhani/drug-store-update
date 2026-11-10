@@ -53,6 +53,8 @@ export const apiCaller = (apiCallerInstances, nuxtApp) => {
     const apiCallerInstance = apiCallerInstances[instance]
     const fetchOptions = { method: method.toUpperCase(), params: config.params || undefined }
     if (method !== 'get') fetchOptions.body = config.data || undefined
+    // 'blob' for file downloads (PDF/attachments); onResponse then wraps the Blob as { data: Blob }
+    if (config.responseType) fetchOptions.responseType = config.responseType
 
     try {
       return await apiCallerInstance(url, fetchOptions)
@@ -80,7 +82,9 @@ export const apiCaller = (apiCallerInstances, nuxtApp) => {
 
   return {
     get(url, config = {}) {
-      const cacheKey = url + (config.params ? JSON.stringify(config.params) : '')
+      // responseType is part of the key so a blob GET never shares a promise with a JSON GET on the same URL
+      const cacheKey =
+        url + (config.params ? JSON.stringify(config.params) : '') + (config.responseType ? `#${config.responseType}` : '')
 
       if (apiPromisesCache.has(cacheKey)) {
         return apiPromisesCache.get(cacheKey)
