@@ -8,7 +8,9 @@ Checked against the backend source in `PouyanPlatform` (`PublicEndpoints`, `Cate
 
 ---
 
-## 1. REQUIRED — make the category tree public (guest gets 401 today)
+## 1. ~~REQUIRED — make the category tree public~~ — RESOLVED 2026-11-04 (BACK #470, `GET /api/categories/tree` is public)
+
+_Kept below for the nice-to-have asks (`goodsCount`/`withGoodsOnly`, category icon). The original problem text follows._
 
 **Problem.** The home page category row and the category filter on `/medications` have nothing to show: a guest calling
 `GET /api/categories/tree` gets **401**. `PublicEndpoints` has no entry for `/api/categories*`

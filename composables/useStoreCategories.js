@@ -1,7 +1,7 @@
 // The store's product category tree (GET api/categories/tree?scope=PRODUCT), shared app-wide via useState.
 //
-// BACK doesn't expose this to guests yet (it answers 401 — see BACKEND_REQUESTS.md), so a 401/403 is not an error:
-// `status` becomes 'unavailable' and the category UI hides itself. Once BACK opens the endpoint nothing here changes.
+// Public on BACK since #470 (2026-11-04). A 401/403 is still not an error, just defensive: `status` becomes
+// 'unavailable' and the category UI hides itself.
 //   status: 'idle' | 'loading' | 'ready' | 'unavailable' (no access or nothing to show) | 'failed' (network/server error)
 export const useStoreCategories = () => {
   const tree = useState('store-categories', () => [])

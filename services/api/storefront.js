@@ -17,7 +17,7 @@ export default (apiCaller) => ({
   },
 
   // CategoryDTO[] roots with nested `children` {id, name, parentId, level, code, sortOrder, children}.
-  // NOT public on BACK yet (401 for a guest) — see BACKEND_REQUESTS.md; callers must treat 401/403 as "no categories".
+  // Public since BACK #470 (2026-11-04). Callers still treat 401/403 as "no categories" defensively.
   getCategoryTree(config) {
     return apiCaller.get('api/categories/tree', { params: { scope: 'PRODUCT' }, ...config })
   },
