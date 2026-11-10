@@ -57,6 +57,27 @@ export default (apiCaller) => ({
     return apiCaller.get(`api/questions/goods/${goodsId}`, config)
   },
 
+  // ========== MY REVIEWS (customer, any login; BACK GoodsReviewCustomerController, module GOODS_REVIEW_CUSTOMER) ==========
+  // {goodsId, canReview, review: MyGoodsReviewDTO|null}; canReview = a paid order holds the goods (else submit is 403)
+  getMyReviewState(goodsId) {
+    return apiCaller.get(`api/reviews/my/goods/${goodsId}`)
+  },
+
+  // body {goodsId, rating 1..5, comment?} → MyGoodsReviewDTO (status PENDING); re-submitting edits the one review per goods
+  submitReview(config) {
+    return apiCaller.post('api/reviews/my', config)
+  },
+
+  // config.params {page, size, rating?} → PageResponse<MyGoodsReviewDTO {id,rating,comment,authorName,createdAt,storeReply,storeReplyAt,goodsId,goodsName,status,updatedAt}>, newest first
+  listMyReviews(config) {
+    return apiCaller.get('api/reviews/my', config)
+  },
+
+  // 404 for another user's review
+  deleteMyReview(id) {
+    return apiCaller.delete(`api/reviews/my/${id}`)
+  },
+
   // ========== INFO PAGES (public) ==========
   getAboutUs() {
     return apiCaller.get('api/about-us')

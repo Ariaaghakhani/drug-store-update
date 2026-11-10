@@ -362,6 +362,11 @@ Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, `object-cover
 - Pattern: `<USelectMenu v-model="form.categoryIds" :items="categoryMenuItems" multiple value-key="value" placeholder="..." class="w-full" />`.
 - Populate `items` from the corresponding list endpoint on mount; fall back to an empty array on fetch failure rather than blocking the form.
 
+### Star rating (reviews)
+- Display: `UIcon` `i-heroicons-star-solid` / `i-heroicons-star` at `w-4 h-4` (lists) or `w-5 h-5` (summaries), `text-yellow-400 dark:text-yellow-300`.
+- Picker: five icon-only `UButton color="neutral" variant="ghost" square` with `i-heroicons-star-solid` for picked stars and `i-heroicons-star` otherwise; the tint is a `:class` (`text-yellow-400` vs `text-gray-300 dark:text-gray-600`) and each button has an `aria-label` like «۳ ستاره». Sits inside `UFormField` so its error shows under the stars.
+- A storefront block whose page already has a primary CTA (product page add-to-cart) submits with `color="neutral" variant="solid"`, so the view keeps one primary.
+
 ### UCard (panel pattern)
 - Default body padding: `p-4 sm:p-6`. Remove for edge-to-edge rows: `:ui="{ body: 'p-0' }"`.
 - Panel card structure: header strip (`flex items-center gap-2 px-4 sm:px-6 py-4 border-b`) with `w-4 h-4 text-brand-500` icon + `text-sm font-medium` title, then `divide-y divide-gray-100 dark:divide-gray-800` rows with `px-4 sm:px-6 py-4` each.

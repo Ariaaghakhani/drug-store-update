@@ -45,7 +45,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [ ] B2. Checkout: discount code, wallet payment (`useWallet`), gateways list (`GET payment/gateways`)
 - [ ] B3. My orders: `GET orders/my`, order items, invoice PDF (`invoices/pdf`)
 - [ ] B4. Customer returns: returnable items, request, photos, list/detail, cancel, tracking code
-- [ ] B5. Reviews: write/list/delete mine (`reviews/my*`) on product page + panel
+- [x] B5. Reviews: write/list/delete mine (`reviews/my*`) on product page + panel
 - [ ] B6. Questions: ask/list/delete mine (`questions/my*`)
 - [~] B7. Blog: delete my comment (`DELETE blog/comments/{id}`)
 - [x] B8. Captcha (`captcha/status`, `POST captcha`) on login/register/contact
@@ -95,3 +95,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - B8a (2026-11-10, Haiku): `CaptchaField` + auth wrappers + contact page. eslint: only 2 pre-existing no-dynamic-delete errors in contact.vue. B8b (login/register/forgot OTP) still to do.
 - B8b (2026-11-10, Haiku): captcha on password login, login-OTP send, register send-otp, forgot-password send-otp (+resends; OTP step resend-only). Bodies verified against AuthServiceImpl; verify-otp untouched. eslint 0 errors, build OK; not exercised in a browser.
 - B7 (2026-11-10, Haiku) PARTIAL: delete button for comments remembered in this browser (localStorage), since BlogCommentDTO has no `mine`; request filed as BACKEND_REQUESTS.md §3. A just-posted PENDING comment isn't listed so it gets the button only after approval. eslint + build OK; not exercised in a browser.
+- B5 (2026-11-10, Haiku): customer reviews — «نظر شما» block in ProductReviews (star picker, edit/delete, non-buyer hint), /panel/reviews «نظرهای من» (usePagedList), reviewMeta, wrappers. Customer sidebar entry has group '' (no lone heading). Staff moderation is C8. eslint clean + build OK; not exercised in a browser.
