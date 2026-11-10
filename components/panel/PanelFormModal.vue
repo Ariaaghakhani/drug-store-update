@@ -30,7 +30,7 @@
           <UButton
             type="submit"
             :form="formId"
-            color="primary"
+            :color="submitColor"
             :loading="loading"
             :disabled="loading || submitDisabled"
           >
@@ -55,6 +55,12 @@ const props = defineProps({
   title: { type: String, required: true },
   icon: { type: String, default: '' },
   submitLabel: { type: String, default: 'ذخیره' },
+  // Destructive forms pass 'error'; everything else keeps the one brand primary
+  submitColor: {
+    type: String,
+    default: 'primary',
+    validator: (value) => ['primary', 'error'].includes(value),
+  },
   loading: { type: Boolean, default: false },
   submitDisabled: { type: Boolean, default: false },
   width: {

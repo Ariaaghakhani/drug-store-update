@@ -1,7 +1,7 @@
 <template>
   <UModal
     :open="open"
-    title="درخواست مرجوعی"
+    :title="staff ? 'ثبت مرجوعی برای مشتری' : 'درخواست مرجوعی'"
     :description="orderId ? `سفارش #${Number(orderId).toLocaleString('fa-IR')}` : ''"
     @update:open="emit('update:open', $event)"
   >
@@ -20,7 +20,7 @@
             <UButton color="neutral" variant="soft" icon="i-heroicons-arrow-path" @click="load">تلاش دوباره</UButton>
           </div>
 
-          <div v-else-if="returnable && !returnable.open" key="closed" class="space-y-4">
+          <div v-else-if="returnable && !returnable.open && !staff" key="closed" class="space-y-4">
             <div class="flex items-start gap-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 p-4">
               <UIcon name="i-heroicons-information-circle" class="w-5 h-5 mt-0.5 flex-shrink-0 text-info" />
               <p class="text-sm text-gray-700 dark:text-gray-300">{{ closedMessage }}</p>
@@ -52,7 +52,7 @@
                   قبلاً مرجوع‌شده {{ Number(line.alreadyReturned).toLocaleString('fa-IR') }} ·
                   قابل مرجوع {{ Number(line.remaining).toLocaleString('fa-IR') }}
                 </p>
-                <p v-if="!line.returnable" class="text-xs text-gray-500 dark:text-gray-400 ps-6">
+                <p v-if="!line.returnable && !staff" class="text-xs text-gray-500 dark:text-gray-400 ps-6">
                   این کالا فقط با دلیل عیب یا مغایرت قابل مرجوع است
                 </p>
                 <UFormField
@@ -85,7 +85,8 @@
               <UTextarea v-model="details" :rows="3" :maxlength="MAX_DETAILS" class="w-full" />
             </UFormField>
 
-            <ReturnPhotosField v-model="photos" :max="MAX_PHOTOS" />
+            <!-- Photos come from the customer; a staff-created return has none -->
+            <ReturnPhotosField v-if="!staff" v-model="photos" :max="MAX_PHOTOS" />
 
             <p v-if="formError" role="alert" class="text-sm text-error">{{ formError }}</p>
 
@@ -112,14 +113,17 @@
 import ReturnPhotosField from '@/components/panel/returns/ReturnPhotosField.vue'
 
 // Request form for a return on a delivered, paid order. Loads what is still returnable (GET .../orders/{id}), then
-// creates the return (POST api/returns/my) and uploads each photo one by one. Photos are sent after the return exists,
-// so a failed photo keeps the return and only warns.
+// creates the return (POST api/returns/my, or POST api/admin/returns in staff mode) and uploads each photo one by one.
+// Photos are sent after the return exists, so a failed photo keeps the return and only warns.
 const MAX_PHOTOS = 5
 const MAX_DETAILS = 1000
 
 const props = defineProps({
   open: { type: Boolean, required: true },
   orderId: { type: [Number, String], default: null },
+  // Staff mode: a return created for the customer (phone or in person). Ignores the window, delivery and
+  // change-of-mind rules, offers CHANGE_OF_MIND, has no photos, and posts to the admin endpoint.
+  staff: { type: Boolean, default: false },
 })
 const emit = defineEmits(['update:open', 'created'])
 
@@ -168,9 +172,10 @@ const hasInvalidQuantity = computed(() => selectedLines.value.some((line) => lin
 // Change of mind needs the store's switch on and every selected item marked returnable (BACK checks the same)
 const canChooseChangeOfMind = computed(
   () =>
-    Boolean(returnable.value?.changeOfMindAllowed) &&
+    props.staff ||
+    (Boolean(returnable.value?.changeOfMindAllowed) &&
     selectedLines.value.length > 0 &&
-    selectedLines.value.every((line) => line.returnable)
+    selectedLines.value.every((line) => line.returnable))
 )
 const reasonOptions = computed(() =>
   Object.entries(RETURN_REASON_LABELS)
@@ -206,7 +211,7 @@ async function load() {
   returnable.value = null
   lines.value = []
   try {
-    const response = await app.$api.returns.getReturnable(false, props.orderId)
+    const response = await app.$api.returns.getReturnable(props.staff, props.orderId)
     returnable.value = response.data.data ?? null
     lines.value = buildLines(returnable.value)
   } catch (error) {
@@ -239,18 +244,19 @@ async function submit() {
   formError.value = ''
 
   let created
+  const body = {
+    orderId: returnable.value.orderId,
+    reason: reason.value,
+    details: details.value.trim() || null,
+    items: selectedLines.value.map((line) => ({
+      orderItemId: line.orderItemId,
+      quantity: lineQuantity(line),
+    })),
+  }
   try {
-    const response = await app.$api.returns.submitReturn({
-      data: {
-        orderId: returnable.value.orderId,
-        reason: reason.value,
-        details: details.value.trim() || null,
-        items: selectedLines.value.map((line) => ({
-          orderItemId: line.orderItemId,
-          quantity: lineQuantity(line),
-        })),
-      },
-    })
+    const response = props.staff
+      ? await app.$api.returns.createReturnForCustomer({ data: body })
+      : await app.$api.returns.submitReturn({ data: body })
     created = response.data.data
   } catch (error) {
     formError.value = error?.response?.data?.message || 'ثبت درخواست مرجوعی ناموفق بود'
@@ -259,7 +265,7 @@ async function submit() {
   }
 
   let failedPhotos = 0
-  for (const photo of photos.value) {
+  for (const photo of props.staff ? [] : photos.value) {
     try {
       const formData = new FormData()
       formData.append('file', photo)
@@ -270,7 +276,9 @@ async function submit() {
   }
   submitting.value = false
 
-  if (failedPhotos) {
+  if (props.staff) {
+    toast.success('مرجوعی برای مشتری ثبت شد', `شماره درخواست ${Number(created.id).toLocaleString('fa-IR')}`)
+  } else if (failedPhotos) {
     toast.warning(
       'درخواست ثبت شد، اما برخی عکس‌ها ارسال نشد',
       `${failedPhotos.toLocaleString('fa-IR')} عکس ارسال نشد`

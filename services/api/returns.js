@@ -1,7 +1,8 @@
 /**
  * Returns Service — order returns, verified against BACK's OrderReturnCustomerController / OrderReturnAdminController.
  * Customers use /api/returns/my/**, staff use /api/admin/returns/**; the `staff` flag picks the base path.
- * Admin-only calls (create for a customer, approve, reject, receive, refund) are added with the staff branch (C1).
+ * Staff-only write calls (create for a customer, approve, reject, receive, refund) always hit /api/admin/returns/**
+ * (BACK OrderReturnAdminController, module ORDER_RETURN). Every write answers OrderReturnDTO; a wrong status is 409.
  */
 const base = (staff) => (staff ? 'api/admin/returns' : 'api/returns/my')
 
@@ -44,5 +45,31 @@ export default (apiCaller) => ({
   // customer only. body {trackingCode (required, <=100)}; APPROVED with returnMethod CUSTOMER_SENDS only, else 409
   setReturnTracking(id, config) {
     return apiCaller.put(`api/returns/my/${id}/tracking`, config)
+  },
+
+  // staff. body {orderId, reason, details<=1000, items:[{orderItemId, quantity 1..100000}]}; 201 OrderReturnDTO. Any paid order;
+  // exempt from the window, delivery and change-of-mind rules
+  createReturnForCustomer(config) {
+    return apiCaller.post('api/admin/returns', config)
+  },
+
+  // staff. REQUESTED only. body {returnMethod CUSTOMER_SENDS|STORE_PICKUP|CUSTOMER_BRINGS (required), note<=500 (shown to customer)}
+  approveReturn(id, config) {
+    return apiCaller.post(`api/admin/returns/${id}/approve`, config)
+  },
+
+  // staff. REQUESTED only. body {note (required, <=500, shown to customer)}
+  rejectReturn(id, config) {
+    return apiCaller.post(`api/admin/returns/${id}/reject`, config)
+  },
+
+  // staff. APPROVED only. body {items?:[{returnItemId, restockedQuantity>=0, damagedQuantity>=0}], note<=500}; body optional
+  receiveReturn(id, config) {
+    return apiCaller.post(`api/admin/returns/${id}/receive`, config)
+  },
+
+  // staff. RECEIVED only. body {amount? >=0 (empty = suggestedRefund, 0 = none), note<=500}; body optional
+  refundReturn(id, config) {
+    return apiCaller.post(`api/admin/returns/${id}/refund`, config)
   },
 })

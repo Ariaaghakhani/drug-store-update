@@ -26,6 +26,23 @@ export const RETURN_REASON_LABELS = {
   CHANGE_OF_MIND: 'انصراف از خرید',
 }
 
+// Manual refunds of an order (BACK RefundReason / RefundStatus). RETURN is recorded by a return's refund step, not by the order form.
+export const REFUND_REASON_LABELS = {
+  ORDER_CANCELLED: 'لغو سفارش',
+  SHIPPING_CHANGE: 'تغییر ارسال',
+  LOST: 'گم شدن مرسوله',
+  DAMAGED: 'آسیب مرسوله',
+  RETURN: 'مرجوعی',
+  OTHER: 'سایر',
+}
+
+export const REFUND_STATUS_META = {
+  PENDING: { label: 'در انتظار پرداخت', color: 'warning' },
+  PAID: { label: 'پرداخت شد', color: 'success' },
+}
+
+export const refundReasonLabel = (reason) => REFUND_REASON_LABELS[reason] ?? reason ?? ''
+
 export const returnStatusMeta = (status) =>
   RETURN_STATUS_META[status] ?? { label: status ?? '', color: 'neutral' }
 

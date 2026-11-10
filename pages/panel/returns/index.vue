@@ -2,10 +2,22 @@
 <template>
   <UCard>
     <div class="flex items-center justify-between mb-6 gap-3 flex-wrap">
-      <h3 class="text-xl font-black text-gray-900 dark:text-white">
+      <h3 v-if="STAFF" class="text-xl font-black text-gray-900 dark:text-white">
+        مرجوعی‌<span class="text-brand-500">ها</span>
+      </h3>
+      <h3 v-else class="text-xl font-black text-gray-900 dark:text-white">
         مرجوعی‌های <span class="text-brand-500">من</span>
       </h3>
       <div class="flex items-center gap-4 flex-wrap">
+        <UInput
+          v-if="STAFF"
+          v-model="filters.orderId"
+          inputmode="numeric"
+          dir="ltr"
+          size="sm"
+          placeholder="شماره سفارش"
+          class="w-36"
+        />
         <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
           <USwitch
             v-model="filters.open"
@@ -82,6 +94,9 @@
                 <UBadge v-if="item.workflow?.pending" color="warning" variant="subtle" size="xs">
                   در انتظار تأیید
                 </UBadge>
+                <UBadge v-if="STAFF && item.byStaff" color="info" variant="subtle" size="xs">
+                  ثبت توسط فروشگاه
+                </UBadge>
               </div>
               <p class="text-xs text-gray-500 dark:text-gray-400">
                 <NuxtLink
@@ -91,11 +106,16 @@
                   سفارش #{{ item.orderId.toLocaleString('fa-IR') }}
                 </NuxtLink>
                 · {{ formatDate(item.createdAt) }}
+                <template v-if="STAFF && item.customerName"> · {{ item.customerName }}</template>
               </p>
               <p class="text-sm text-gray-700 dark:text-gray-300">
                 {{ item.reasonLabel || returnReasonLabel(item.reason) }}
               </p>
+              <p v-if="STAFF && item.refundAmount != null" class="text-xs text-gray-700 dark:text-gray-300">
+                مبلغ بازپرداخت: {{ formatMoney(item.refundAmount) }}
+              </p>
             </div>
+            <WorkflowPendingBadge v-if="STAFF" :state="item.workflow" class="flex-shrink-0" />
           </div>
 
           <div v-if="totalPages > 1" class="flex justify-center pt-2">
@@ -107,10 +127,10 @@
           v-else
           key="empty"
           icon="i-heroicons-arrow-uturn-left"
-          title="درخواست مرجوعی ندارید"
-          text="اگر کالایی از سفارش‌های خود می‌خواهید برگردانید، از صفحه سفارش آن درخواست مرجوعی ثبت کنید"
+          :title="STAFF ? 'مرجوعی‌ای پیدا نشد' : 'درخواست مرجوعی ندارید'"
+          :text="STAFF ? 'با این فیلترها مرجوعی‌ای ثبت نشده است' : 'اگر کالایی از سفارش‌های خود می‌خواهید برگردانید، از صفحه سفارش آن درخواست مرجوعی ثبت کنید'"
         >
-          <template #action>
+          <template v-if="!STAFF" #action>
             <UButton to="/panel/orders" color="primary" icon="i-heroicons-shopping-bag">مشاهده سفارش‌ها</UButton>
           </template>
         </PanelEmptyState>
@@ -121,16 +141,18 @@
 
 <script setup>
 import PanelEmptyState from '@/components/panel/PanelEmptyState.vue'
+import WorkflowPendingBadge from '@/components/panel/WorkflowPendingBadge.vue'
+import { formatMoney } from '~/utils/money.js'
 
 const PAGE_SIZE = 20
 
 const app = useNuxtApp()
-// Staff branch (BACKEND_SYNC_PLAN C1a) goes here: `const isStaff = computed(() => useUserPanelTabs().getUserRole() !== 'customer')`
-// and the list call switches to `listReturns(isStaff.value, ...)` with the staff columns. Until then every role
-// reads the customer endpoint (`staff` = false).
-const STAFF = false
+const { getUserRole } = useUserPanelTabs()
 
-const filters = reactive({ status: 'all', open: false })
+// Staff (any non-customer role) list every return with the admin endpoint; customers keep their own list.
+const STAFF = computed(() => getUserRole() !== 'customer')
+
+const filters = reactive({ status: 'all', open: false, orderId: '' })
 
 const statusOptions = [
   { value: 'all', label: 'همه وضعیت‌ها' },
@@ -138,13 +160,17 @@ const statusOptions = [
 ]
 
 // Paging, loading and error state come from the shared composable (0-based BACK paging behind a 1-based UPagination).
-// `open` and `status` are sent only when set: BACK ignores `status` while `open` is on.
+// `open` and `status` are sent only when set: BACK ignores `status` while `open` is on. The order filter is staff only.
 const { items, total, totalPages, page, loading, error, forbidden, reload } = usePagedList(
   ({ page: backendPage, size }) => {
     const params = { page: backendPage, size }
     if (filters.open) params.open = true
     else if (filters.status !== 'all') params.status = filters.status
-    return app.$api.returns.listReturns(STAFF, { params })
+    if (STAFF.value) {
+      const orderId = parseQuantity(filters.orderId)
+      if (orderId) params.orderId = orderId
+    }
+    return app.$api.returns.listReturns(STAFF.value, { params })
   },
   { size: PAGE_SIZE, filters }
 )
@@ -154,7 +180,7 @@ const formatDate = (value) => {
   return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('fa-IR')
 }
 
-useHead({ title: 'مرجوعی‌های من | پنل کاربری' })
+useHead({ title: STAFF.value ? 'مرجوعی‌ها | پنل مدیریت' : 'مرجوعی‌های من | پنل کاربری' })
 </script>
 
 <style scoped>

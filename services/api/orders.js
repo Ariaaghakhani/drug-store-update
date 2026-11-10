@@ -91,6 +91,28 @@ export default (apiCaller) => ({
     return apiCaller.get(`api/admin/orders/${id}/fulfillment-history`)
   },
 
+  // ========== REFUNDS (staff-only; BACK OrderRefundController, module ORDER_REFUND) ==========
+
+  // POST, body in config.data {note≤500, refundAmount? ≥0 (empty = full paid amount, 0 = none), restock (null/true = back to stock)}; only PAID and not shipped/delivered, else 409 → OrderDTO
+  cancelPaidOrder(orderId, config) {
+    return apiCaller.post(`api/admin/orders/${orderId}/cancel`, config)
+  },
+
+  // GET → OrderRefundDTO[] {id, orderId, amount, reason, status PENDING|PAID, note, reference, paidAt, toWallet, createdAt, createdBy, workflow}, newest first
+  listOrderRefunds(orderId) {
+    return apiCaller.get(`api/admin/orders/${orderId}/refunds`)
+  },
+
+  // POST (201), body in config.data {amount ≥1 (required), reason (required, not RETURN from this form), note≤500}; total refunds ≤ paid amount, else 409
+  createOrderRefund(orderId, config) {
+    return apiCaller.post(`api/admin/orders/${orderId}/refunds`, config)
+  },
+
+  // POST, body in config.data {reference≤100, note≤500, toWallet}; body optional. Workflow-bindable: a pending approval answers 202 (plugin flags `pending`)
+  markOrderRefundPaid(refundId, config) {
+    return apiCaller.post(`api/admin/order-refunds/${refundId}/paid`, config)
+  },
+
   // ========== CASH ON DELIVERY (staff-only) ==========
 
   listCodOrders(config) {

@@ -6,6 +6,25 @@
         جزئیات <span class="text-brand-500">سفارش</span>
       </h3>
       <div class="flex items-center gap-2 flex-wrap">
+        <!-- Staff, paid orders: a return on the customer's behalf, and a cancel while the store still holds the goods -->
+        <UButton
+          v-if="isStaff && canStaffAct"
+          color="neutral"
+          variant="outline"
+          icon="i-heroicons-arrow-uturn-left"
+          @click="staffReturnOpen = true"
+        >
+          ثبت مرجوعی برای مشتری
+        </UButton>
+        <UButton
+          v-if="isStaff && canStaffCancel"
+          color="error"
+          variant="outline"
+          icon="i-heroicons-x-circle"
+          @click="cancelOpen = true"
+        >
+          لغو سفارش
+        </UButton>
         <!-- Customer only: staff keep the page as it was -->
         <UButton
           v-if="canRequestReturn"
@@ -166,12 +185,35 @@
             </p>
           </UCard>
 
+          <!-- Staff only: manual refunds of this order (hides itself on 403) -->
+          <OrderRefundsCard
+            v-if="isStaff"
+            :order-id="order.id"
+            :wallet-enabled="walletEnabled"
+          />
+
           <ReturnRequestModal
             v-if="canRequestReturn"
             :open="returnModalOpen"
             :order-id="order.id"
             @update:open="returnModalOpen = $event"
           />
+
+          <template v-if="isStaff && canStaffAct">
+            <ReturnRequestModal
+              :open="staffReturnOpen"
+              :order-id="order.id"
+              staff
+              @update:open="staffReturnOpen = $event"
+            />
+
+            <CancelPaidOrderModal
+              v-if="canStaffCancel"
+              v-model:open="cancelOpen"
+              :order-id="order.id"
+              @saved="onOrderCancelled"
+            />
+          </template>
         </div>
 
         <div v-else key="empty" class="text-center py-16">
@@ -198,6 +240,8 @@
 
 <script setup>
 import ReturnRequestModal from '@/components/panel/returns/ReturnRequestModal.vue'
+import OrderRefundsCard from '@/components/panel/orders/OrderRefundsCard.vue'
+import CancelPaidOrderModal from '@/components/panel/orders/CancelPaidOrderModal.vue'
 
 // orderStatusMeta(order) comes from utils/orderStatus.js (keyed by OrderDTO.statusCode)
 const FULFILLMENT_META = {
@@ -213,6 +257,10 @@ const app = useNuxtApp()
 const { formatPrice } = useFormat()
 const { getUserRole } = useUserPanelTabs()
 const { download } = useFileDownload()
+const { walletEnabled } = useStoreProfile()
+
+// Staff = any non-customer role. Staff-only blocks (refunds, returns on behalf of the customer, cancel) key off this.
+const isStaff = computed(() => getUserRole() !== 'customer')
 
 const loading = ref(true)
 const order = ref(null)
@@ -233,6 +281,17 @@ const canRequestReturn = computed(
     order.value?.fulfillmentStatus === 'DELIVERED'
 )
 const returnModalOpen = ref(false)
+
+// Staff act on paid orders only. A cancel is refused once the parcel left or arrived (SHIPPED / DELIVERED)
+const canStaffAct = computed(() => order.value?.statusCode === 'PAID')
+const canStaffCancel = computed(
+  () => canStaffAct.value && !['SHIPPED', 'DELIVERED'].includes(order.value?.fulfillmentStatus)
+)
+const staffReturnOpen = ref(false)
+const cancelOpen = ref(false)
+
+// The order and its refunds changed: reload both (the refunds card remounts with the order)
+const onOrderCancelled = () => fetchOrder()
 
 const items = computed(() => order.value?.items ?? [])
 

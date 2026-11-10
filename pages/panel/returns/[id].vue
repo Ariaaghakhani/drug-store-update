@@ -5,7 +5,7 @@
       <h3 class="text-xl font-black text-gray-900 dark:text-white">
         جزئیات <span class="text-brand-500">مرجوعی</span>
       </h3>
-      <UButton to="/panel/returns" color="neutral" variant="outline" icon="i-heroicons-arrow-right">
+      <UButton :to="backPath" color="neutral" variant="outline" icon="i-heroicons-arrow-right">
         بازگشت به مرجوعی‌ها
       </UButton>
     </div>
@@ -28,8 +28,9 @@
               <UBadge :color="returnStatusMeta(ret.status).color" variant="subtle" size="xs">
                 {{ returnStatusMeta(ret.status).label }}
               </UBadge>
-              <UBadge v-if="ret.workflow?.pending" color="warning" variant="subtle" size="xs">
-                در انتظار تأیید
+              <WorkflowPendingBadge :state="ret.workflow" />
+              <UBadge v-if="isStaff && ret.byStaff" color="info" variant="subtle" size="xs">
+                ثبت توسط فروشگاه
               </UBadge>
             </div>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -43,6 +44,10 @@
             </p>
 
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mt-4 text-sm">
+              <div v-if="isStaff">
+                <dt class="text-xs text-gray-500 dark:text-gray-400">مشتری</dt>
+                <dd class="text-gray-900 dark:text-white mt-0.5">{{ ret.customerName || '—' }}</dd>
+              </div>
               <div>
                 <dt class="text-xs text-gray-500 dark:text-gray-400">دلیل مرجوعی</dt>
                 <dd class="text-gray-900 dark:text-white mt-0.5">{{ ret.reasonLabel || returnReasonLabel(ret.reason) }}</dd>
@@ -61,11 +66,77 @@
                 <dt class="text-xs text-gray-500 dark:text-gray-400">تاریخ دریافت کالا</dt>
                 <dd class="text-gray-900 dark:text-white mt-0.5">{{ formatDateTime(ret.receivedAt) }}</dd>
               </div>
+              <div v-if="isStaff && ret.customerTrackingCode">
+                <dt class="text-xs text-gray-500 dark:text-gray-400">کد رهگیری مرسوله‌ی مشتری</dt>
+                <dd class="text-gray-900 dark:text-white mt-0.5" dir="ltr">{{ ret.customerTrackingCode }}</dd>
+              </div>
             </dl>
 
             <p v-if="ret.details" class="text-sm text-gray-700 dark:text-gray-300 mt-4 whitespace-pre-line">
               {{ ret.details }}
             </p>
+
+            <p v-if="isStaff" class="text-xs text-gray-500 dark:text-gray-400 mt-4">
+              شرایط مرجوعی پذیرفته‌شده:
+              <template v-if="ret.refundPolicyVersion">
+                نسخه {{ ret.refundPolicyVersion }}
+                <template v-if="ret.refundPolicyAcceptedAt">· {{ formatDateTime(ret.refundPolicyAcceptedAt) }}</template>
+              </template>
+              <template v-else>ثبت نشده</template>
+            </p>
+          </UCard>
+
+          <!-- Staff actions (decided by the status; every action is disabled while a workflow approval is pending) -->
+          <UCard v-if="isStaff && staffHasActions">
+            <div class="flex items-center gap-2 flex-wrap">
+              <UButton
+                v-if="ret.status === 'REQUESTED'"
+                color="primary"
+                icon="i-heroicons-check-circle"
+                :disabled="locked"
+                @click="showApprove = true"
+              >
+                تأیید
+              </UButton>
+              <UButton
+                v-if="ret.status === 'REQUESTED'"
+                color="error"
+                variant="soft"
+                icon="i-heroicons-x-circle"
+                :disabled="locked"
+                @click="showReject = true"
+              >
+                رد
+              </UButton>
+              <UButton
+                v-if="ret.status === 'APPROVED'"
+                color="primary"
+                icon="i-heroicons-inbox-arrow-down"
+                :disabled="locked"
+                @click="showReceive = true"
+              >
+                ثبت دریافت کالا
+              </UButton>
+              <UButton
+                v-if="ret.status === 'RECEIVED'"
+                color="primary"
+                icon="i-heroicons-banknotes"
+                :disabled="locked"
+                @click="showRefund = true"
+              >
+                ثبت بازپرداخت
+              </UButton>
+              <UButton
+                v-if="canCancel"
+                color="neutral"
+                variant="outline"
+                icon="i-heroicons-no-symbol"
+                :disabled="locked"
+                @click="openCancel"
+              >
+                لغو
+              </UButton>
+            </div>
           </UCard>
 
           <!-- Store decision (approval note, rejection or cancellation reason) -->
@@ -85,6 +156,8 @@
                     <th class="text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3 text-start">کالا</th>
                     <th class="text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3 text-start">تعداد</th>
                     <th class="text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3 text-start">قیمت واحد</th>
+                    <th v-if="isStaff" class="text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3 text-start">سالم</th>
+                    <th v-if="isStaff" class="text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3 text-start">خراب</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -93,7 +166,13 @@
                     <td class="px-6 py-3 text-gray-700 dark:text-gray-300">
                       {{ (line.quantity ?? 0).toLocaleString('fa-IR') }}
                     </td>
-                    <td class="px-6 py-3 text-gray-700 dark:text-gray-300">{{ formatToman(line.unitPrice) }}</td>
+                    <td class="px-6 py-3 text-gray-700 dark:text-gray-300">{{ money(line.unitPrice) }}</td>
+                    <td v-if="isStaff" class="px-6 py-3 text-gray-700 dark:text-gray-300">
+                      {{ line.restockedQuantity != null ? line.restockedQuantity.toLocaleString('fa-IR') : '—' }}
+                    </td>
+                    <td v-if="isStaff" class="px-6 py-3 text-gray-700 dark:text-gray-300">
+                      {{ line.damagedQuantity != null ? line.damagedQuantity.toLocaleString('fa-IR') : '—' }}
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -105,11 +184,18 @@
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
               <div v-if="ret.suggestedRefund != null">
                 <dt class="text-xs text-gray-500 dark:text-gray-400">مبلغ پیشنهادی بازپرداخت</dt>
-                <dd class="text-gray-900 dark:text-white mt-0.5">{{ formatToman(ret.suggestedRefund) }}</dd>
+                <dd class="text-gray-900 dark:text-white mt-0.5">{{ money(ret.suggestedRefund) }}</dd>
               </div>
               <div v-if="ret.refundAmount != null">
                 <dt class="text-xs text-gray-500 dark:text-gray-400">مبلغ بازپرداخت</dt>
-                <dd class="text-gray-900 dark:text-white mt-0.5">{{ formatToman(ret.refundAmount) }}</dd>
+                <dd class="text-gray-900 dark:text-white mt-0.5">{{ money(ret.refundAmount) }}</dd>
+                <NuxtLink
+                  v-if="isStaff"
+                  :to="`/panel/orders/${ret.orderId}#refunds`"
+                  class="text-xs text-brand-500 dark:text-brand-400 hover:underline"
+                >
+                  پیگیری در بازپرداخت‌های سفارش
+                </NuxtLink>
               </div>
             </dl>
           </UCard>
@@ -137,7 +223,7 @@
             </div>
           </UCard>
 
-          <!-- Tracking code (customer sends the parcel back) -->
+          <!-- Tracking code (customer sends the parcel back; staff only read it above) -->
           <UCard v-if="showTracking">
             <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-1">کد رهگیری مرسوله</h4>
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
@@ -158,8 +244,8 @@
             </form>
           </UCard>
 
-          <!-- Cancel (before the store receives the goods) -->
-          <div v-if="canCancel" class="flex justify-end">
+          <!-- Cancel for the customer (before the store receives the goods) -->
+          <div v-if="canCancel && !isStaff" class="flex justify-end">
             <UButton color="error" variant="soft" icon="i-heroicons-x-circle" @click="showCancel = true">
               لغو درخواست مرجوعی
             </UButton>
@@ -181,7 +267,7 @@
           :text="loadError?.message || 'این درخواست وجود ندارد یا به شما تعلق ندارد'"
         >
           <template #action>
-            <UButton to="/panel/returns" color="primary" icon="i-heroicons-arrow-right">
+            <UButton :to="backPath" color="primary" icon="i-heroicons-arrow-right">
               بازگشت به مرجوعی‌ها
             </UButton>
           </template>
@@ -196,6 +282,7 @@
       </Transition>
     </div>
 
+    <!-- Customer cancel -->
     <DeleteConfirmDialog
       v-model:open="showCancel"
       title="لغو درخواست مرجوعی"
@@ -204,22 +291,72 @@
       confirm-label="لغو درخواست"
       @confirm="confirmCancel"
     />
+
+    <template v-if="isStaff && ret">
+      <ReturnApproveModal
+        v-model:open="showApprove"
+        :return-id="ret.id"
+        @done="onDecided"
+      />
+
+      <ReturnReceiveModal
+        v-model:open="showReceive"
+        :ret="ret"
+        @done="onDecided"
+      />
+
+      <ReturnRefundModal
+        v-model:open="showRefund"
+        :ret="ret"
+        @done="onDecided"
+      />
+
+      <PanelConfirmDialog
+        v-model:open="showReject"
+        title="رد مرجوعی"
+        message="درخواست مرجوعی رد می‌شود و دلیل آن به مشتری نشان داده می‌شود."
+        confirm-label="رد درخواست"
+        confirm-color="error"
+        note-label="دلیل رد (به مشتری نشان داده می‌شود)"
+        :note-required="true"
+        :loading="rejecting"
+        @confirm="confirmReject"
+      />
+
+      <PanelConfirmDialog
+        v-model:open="showStaffCancel"
+        title="لغو مرجوعی"
+        message="درخواست مرجوعی لغو می‌شود و دیگر قابل پیگیری نیست."
+        confirm-label="لغو درخواست"
+        confirm-color="error"
+        note-label="دلیل لغو (اختیاری)"
+        :loading="cancelling"
+        @confirm="confirmStaffCancel"
+      />
+    </template>
   </div>
 </template>
 
 <script setup>
 import DeleteConfirmDialog from '@/components/panel/DeleteConfirmDialog.vue'
 import PanelEmptyState from '@/components/panel/PanelEmptyState.vue'
+import PanelConfirmDialog from '@/components/panel/PanelConfirmDialog.vue'
+import WorkflowPendingBadge from '@/components/panel/WorkflowPendingBadge.vue'
+import ReturnApproveModal from '@/components/panel/returns/ReturnApproveModal.vue'
+import ReturnReceiveModal from '@/components/panel/returns/ReturnReceiveModal.vue'
+import ReturnRefundModal from '@/components/panel/returns/ReturnRefundModal.vue'
+import { apiErrorMessage, isPending } from '~/utils/apiError.js'
+import { formatMoney } from '~/utils/money.js'
 
-// Staff branch (BACKEND_SYNC_PLAN C1b) goes here: `isStaff` switches STAFF to true (admin routes), adds the
-// approve/reject/receive/refund actions, shows suggestedRefund and the workflow gate. Until then every role uses the
-// customer endpoints (`STAFF` = false).
-const STAFF = false
-
+// Staff (any non-customer role) use the admin endpoints and the staff actions; customers keep their own view.
 const route = useRoute()
 const app = useNuxtApp()
 const toast = useAppToast()
 const { previewUrl } = useFileDownload()
+const { getUserRole } = useUserPanelTabs()
+
+const isStaff = computed(() => getUserRole() !== 'customer')
+const backPath = '/panel/returns'
 
 const loading = ref(true)
 const ret = ref(null)
@@ -228,12 +365,20 @@ const loadError = ref(null) // { status, message } when the load failed or the r
 const notFound = computed(() => loadError.value?.status === 404)
 const forbidden = computed(() => loadError.value?.status === 403)
 
+// A workflow-pending return takes no further action until BACK finishes the approval
+const locked = computed(() => Boolean(ret.value?.workflow?.pending))
+// Staff actions by status: approve/reject (REQUESTED), receive (APPROVED), refund (RECEIVED); cancel is in the same card
+const staffHasActions = computed(() => ['REQUESTED', 'APPROVED', 'RECEIVED'].includes(ret.value?.status) || canCancel.value)
+
 const formatDateTime = (value) => {
+  if (!value) return ''
   const date = new Date(value)
   return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('fa-IR')
 }
 
+// Staff see Rial as BACK sends it (CONV A); the customer view keeps its existing toman label
 const formatToman = (value) => `${Number(value ?? 0).toLocaleString('fa-IR')} تومان`
+const money = (value) => (isStaff.value ? formatMoney(value) : formatToman(value))
 
 // ---------- load ----------
 // `photoUrls` maps photo id (string) -> object URL. undefined = loading, null = failed, string = ready.
@@ -258,7 +403,7 @@ async function syncPhotos(photos) {
       .map(async (photo) => {
         const key = String(photo.id)
         photoUrls.set(key, undefined)
-        const path = app.$api.returns.photoPath(STAFF, ret.value.id, photo.id)
+        const path = app.$api.returns.photoPath(isStaff.value, ret.value.id, photo.id)
         const url = await previewUrl(app.$api.instances.default(path, { responseType: 'blob' }))
         // The page left while the file was loading: nothing will revoke this URL later
         if (unmounted) {
@@ -270,9 +415,16 @@ async function syncPhotos(photos) {
   )
 }
 
+// Replaces the shown return with a fresh DTO (an action's response). Photos are kept when the response omits them.
+async function applyReturn(dto) {
+  ret.value = { ...dto, photos: dto.photos ?? ret.value?.photos ?? [] }
+  trackingCode.value = dto.customerTrackingCode ?? ''
+  await syncPhotos(ret.value.photos)
+}
+
 async function fetchReturn() {
   try {
-    const response = await app.$api.returns.getReturn(STAFF, route.params.id)
+    const response = await app.$api.returns.getReturn(isStaff.value, route.params.id)
     ret.value = response.data.data ?? null
     if (!ret.value) {
       loadError.value = { status: 404 }
@@ -306,7 +458,7 @@ onBeforeUnmount(() => {
 
 // ---------- tracking code (customer, APPROVED + CUSTOMER_SENDS; BACK replaces an earlier code) ----------
 const showTracking = computed(
-  () => ret.value?.status === 'APPROVED' && ret.value?.returnMethod === 'CUSTOMER_SENDS'
+  () => !isStaff.value && ret.value?.status === 'APPROVED' && ret.value?.returnMethod === 'CUSTOMER_SENDS'
 )
 const trackingCode = ref('')
 const trackingError = ref('')
@@ -338,11 +490,18 @@ async function submitTracking() {
 
 // ---------- cancel (REQUESTED or APPROVED only) ----------
 const canCancel = computed(() => ['REQUESTED', 'APPROVED'].includes(ret.value?.status))
-const showCancel = ref(false)
+const showCancel = ref(false) // customer dialog
+const showStaffCancel = ref(false)
+const cancelling = ref(false)
+
+const openCancel = () => {
+  if (isStaff.value) showStaffCancel.value = true
+  else showCancel.value = true
+}
 
 async function confirmCancel() {
   try {
-    await app.$api.returns.cancelReturn(STAFF, ret.value.id)
+    await app.$api.returns.cancelReturn(false, ret.value.id)
     showCancel.value = false
     toast.success('درخواست مرجوعی لغو شد')
   } catch (error) {
@@ -351,6 +510,53 @@ async function confirmCancel() {
     toast.error('لغو درخواست ناموفق بود', error?.response?.data?.message)
   }
   await fetchReturn()
+}
+
+async function confirmStaffCancel(note) {
+  cancelling.value = true
+  try {
+    const res = await app.$api.returns.cancelReturn(true, ret.value.id, { data: { note: note || undefined } })
+    showStaffCancel.value = false
+    if (isPending(res)) return fetchReturn()
+    toast.success('مرجوعی لغو شد')
+    await applyReturn(res.data.data)
+  } catch (error) {
+    showStaffCancel.value = false
+    toast.error(apiErrorMessage(error, 'لغو مرجوعی ناموفق بود'))
+    await fetchReturn()
+  } finally {
+    cancelling.value = false
+  }
+}
+
+// ---------- staff decisions (approve lives in ReturnApproveModal, which emits its outcome) ----------
+const showApprove = ref(false)
+const showReject = ref(false)
+const rejecting = ref(false)
+const showReceive = ref(false)
+const showRefund = ref(false)
+
+async function onDecided({ pending, dto }) {
+  if (pending) return fetchReturn()
+  await applyReturn(dto)
+}
+
+async function confirmReject(note) {
+  rejecting.value = true
+  try {
+    const res = await app.$api.returns.rejectReturn(ret.value.id, { data: { note } })
+    showReject.value = false
+    if (isPending(res)) return fetchReturn()
+    toast.success('درخواست مرجوعی رد شد')
+    await applyReturn(res.data.data)
+  } catch (error) {
+    // 409: the request moved on. Show BACK's reason, close the dialog and reload the current state
+    showReject.value = false
+    toast.error(apiErrorMessage(error, 'رد درخواست ناموفق بود'))
+    await fetchReturn()
+  } finally {
+    rejecting.value = false
+  }
 }
 
 useHead({ title: 'جزئیات مرجوعی | پنل کاربری' })
