@@ -41,7 +41,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [x] A4. Terms pending dialog after login (`GET auth/me/terms/pending`, `POST auth/me/terms/accept`)
 
 ## B. Storefront / customer
-- [ ] B1. Checkout: shipping methods + pickup slots (`GET shipping/methods`, `/{id}/slots`) in `cart.vue`
+- [x] B1. Checkout: shipping methods + pickup slots (`GET shipping/methods`, `/{id}/slots`) in `cart.vue`
 - [ ] B2. Checkout: discount code, wallet payment (`useWallet`), gateways list (`GET payment/gateways`)
 - [x] B3. My orders: `GET orders/my`, order items, invoice PDF (`invoices/pdf`)
 - [x] B4. Customer returns: returnable items, request, photos, list/detail, cancel, tracking code
@@ -60,7 +60,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [x] C3. Discount codes CRUD
 - [x] C4. Shipping methods CRUD (`admin/shipping-methods`)
 - [x] C5. Store payment gateways (`admin/payment-gateways`)
-- [ ] C6. Wallet administration (`admin/wallets*`)
+- [x] C6. Wallet administration (`admin/wallets*`)
 - [ ] C7. Store customers (CRUD, import, export)
 - [ ] C8. Review moderation (`admin/reviews*`) and Q&A moderation (`admin/questions*`)
 - [ ] C9. Blog administration: posts, tags, comments
@@ -102,3 +102,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - B4b (2026-11-10, Haiku): ReturnRequestModal + ReturnPhotosField (≤5 images, 20 MB) + «درخواست مرجوعی» on delivered paid orders. Gap: no way to re-upload a photo from the detail page if one fails at creation (follow-up). eslint clean + build OK; not exercised in a browser.
 - C4 (2026-11-11, Haiku, plan V2 steps S0+C4a-c): shipping admin list/form/rates/slots/hours; shared panel utils (money, enumMeta, apiError, PanelFormModal etc.) landed in f086051. eslint clean + build OK; not exercised against the dev backend.
 - C5+C3 (2026-11-11, Haiku): payment gateways under /panel/settings (shell + tabs) and discount codes admin (list + form). eslint clean + build OK; not exercised against the dev backend.
+- C6+B1 (2026-11-11, Haiku): wallet admin (list/detail/adjust) and checkout shipping methods + slots (CheckoutModal extracted from cart.vue). eslint clean + build OK; not exercised against the dev backend. Follow-up: stores/cart.js `total` still adds placeholder shipping.
