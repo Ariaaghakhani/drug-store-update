@@ -38,7 +38,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [x] A3. Store flags: make sure every storefront section/page respects `useStoreProfile` flags
       (`orderingEnabled`+banner, `prescriptionEnabled`, `wishlistEnabled`, `walletEnabled`, `stockAlertsEnabled`,
       `goodsQuestionsEnabled`, `expiryRequired`, `variantsEnabled`)
-- [ ] A4. Terms pending dialog after login (`GET auth/me/terms/pending`, `POST auth/me/terms/accept`)
+- [x] A4. Terms pending dialog after login (`GET auth/me/terms/pending`, `POST auth/me/terms/accept`)
 
 ## B. Storefront / customer
 - [ ] B1. Checkout: shipping methods + pickup slots (`GET shipping/methods`, `/{id}/slots`) in `cart.vue`
@@ -89,3 +89,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - P1 (2026-11-10, Haiku): `config.responseType` pass-through in plugins/api.js (+ cache-key suffix), `composables/useFileDownload.js` (download/previewUrl). Lint OK. First real use: B3 invoice PDF.
 - P3 (2026-11-10, Haiku): utils/jalali.js (Intl-based) + JalaliDateInput.vue. Node-verified: 1405/01/01→2026-03-21, 1403/12/30→2025-03-20, invalid days→null, 1400–1410 round-trip 0 mismatches. UInput blur/Enter not yet exercised in a browser (first consumer C3).
 - P2 (2026-11-10, Haiku): `usePagedList` (stale-response guard, filters reset to page 1) + `PanelEmptyState`. Lint OK; first consumer will exercise it (B4/C4).
+- A4 (2026-11-10, Haiku): pending-terms dialog (usePendingTerms + TermsPendingDialog, mounted in app.vue; non-dismissible, htmlToText, errors swallowed). eslint + build OK; not exercised in a browser/dev backend (needs a user with a newly published terms version).

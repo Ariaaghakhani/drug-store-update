@@ -23,6 +23,7 @@ Global presentational and feature components for the public storefront shell (he
 - `StatsSection.vue` — static stats cards, no logic.
 - `ChatbotWidget.vue` — floating AI chat widget driven by [`stores/chat`](../stores/CLAUDE.md) and `stores/cart`.
 - `AuthModal.vue` — standalone **legacy** login/register modal with simulated (`setTimeout`) calls; still mounted only from `pages/cart.vue`.
+- `TermsPendingDialog.vue` — **new (2026-11-10)**: non-dismissible `UModal` mounted once in `app.vue` (inside `<ClientOnly>`). Shows the logged-in user's pending terms (`usePendingTerms`) with `htmlToText` content (never `v-html`), a checkbox gating «پذیرش», and «خروج از حساب» (`logoutAndResetAuthentication`). Renders nothing when the list is empty or the check failed.
 - `auth/PhoneStep.vue`, `PasswordStep.vue`, `OtpStep.vue`, `RegisterStep.vue`, `ResetPasswordStep.vue`, `AuthHero.vue` — the real, current login flow steps, driven entirely by `pages/login.vue`.
 - `dashboard/admin/AdminDashboard.vue` — renders real data from [`composables/useAdminDashboard`](../composables/CLAUDE.md) (store summary, low-stock, expiring goods); order-queue/prescription-review-queue sections remain TODO placeholders (no BACK endpoint).
 - `dashboard/owner/OwnerDashboard.vue` — renders real data from [`composables/useOwnerDashboard`](../composables/CLAUDE.md): user-activity bar chart, goods-by-category pie chart (both hand-rolled horizontal bars, no chart library), plus 4 KPI tiles (revenue this month + growth %, 30-day sales total, top product, most-active staff member) — **wired for real as of 2026-10-27**, previously static "TODO" text.
@@ -62,6 +63,6 @@ Global presentational and feature components for the public storefront shell (he
 - `Header`'s cart dropdown position is computed manually in JS, not CSS/popper.
 - **`h-full` on a dashboard card chains up through `pages/panel.vue`'s `<NuxtPage class="h-full" />`** (which falls through onto the page's/dashboard component's root) into the sidebar-vs-main grid stretch — the sidebar nav is usually taller than the dashboard content, so an un-grounded `h-full` on a card makes it balloon to sidebar height with a huge blank area below its content (fixed on `OrderTracking.vue` 2026-10-28 after removing `RefillReminders.vue`'s 2-column grid, which had been accidentally "grounding" the chain by being its own auto-height container). Only add `h-full` to a card root when it's paired with a sibling inside its own grid/flex row to match heights against — never on a lone/full-width card.
 
-Last synced: 2026-10-28 (OrderTracking.vue's h-full removed — was ballooning to sidebar height with RefillReminders.vue gone)
+Last synced: 2026-11-10 (TermsPendingDialog.vue added; earlier 2026-10-28 — OrderTracking.vue's h-full removed — was ballooning to sidebar height with RefillReminders.vue gone)
 
 - `InfoDocument.vue` (2026-10-29) — generic public text page shell: prop `documents: [{key,title,content,meta?}]`, `loading`, `emptyTitle`; skeleton/empty states; content is plain text (no `v-html`). Used by `terms.vue`/`privacy.vue`/`returns.vue`.

@@ -98,4 +98,13 @@ export default (apiCaller) => ({
   getMyPermissions(config) {
     return apiCaller.post('api/auth/me/permissions', config)
   },
+
+  // ========== TERMS PENDING ACCEPTANCE (verified: BACK MyTermsController, ApiResponse<TermsAndConditionsDTO[]>, payload = res.data.data; accept returns the accepted list) ==========
+  getPendingTerms(config) {
+    return apiCaller.get('api/auth/me/terms/pending', config)
+  },
+
+  acceptPendingTerms() {
+    return apiCaller.post('api/auth/me/terms/accept')
+  },
 })
