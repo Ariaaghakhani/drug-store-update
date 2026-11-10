@@ -2,7 +2,11 @@
  * Content admin: goods review/question moderation and the store blog (posts, tags, comments), verified against BACK's
  * GoodsReviewAdminController (`/api/admin/reviews`, GOODS_REVIEW), GoodsQuestionAdminController (`/api/admin/questions`,
  * GOODS_QUESTION), BlogAdminPostController (`/api/admin/blog/posts`, BLOG_POST), BlogAdminTagController
- * (`/api/admin/blog/tags`, BLOG_TAG) and BlogAdminCommentController (`/api/admin/blog/comments`, BLOG_COMMENT).
+ * (`/api/admin/blog/tags`, BLOG_TAG), BlogAdminCommentController (`/api/admin/blog/comments`, BLOG_COMMENT),
+ * ContactAdminController (`/api/admin/contact-messages`, CONTACT), ContactSettingsController (`/api/admin/contact-settings`,
+ * CONTACT), AboutUsAdminController (`/api/admin/about-us`, ABOUT_US), ReturnPolicyAdminController
+ * (`/api/admin/return-policy`, RETURN_POLICY) and TermsAdminController / TermsAcceptanceAdminController
+ * (`/api/admin/terms`, `/api/admin/terms-acceptances`, TERMS).
  * Paging is 0-based (`page` from 0, `size` 1..100). Payload = res.data.data. A wrong status is 409.
  */
 const REVIEWS = 'api/admin/reviews'
@@ -10,6 +14,12 @@ const QUESTIONS = 'api/admin/questions'
 const BLOG_POSTS = 'api/admin/blog/posts'
 const BLOG_TAGS = 'api/admin/blog/tags'
 const BLOG_COMMENTS = 'api/admin/blog/comments'
+const CONTACT_MESSAGES = 'api/admin/contact-messages'
+const CONTACT_SETTINGS = 'api/admin/contact-settings'
+const ABOUT_US = 'api/admin/about-us'
+const RETURN_POLICY = 'api/admin/return-policy'
+const TERMS = 'api/admin/terms'
+const TERMS_ACCEPTANCES = 'api/admin/terms-acceptances'
 
 export default (apiCaller) => ({
   // GET, config.params {status? PENDING|APPROVED|REJECTED, goodsId?, rating? 1..5, page, size} → PageResponse<GoodsReviewAdminDTO>, newest first
@@ -163,5 +173,127 @@ export default (apiCaller) => ({
   // DELETE → null. Soft delete of the comment and its replies
   deleteBlogComment(id) {
     return apiCaller.delete(`${BLOG_COMMENTS}/${id}`)
+  },
+
+  // GET, config.params {status? NEW|READ|REPLIED|CLOSED, q? ≤100 (subject, name, email or phone), page, size}
+  // → PageResponse<ContactMessageResponseDTO>, newest first
+  listContactMessages(config) {
+    return apiCaller.get(CONTACT_MESSAGES, config)
+  },
+
+  // GET → ContactMessageResponseDTO
+  getContactMessage(id) {
+    return apiCaller.get(`${CONTACT_MESSAGES}/${id}`)
+  },
+
+  // POST, body in config.data {status (required NEW|READ|REPLIED|CLOSED)} → ContactMessageResponseDTO
+  setContactMessageStatus(id, config) {
+    return apiCaller.post(`${CONTACT_MESSAGES}/${id}/status`, config)
+  },
+
+  // POST, optional config.data {category TECHNICAL|FINANCIAL|GENERAL, priority LOW|MEDIUM|HIGH} (default GENERAL, MEDIUM)
+  // → ContactMessageResponseDTO with ticketId; the message is closed. 400 = sender is not a store user, 409 = already converted
+  convertContactToTicket(id, config) {
+    return apiCaller.post(`${CONTACT_MESSAGES}/${id}/convert-to-ticket`, config)
+  },
+
+  // DELETE → null
+  deleteContactMessage(id) {
+    return apiCaller.delete(`${CONTACT_MESSAGES}/${id}`)
+  },
+
+  // GET → ContactNotifySettingsDTO {phones[]} (the store's SMS recipients for a new contact message; unset → [])
+  getContactSettings() {
+    return apiCaller.get(CONTACT_SETTINGS)
+  },
+
+  // PUT, body in config.data {phones: string[] ≤5, each an Iranian mobile 09…} replaces the list → ContactNotifySettingsDTO.
+  // An empty list turns the SMS off
+  saveContactSettings(config) {
+    return apiCaller.put(CONTACT_SETTINGS, config)
+  },
+
+  // GET → AboutUsDTO {id (null = never saved), title, content, mission, vision, contactEmail, contactPhone, address,
+  // logoUrl, workingHours, instagram, telegram, whatsapp, latitude, longitude, active, defaultText, updatedAt}
+  getAboutUsAdmin() {
+    return apiCaller.get(ABOUT_US)
+  },
+
+  // PUT, body in config.data = AboutUsRequestDTO, a full replace. title (required ≤200), content (required, HTML ≤100000),
+  // mission/vision ≤2000, contactEmail (email), contactPhone [0-9+\- ]{0,50}, address/logoUrl ≤255, workingHours ≤500,
+  // socials ≤255, latitude −90..90, longitude −180..180; active null = shown → AboutUsDTO
+  saveAboutUs(config) {
+    return apiCaller.put(ABOUT_US, config)
+  },
+
+  // DELETE → null. 404 when the store never saved an About us page
+  deleteAboutUs() {
+    return apiCaller.delete(ABOUT_US)
+  },
+
+  // GET → ReturnPolicyDTO {id (null = default text not saved yet), title, content, version, active, defaultText,
+  // publishedAt, updatedAt}; the current version of this store
+  getReturnPolicyAdmin() {
+    return apiCaller.get(RETURN_POLICY)
+  },
+
+  // GET → ReturnPolicyDTO[] newest first. Only the active one is shown to customers and accepted at checkout
+  listReturnPolicyVersions() {
+    return apiCaller.get(`${RETURN_POLICY}/versions`)
+  },
+
+  // PUT, body in config.data {title (required ≤200), content (required, HTML ≤100000), active (null = publish and archive the
+  // previous version, false = saved but hidden)} → ReturnPolicyDTO. Changed text is a new version
+  saveReturnPolicy(config) {
+    return apiCaller.put(RETURN_POLICY, config)
+  },
+
+  // DELETE → ReturnPolicyDTO: publishes the platform default text (with the store name and return deadline) as a new version
+  resetReturnPolicy() {
+    return apiCaller.delete(RETURN_POLICY)
+  },
+
+  // GET, config.params {type? TERMS_OF_USE|PRIVACY_POLICY|REFUND_POLICY, status? DRAFT|PUBLISHED|ARCHIVED} → TermsAndConditionsDTO[]
+  // (unpaged, every status, newest first)
+  listTermsAdmin(config) {
+    return apiCaller.get(TERMS, config)
+  },
+
+  // GET → TermsAndConditionsDTO (any status)
+  getTermsAdmin(id) {
+    return apiCaller.get(`${TERMS}/${id}`)
+  },
+
+  // POST, body in config.data {type (required), title (required ≤200), version (required ≤50, unique per type → 409),
+  // content (required, HTML ≤200000), effectiveDate? (ISO date, shown only)} → 201 TermsAndConditionsDTO, always DRAFT
+  createTerms(config) {
+    return apiCaller.post(TERMS, config)
+  },
+
+  // PUT, same body as create, DRAFT only (a published or archived version → 409) → TermsAndConditionsDTO
+  updateTerms(id, config) {
+    return apiCaller.put(`${TERMS}/${id}`, config)
+  },
+
+  // POST, no body → TermsAndConditionsDTO (PUBLISHED). The previous published version of the type is archived and
+  // customers get the new-version dialog
+  publishTerms(id) {
+    return apiCaller.post(`${TERMS}/${id}/publish`)
+  },
+
+  // POST, no body → TermsAndConditionsDTO back in ARCHIVED; that type has no visible version until the next publish
+  unpublishTerms(id) {
+    return apiCaller.post(`${TERMS}/${id}/unpublish`)
+  },
+
+  // DELETE → null. A PUBLISHED version cannot be deleted (409)
+  deleteTerms(id) {
+    return apiCaller.delete(`${TERMS}/${id}`)
+  },
+
+  // GET, config.params {userId} (required) → TermsAcceptanceDTO[] newest first: which version the user accepted, when and from
+  // where (REGISTRATION, CHECKOUT, PROMPT or PANEL_LOGIN). Kept as evidence, so nothing here is deleted
+  listTermsAcceptances(config) {
+    return apiCaller.get(TERMS_ACCEPTANCES, config)
   },
 })
