@@ -50,7 +50,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [ ] B7. Blog: delete my comment (`DELETE blog/comments/{id}`)
 - [ ] B8. Captcha (`captcha/status`, `POST captcha`) on login/register/contact
 - [x] B9. Password policy hint under password fields (`GET auth/password-policy`)
-- [ ] B10. Province cities by slug (`locations/provinces/by-slug/{slug}/cities`) if still useful
+- [x] B10. Province cities by slug (`locations/provinces/by-slug/{slug}/cities`) if still useful
 - [ ] B11. Customer prescriptions (only if `prescriptionEnabled`): options, send, list/detail/image, confirm, cancel,
       receipt
 
@@ -91,3 +91,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - P2 (2026-11-10, Haiku): `usePagedList` (stale-response guard, filters reset to page 1) + `PanelEmptyState`. Lint OK; first consumer will exercise it (B4/C4).
 - A4 (2026-11-10, Haiku): pending-terms dialog (usePendingTerms + TermsPendingDialog, mounted in app.vue; non-dismissible, htmlToText, errors swallowed). eslint + build OK; not exercised in a browser/dev backend (needs a user with a newly published terms version).
 - B9 (2026-11-10, Haiku): `usePasswordRules` + live rule list in RegisterStep/ResetPasswordStep/ChangePasswordModal (fallback min 8 if the call fails; policy cached per app load). eslint OK; not exercised in a browser.
+- B10 (2026-11-10, Haiku): wrapper only (`address.getCitiesBySlug`), no UI. Route verified in LocationController. eslint + build OK.
