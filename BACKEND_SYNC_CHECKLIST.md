@@ -22,7 +22,7 @@ this repo.
 - [x] A1. `plugins/api.js`: global handler for HTTP 202 `{pending, requestId, instanceId, status}` (toast
       «ثبت شد و منتظر تأیید است», do not treat `data` as the saved record) and 409 `workflow.action.pending`
 - [x] A2. Docs: categories tree is public now (`services/api/CLAUDE.md`, `BACKEND_REQUESTS.md` item 1 resolved)
-- [ ] A3. Store flags: make sure every storefront section/page respects `useStoreProfile` flags
+- [x] A3. Store flags: make sure every storefront section/page respects `useStoreProfile` flags
       (`orderingEnabled`+banner, `prescriptionEnabled`, `wishlistEnabled`, `walletEnabled`, `stockAlertsEnabled`,
       `goodsQuestionsEnabled`, `expiryRequired`, `variantsEnabled`)
 - [ ] A4. Terms pending dialog after login (`GET auth/me/terms/pending`, `POST auth/me/terms/accept`)
@@ -71,3 +71,4 @@ this repo.
 ## Done log
 - A1 (2026-11-10): `plugins/api.js` toasts 202 pending + sets `pending:true` on the result; 409 left to callers' normal error display.
 - A2 (2026-11-10): stale "category tree 401 for guests" notes updated (storefront.js, useStoreCategories.js, services/api/CLAUDE.md, BACKEND_REQUESTS.md). Runtime behaviour unchanged.
+- A3 (2026-11-10): audited flags; only gap was `variantsEnabled` (product-page variant picker) — now gated. Others already gated; wallet-at-checkout belongs to B2, prescription pages to B11. Tested: eslint (only pre-existing warnings) + `npm run build` OK.
