@@ -78,6 +78,23 @@ export default (apiCaller) => ({
     return apiCaller.delete(`api/reviews/my/${id}`)
   },
 
+  // ========== MY QUESTIONS (customer, any login, no purchase needed; BACK GoodsQuestionCustomerController, module GOODS_QUESTION_CUSTOMER) ==========
+  // body {goodsId, question (1..1000), anonymous?, privateQuestion?} → MyGoodsQuestionDTO with status PENDING (200, not 202).
+  // Store Q&A switched off → 409 goods.question.disabled (error.response.data.message is the store's Persian text)
+  askQuestion(config) {
+    return apiCaller.post('api/questions/my', config)
+  },
+
+  // config.params {goodsId?, page, size} → PageResponse<MyGoodsQuestionDTO {id,question,answer,answerSignature,authorName,anonymous,createdAt,answeredAt,goodsId,goodsName,privateQuestion,status}>, newest first; not blocked when Q&A is off
+  listMyQuestions(config) {
+    return apiCaller.get('api/questions/my', config)
+  },
+
+  // 404 for another user's question
+  deleteMyQuestion(id) {
+    return apiCaller.delete(`api/questions/my/${id}`)
+  },
+
   // ========== INFO PAGES (public) ==========
   getAboutUs() {
     return apiCaller.get('api/about-us')
