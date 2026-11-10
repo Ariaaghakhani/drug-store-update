@@ -4,7 +4,7 @@ Backend source: `C:\Users\Aria Aghakhani\PouyanPars\PouyanPlatform` (main). Cont
 and `docs/FRONTEND_FEATURES_BY_USER.md`. Created 2026-11-10 from a route-by-route diff of the backend controllers against
 this repo.
 
-Detailed per-item plan (routes, files, tests, sub-steps): `BACKEND_SYNC_PLAN.md` (written by a Sonnet planner).
+Detailed per-item plan: **`BACKEND_SYNC_PLAN_V2.md`** (Opus, 2026-11-10, verified against backend main; wins over `BACKEND_SYNC_PLAN.md`). Execute its "Execution order" step list; no decisions are left open.
 Each item/sub-step is implemented by a Haiku subagent; the main session reviews the diff, builds, commits, pushes (PR #66)
 and ticks the item. Execute in the plan's section 4 order, NOT the A/B/C order:
 P0, P1, P2, P3, A4, B9, B10, B8, B7, B5, B6, B3, B4, C4, C5, C3, C6, B1, B2, C1, C2, C7-C15, B11, C17, C16, C18, C19-C22.
