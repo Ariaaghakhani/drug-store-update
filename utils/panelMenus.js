@@ -24,6 +24,7 @@ export const PANEL_MENUS = [
   { key: 'inventory', label: 'انبار', icon: 'i-heroicons-archive-box', to: '/panel/inventory', modules: ['INVENTORY', 'WAREHOUSE'] },
   { key: 'orders', label: 'سفارشات', icon: 'i-heroicons-shopping-bag', to: '/panel/orders', modules: ['ORDER'] },
   { key: 'tickets', label: 'تیکت‌ها', icon: 'i-heroicons-lifebuoy', to: '/panel/tickets', modules: ['TICKET'] },
+  { key: 'returns', label: 'مرجوعی‌ها', icon: 'i-heroicons-arrow-uturn-left', to: '/panel/returns', modules: ['ORDER_RETURN'], group: 'sales' },
   { key: 'reviews', label: 'نظرات', icon: 'i-heroicons-star', to: '/panel/reviews', modules: ['GOODS_REVIEW'], group: 'content' },
   { key: 'questions', label: 'پرسش و پاسخ', icon: 'i-heroicons-chat-bubble-left-right', to: '/panel/questions', modules: ['GOODS_QUESTION'], flag: 'goodsQuestionsEnabled', group: 'content' },
   { key: 'wishlist', label: 'علاقه‌مندی‌ها', icon: 'i-heroicons-heart', to: '/panel/wishlist', flag: 'wishlistEnabled' },
@@ -40,6 +41,7 @@ export const FALLBACK_MENUS_BY_ROLE = {
   customer: [
     { key: 'dashboard' },
     { key: 'orders' },
+    { key: 'returns', group: '' },
     { key: 'wishlist' },
     { key: 'wallet' },
     { key: 'tickets' },

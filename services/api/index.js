@@ -26,6 +26,7 @@ import dynamic from '@/services/api/dynamic.js'
 import sms from '@/services/api/sms.js'
 import address from '~/services/api/panel/address.js'
 import ticket from '@/services/api/ticket.js'
+import returns from '@/services/api/returns.js'
 import storefront from '@/services/api/storefront.js'
 import notification from '@/services/api/notification.js'
 
@@ -41,6 +42,7 @@ export default (apiCaller, apiInstances) => ({
   // ========== ORDERS & PAYMENTS ==========
   orders: orders(apiCaller),
   payments: payments(apiCaller),
+  returns: returns(apiCaller),
 
   // ========== INVENTORY ==========
   inventory: inventory(apiCaller),
