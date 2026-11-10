@@ -402,6 +402,10 @@ Wrapped in `UCard :ui="{ body: 'p-0' }"` with `overflow-x-auto`. `<thead>` uses 
 
 **Section tabs:** `components/panel/PanelSectionTabs.vue` (horizontal `NuxtLink` pills, route-driven active state; `exact` for an index tab). Active = `bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400`; inactive = `text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800`. Use it to switch sub-pages inside one panel section, not as a page title.
 
+**Radio cards (single choice with a summary, C12b):** a `role="radiogroup"` grid (`grid gap-3 sm:grid-cols-2 lg:grid-cols-3`) of `<button role="radio" aria-checked>` tiles, `rounded-xl border p-4`. The selected tile is `border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-900/20` with a `i-heroicons-check-circle-solid` `w-5 h-5 text-brand-500` mark; the rest are `bg-white dark:bg-gray-800` with `hover:bg-gray-50`. Each tile shows its title (`text-sm font-semibold`) and a muted `text-xs` summary. Used by `pages/panel/settings/store.vue`.
+
+**Settings rows (SYSTEM_SETTINGS, C12a):** one row per setting in a `UCard :ui="{ body: 'p-0' }"`, `divide-y`. The left side is the label (`text-sm font-semibold`), a source `StatusBadge` (own value primary, platform/default neutral) and the key (`dir="ltr"`, `font-mono`, muted). The right side is the control (`w-full md:w-80`): a switch or a choice `USelect` saves on change; other types get a `UFormField` with a ghost «ذخیره» when dirty and a soft «بازگشت به پیش‌فرض» when the store has its own value. A platform-required rule is a disabled, on `USwitch` with an `info` «الزام پلتفرم» badge. Used by `components/panel/settings/SettingField.vue` and `pages/panel/settings/password.vue`.
+
 ### Empty / loading / error states
 - **Empty (cart/search):** centered large gray icon + bold heading + muted line + CTA.
 - **Loading grid:** `USkeleton` ×12, `h-80 w-full`, in the product grid columns.

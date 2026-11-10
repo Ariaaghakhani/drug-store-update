@@ -18,6 +18,12 @@ export const useStoreProfile = () => {
     }
   }
 
+  // Drops the cached profile and fetches it again. Call after a change to the store type or a storefront flag.
+  const refresh = async () => {
+    profile.value = null
+    await load()
+  }
+
   if (import.meta.client) load()
 
   const flag = (name) => Boolean(profile.value?.[name])
@@ -25,6 +31,7 @@ export const useStoreProfile = () => {
   return {
     profile,
     load,
+    refresh,
     orderingEnabled: computed(() => profile.value?.orderingEnabled !== false),
     orderingClosedMessage: computed(() => profile.value?.orderingClosedMessage || ''),
     wishlistEnabled: computed(() => flag('wishlistEnabled')),

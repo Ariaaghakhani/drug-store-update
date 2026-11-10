@@ -66,7 +66,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [x] C9. Blog administration: posts, tags, comments
 - [x] C10. Contact messages + contact settings
 - [x] C11. About us, terms (+acceptances), return policy admin
-- [ ] C12. Store settings, password policy, my-organization
+- [x] C12. Store settings, password policy, my-organization
 - [ ] C13. Attributes + category assignment, goods variants
 - [ ] C14. Goods import, goods-images import, opening-stock import
 - [ ] C15. Stock movements, top wishlist / stock alerts, search-query logs
@@ -109,3 +109,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - C7+C8 (2026-11-11, Haiku): store customers (list/form/import/export) and staff review + Q&A moderation inside the existing reviews/questions pages. eslint clean + build OK; not exercised against the dev backend.
 - C9 (2026-11-11, Haiku): blog admin (posts list/form/publish/images, tags tab, comments tab). eslint clean + build OK; not exercised against the dev backend.
 - C10+C11 (2026-11-11, Haiku): contact messages + notify phones; about-us/return-policy/terms tabs + acceptances card on user page. eslint clean + build OK; not exercised against the dev backend.
+- C12 (2026-11-11, Haiku): settings editor, store type, password policy, organization + logo under /panel/settings tabs. eslint clean + build OK; not exercised against the dev backend.

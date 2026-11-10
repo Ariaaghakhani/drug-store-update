@@ -33,6 +33,7 @@ import shipping from '@/services/api/shipping.js'
 import commerceAdmin from '@/services/api/commerceAdmin.js'
 import storefront from '@/services/api/storefront.js'
 import notification from '@/services/api/notification.js'
+import storeSettings from '@/services/api/storeSettings.js'
 
 export default (apiCaller, apiInstances) => ({
   // ========== AUTHENTICATION ==========
@@ -80,6 +81,7 @@ export default (apiCaller, apiInstances) => ({
 
   // ========== SYSTEM ==========
   settings: settings(apiCaller),
+  storeSettings: storeSettings(apiCaller),
   audit: audit(apiCaller),
   dynamic: dynamic(apiCaller),
   sms: sms(apiCaller),
