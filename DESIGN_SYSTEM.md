@@ -382,6 +382,8 @@ Wrapped in `UCard :ui="{ body: 'p-0' }"` with `overflow-x-auto`. `<thead>` uses 
 
 **Quantity inputs:** use a text `UInput` with `inputmode="numeric" dir="ltr"`, not `type="number"`, which rejects digits from a Persian keyboard. Parse with `parseQuantity` (`utils/inventoryMeta.js`) and show limits through `UFormField`'s `help`/`error`.
 
+**Photo picker (uploads):** `components/panel/returns/ReturnPhotosField.vue` (v-model `File[]`; the field itself uploads nothing). A `grid-cols-3 sm:grid-cols-5 gap-3` grid of `aspect-square rounded-xl` thumbnails, each with a remove button that is always visible (not hover-only, so it works on touch), and a dashed `border-2 border-dashed` add tile that is hidden at the limit. Overflow past the limit and rejected files show an inline `text-xs text-error` line under the grid. Accept only the formats the backend takes (JPG/PNG/WebP), with the backend's size cap. Thumbnails are object URLs, revoked on removal and on unmount.
+
 ### Metric card grid (admin)
 `grid grid-cols-2 lg:grid-cols-4 gap-4`. Each `UCard :ui="{ body: 'p-4' }"` holds `flex items-center gap-3`: icon container (`w-10 h-10 rounded-xl`) + div with `text-xs text-gray-500` label above `text-xl font-black` value formatted with `.toLocaleString('fa-IR')`.
 

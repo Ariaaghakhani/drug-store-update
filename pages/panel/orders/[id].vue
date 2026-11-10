@@ -8,6 +8,15 @@
       <div class="flex items-center gap-2 flex-wrap">
         <!-- Customer only: staff keep the page as it was -->
         <UButton
+          v-if="canRequestReturn"
+          color="neutral"
+          variant="outline"
+          icon="i-heroicons-arrow-uturn-left"
+          @click="returnModalOpen = true"
+        >
+          درخواست مرجوعی
+        </UButton>
+        <UButton
           v-for="invoice in invoices"
           :key="invoice.id"
           color="neutral"
@@ -156,6 +165,13 @@
               کد پستی: {{ order.shippingAddress.postalCode }}
             </p>
           </UCard>
+
+          <ReturnRequestModal
+            v-if="canRequestReturn"
+            :open="returnModalOpen"
+            :order-id="order.id"
+            @update:open="returnModalOpen = $event"
+          />
         </div>
 
         <div v-else key="empty" class="text-center py-16">
@@ -181,6 +197,8 @@
 </template>
 
 <script setup>
+import ReturnRequestModal from '@/components/panel/returns/ReturnRequestModal.vue'
+
 // orderStatusMeta(order) comes from utils/orderStatus.js (keyed by OrderDTO.statusCode)
 const FULFILLMENT_META = {
   SHIPPED: { label: 'ارسال شده', color: 'info' },
@@ -206,6 +224,15 @@ const downloadingId = ref(null)
 const invoiceNumbers = computed(() =>
   invoices.value.map((invoice) => Number(invoice.invoiceNumber).toLocaleString('fa-IR')).join('، ')
 )
+
+// A return can be asked only for a paid, delivered order (BACK's ReturnableOrderDTO.open also checks the window)
+const canRequestReturn = computed(
+  () =>
+    isCustomer.value &&
+    order.value?.statusCode === 'PAID' &&
+    order.value?.fulfillmentStatus === 'DELIVERED'
+)
+const returnModalOpen = ref(false)
 
 const items = computed(() => order.value?.items ?? [])
 
