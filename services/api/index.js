@@ -30,6 +30,7 @@ import sms from '@/services/api/sms.js'
 import address from '~/services/api/panel/address.js'
 import ticket from '@/services/api/ticket.js'
 import returns from '@/services/api/returns.js'
+import prescription from '@/services/api/prescription.js'
 import shipping from '@/services/api/shipping.js'
 import commerceAdmin from '@/services/api/commerceAdmin.js'
 import storefront from '@/services/api/storefront.js'
@@ -50,6 +51,7 @@ export default (apiCaller, apiInstances) => ({
   orders: orders(apiCaller),
   payments: payments(apiCaller),
   returns: returns(apiCaller),
+  prescription: prescription(apiCaller),
   shipping: shipping(apiCaller),
   commerceAdmin: commerceAdmin(apiCaller),
 

@@ -6,7 +6,7 @@
 // Optional `group`: a key of GROUP_LABELS. The desktop sidebar (pages/panel.vue) renders a heading when the group
 // changes and a divider between grouped and ungrouped entries; entries without `group` render exactly as before.
 // To add a menu: add an entry here (+ its page under pages/panel/) with the BACK module(s) guarding its endpoints.
-// Every entry must have a page, or it links to a 404. Not built yet, so not listed: reports (REPORT), analytics, finance. Purchase orders (PURCHASE_ORDER) is listed from C2a, under the stock group. Settings (SYSTEM_SETTINGS, PAYMENT_GATEWAY, MY_ORGANIZATION) is listed from C5a and shows only its tabs the user can read. Customer wallets (WALLET, `/panel/wallets`) is listed from C6a. Store customers (STORE_CUSTOMER, STORE_CUSTOMER_ADMIN, `/panel/customers`) is listed from C7a. The blog (BLOG_POST, BLOG_COMMENT, BLOG_TAG, `/panel/blog`) is listed from C9a, under the content group after questions. Contact messages (CONTACT, `/panel/contact`) is listed from C10a, under the content group after blog. Info pages (ABOUT_US, TERMS, RETURN_POLICY, `/panel/pages`) is listed from C11a, under the content group after contact. Goods attributes (GOODS_ATTRIBUTE, `/panel/attributes`) is listed from C13a, under the stock group after purchase orders. Bulk imports (GOODS, `/panel/imports`) is listed from C14a, under the stock group after attributes. Stock movements (INVENTORY, `/panel/stock-movements`) is listed from C15a, under the stock group after imports. Demand insights (WISHLIST, STOCK_ALERT, GLOBAL_SEARCH, `/panel/insights`) is listed from C15b, under the insights group after the info pages.
+// Every entry must have a page, or it links to a 404. Not built yet, so not listed: reports (REPORT), analytics, finance. Purchase orders (PURCHASE_ORDER) is listed from C2a, under the stock group. Settings (SYSTEM_SETTINGS, PAYMENT_GATEWAY, MY_ORGANIZATION) is listed from C5a and shows only its tabs the user can read. Customer wallets (WALLET, `/panel/wallets`) is listed from C6a. Store customers (STORE_CUSTOMER, STORE_CUSTOMER_ADMIN, `/panel/customers`) is listed from C7a. The blog (BLOG_POST, BLOG_COMMENT, BLOG_TAG, `/panel/blog`) is listed from C9a, under the content group after questions. Contact messages (CONTACT, `/panel/contact`) is listed from C10a, under the content group after blog. Info pages (ABOUT_US, TERMS, RETURN_POLICY, `/panel/pages`) is listed from C11a, under the content group after contact. Goods attributes (GOODS_ATTRIBUTE, `/panel/attributes`) is listed from C13a, under the stock group after purchase orders. Bulk imports (GOODS, `/panel/imports`) is listed from C14a, under the stock group after attributes. Stock movements (INVENTORY, `/panel/stock-movements`) is listed from C15a, under the stock group after imports. Demand insights (WISHLIST, STOCK_ALERT, GLOBAL_SEARCH, `/panel/insights`) is listed from C15b, under the insights group after the info pages. Prescriptions (PRESCRIPTION, `/panel/prescriptions`, flag `prescriptionEnabled`) is listed from B11a, under the sales group after wallets; the customer fallback gains it after returns (the owner fallback does not, until the staff view lands in C17).
 export const GROUP_LABELS = {
   sales: 'فروش و مشتریان',
   stock: 'کالا و انبار',
@@ -29,6 +29,7 @@ export const PANEL_MENUS = [
   { key: 'shipping', label: 'روش‌های ارسال', icon: 'i-heroicons-truck', to: '/panel/shipping', modules: ['SHIPPING'], group: 'sales' },
   { key: 'customers', label: 'باشگاه مشتریان', icon: 'i-heroicons-user-group', to: '/panel/customers', modules: ['STORE_CUSTOMER', 'STORE_CUSTOMER_ADMIN'], group: 'sales' },
   { key: 'wallets', label: 'کیف پول مشتریان', icon: 'i-heroicons-banknotes', to: '/panel/wallets', modules: ['WALLET'], group: 'sales' },
+  { key: 'prescriptions', label: 'نسخه‌ها', icon: 'i-heroicons-document-text', to: '/panel/prescriptions', modules: ['PRESCRIPTION'], flag: 'prescriptionEnabled', group: 'sales' },
   { key: 'purchase-orders', label: 'سفارش‌های خرید', icon: 'i-heroicons-clipboard-document-list', to: '/panel/purchase-orders', modules: ['PURCHASE_ORDER'], group: 'stock' },
   { key: 'attributes', label: 'ویژگی‌های کالا', icon: 'i-heroicons-adjustments-horizontal', to: '/panel/attributes', modules: ['GOODS_ATTRIBUTE'], group: 'stock' },
   { key: 'imports', label: 'ورود گروهی', icon: 'i-heroicons-arrow-up-tray', to: '/panel/imports', modules: ['GOODS'], group: 'stock' },
@@ -55,6 +56,7 @@ export const FALLBACK_MENUS_BY_ROLE = {
     { key: 'dashboard' },
     { key: 'orders' },
     { key: 'returns', group: '' },
+    { key: 'prescriptions', label: 'نسخه‌های من', group: '' },
     { key: 'wishlist' },
     { key: 'wallet' },
     { key: 'tickets' },

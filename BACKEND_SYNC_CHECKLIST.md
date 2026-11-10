@@ -51,7 +51,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [x] B8. Captcha (`captcha/status`, `POST captcha`) on login/register/contact
 - [x] B9. Password policy hint under password fields (`GET auth/password-policy`)
 - [x] B10. Province cities by slug (`locations/provinces/by-slug/{slug}/cities`) if still useful
-- [ ] B11. Customer prescriptions (only if `prescriptionEnabled`): options, send, list/detail/image, confirm, cancel,
+- [x] B11. Customer prescriptions (only if `prescriptionEnabled`): options, send, list/detail/image, confirm, cancel,
       receipt
 
 ## C. Panel (staff)
@@ -112,3 +112,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - C12 (2026-11-11, Haiku): settings editor, store type, password policy, organization + logo under /panel/settings tabs. eslint clean + build OK; not exercised against the dev backend.
 - C13 (2026-11-11, Haiku): attributes CRUD, category assignments, product variants (generate/create). eslint clean + build OK; not exercised against the dev backend. Note: products/new.vue still labels price «قیمت (تومان)» while staff money elsewhere is Rial.
 - C14+C15 (2026-11-11, Haiku): imports page (goods Excel, images, opening stock), stock movements, insights tabs (wishlist, stock alerts, search logs). eslint clean + build OK; not exercised against the dev backend. Note: crm.js doc comment calls the import body raw but it is ApiResponse-wrapped.
+- B11 (2026-11-11, Haiku): customer prescriptions (list, submit, detail, confirm, receipt) gated by prescriptionEnabled. eslint clean + build OK; not exercised against the dev backend. Staff view of /panel/prescriptions is C17. Stale prescription calls remain in services/api/medical.js (unused).
