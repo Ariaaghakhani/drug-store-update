@@ -14,7 +14,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 ## Prerequisites (from the plan, section 2)
 - [x] P0. Grouped sidebar mechanism (`utils/panelMenus.js`, `useUserPanelTabs.js`, `pages/panel.vue`)
 - [x] P1. File download + blob responses (`plugins/api.js` responseType, `composables/useFileDownload.js`)
-- [ ] P2. `composables/usePagedList.js` + `components/panel/PanelEmptyState.vue`
+- [x] P2. `composables/usePagedList.js` + `components/panel/PanelEmptyState.vue`
 - [x] P3. Jalali dates (`utils/jalali.js`, `components/panel/JalaliDateInput.vue`)
 
 ## Loop rules (one item per iteration)
@@ -88,3 +88,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - P0 (2026-11-10, Haiku): grouped-sidebar mechanism (GROUP_LABELS + headings/dividers in desktop nav). No entry uses `group` yet so the sidebar is unchanged. Lint: only a pre-existing unused `roleBadgeColor` error in panel.vue. Build pending with P1.
 - P1 (2026-11-10, Haiku): `config.responseType` pass-through in plugins/api.js (+ cache-key suffix), `composables/useFileDownload.js` (download/previewUrl). Lint OK. First real use: B3 invoice PDF.
 - P3 (2026-11-10, Haiku): utils/jalali.js (Intl-based) + JalaliDateInput.vue. Node-verified: 1405/01/01→2026-03-21, 1403/12/30→2025-03-20, invalid days→null, 1400–1410 round-trip 0 mismatches. UInput blur/Enter not yet exercised in a browser (first consumer C3).
+- P2 (2026-11-10, Haiku): `usePagedList` (stale-response guard, filters reset to page 1) + `PanelEmptyState`. Lint OK; first consumer will exercise it (B4/C4).
