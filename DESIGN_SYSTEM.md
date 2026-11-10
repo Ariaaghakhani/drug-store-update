@@ -323,6 +323,7 @@ Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, `object-cover
 ### Panel / pharmacist (`panel.vue` + `layouts/panel.vue`)
 - Desktop: `UCard` sidebar (logo, nav from `useUserPanelTabs().getMenuItems()`, quick links, logout in red).
 - Active link: `!bg-teal-50 dark:!bg-teal-900/20 !text-teal-600 dark:!text-teal-400 font-medium`.
+- Grouped sidebar: menu entries with a `group` (key of `GROUP_LABELS` in `utils/panelMenus.js`) get a heading `<p class="px-4 pt-4 pb-1 text-xs font-medium text-gray-400 dark:text-gray-500">` when the group changes, and a `my-3 border-t border-gray-200 dark:border-gray-700` divider between grouped and ungrouped entries.
 - Profile banner with gradient avatar `from-teal-400 to-teal-600`, initials.
 - Mobile: fixed bottom nav (home / products / profile) + slide-up profile sheet.
 - Roles: customer / admin / owner (labels مشتری / مدیر / مالک).

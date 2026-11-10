@@ -19,25 +19,35 @@
 
                 <!-- Navigation Menu -->
                 <nav class="space-y-1 pt-6 flex-1">
-                  <NuxtLink
-                    v-for="item in menuItems"
-                    :key="item.id"
-                    :to="item.to"
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-right transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    active-class="!bg-teal-50 dark:!bg-teal-900/20 !text-teal-600 dark:!text-teal-400 font-medium"
-                  >
-                    <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
-                    <span>{{ item.label }}</span>
-                    <UBadge
-                      v-if="item.badge !== undefined"
-                      color="neutral"
-                      variant="subtle"
-                      size="xs"
-                      class="mr-auto"
+                  <template v-for="(item, index) in menuItems" :key="item.id">
+                    <p
+                      v-if="item.group && item.group !== menuItems[index - 1]?.group"
+                      class="px-4 pt-4 pb-1 text-xs font-medium text-gray-400 dark:text-gray-500"
                     >
-                      {{ item.badge }}
-                    </UBadge>
-                  </NuxtLink>
+                      {{ GROUP_LABELS[item.group] }}
+                    </p>
+                    <div
+                      v-else-if="!item.group && menuItems[index - 1]?.group"
+                      class="my-3 border-t border-gray-200 dark:border-gray-700"
+                    />
+                    <NuxtLink
+                      :to="item.to"
+                      class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-right transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      active-class="!bg-teal-50 dark:!bg-teal-900/20 !text-teal-600 dark:!text-teal-400 font-medium"
+                    >
+                      <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
+                      <span>{{ item.label }}</span>
+                      <UBadge
+                        v-if="item.badge !== undefined"
+                        color="neutral"
+                        variant="subtle"
+                        size="xs"
+                        class="mr-auto"
+                      >
+                        {{ item.badge }}
+                      </UBadge>
+                    </NuxtLink>
+                  </template>
                 </nav>
 
                 <!-- Quick Links + Logout (separated) -->
@@ -296,6 +306,7 @@
 
 <script setup>
 import NotificationBell from '@/components/panel/notifications/NotificationBell.vue'
+import { GROUP_LABELS } from '~/utils/panelMenus.js'
 
 const route = useRoute()
 const userStore = useUserStore()

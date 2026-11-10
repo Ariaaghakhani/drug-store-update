@@ -3,8 +3,20 @@
 // `{module, action, allowed}` grants, and a staff user sees a menu when they hold READ on any of its `modules`
 // (module names are BACK's `@EndpointInfo(module = …)`). `always: true` menus show for every logged-in user.
 // Optional `flag`: a StoreProfileDTO boolean (GET /api/store-profile) that must be true for the menu to show.
+// Optional `group`: a key of GROUP_LABELS. The desktop sidebar (pages/panel.vue) renders a heading when the group
+// changes and a divider between grouped and ungrouped entries; entries without `group` render exactly as before.
 // To add a menu: add an entry here (+ its page under pages/panel/) with the BACK module(s) guarding its endpoints.
 // Every entry must have a page, or it links to a 404. Not built yet, so not listed: reports (REPORT), settings (STORE_PROFILE, SYSTEM_SETTINGS, MY_ORGANIZATION), analytics, finance.
+export const GROUP_LABELS = {
+  sales: 'فروش و مشتریان',
+  stock: 'کالا و انبار',
+  content: 'محتوا و تعامل',
+  marketing: 'بازاریابی',
+  insights: 'گزارش و تحلیل',
+  workflow: 'گردش کار',
+  settings: 'تنظیمات',
+}
+
 export const PANEL_MENUS = [
   { key: 'dashboard', label: 'داشبورد', icon: 'i-heroicons-rectangle-group', to: '/panel/dashboard', modules: ['DASHBOARD'], always: true },
   { key: 'users', label: 'مدیریت کاربران', icon: 'i-heroicons-users', to: '/panel/users', modules: ['USER_MANAGEMENT'] },
