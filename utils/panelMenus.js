@@ -6,7 +6,7 @@
 // Optional `group`: a key of GROUP_LABELS. The desktop sidebar (pages/panel.vue) renders a heading when the group
 // changes and a divider between grouped and ungrouped entries; entries without `group` render exactly as before.
 // To add a menu: add an entry here (+ its page under pages/panel/) with the BACK module(s) guarding its endpoints.
-// Every entry must have a page, or it links to a 404. Not built yet, so not listed: reports (REPORT), analytics, finance. Settings (SYSTEM_SETTINGS, PAYMENT_GATEWAY, MY_ORGANIZATION) is listed from C5a and shows only its tabs the user can read. Customer wallets (WALLET, `/panel/wallets`) is listed from C6a.
+// Every entry must have a page, or it links to a 404. Not built yet, so not listed: reports (REPORT), analytics, finance. Purchase orders (PURCHASE_ORDER) is listed from C2a, under the stock group. Settings (SYSTEM_SETTINGS, PAYMENT_GATEWAY, MY_ORGANIZATION) is listed from C5a and shows only its tabs the user can read. Customer wallets (WALLET, `/panel/wallets`) is listed from C6a.
 export const GROUP_LABELS = {
   sales: 'فروش و مشتریان',
   stock: 'کالا و انبار',
@@ -28,6 +28,7 @@ export const PANEL_MENUS = [
   { key: 'discounts', label: 'کدهای تخفیف', icon: 'i-heroicons-ticket', to: '/panel/discounts', modules: ['DISCOUNT'], group: 'sales' },
   { key: 'shipping', label: 'روش‌های ارسال', icon: 'i-heroicons-truck', to: '/panel/shipping', modules: ['SHIPPING'], group: 'sales' },
   { key: 'wallets', label: 'کیف پول مشتریان', icon: 'i-heroicons-banknotes', to: '/panel/wallets', modules: ['WALLET'], group: 'sales' },
+  { key: 'purchase-orders', label: 'سفارش‌های خرید', icon: 'i-heroicons-clipboard-document-list', to: '/panel/purchase-orders', modules: ['PURCHASE_ORDER'], group: 'stock' },
   { key: 'reviews', label: 'نظرات', icon: 'i-heroicons-star', to: '/panel/reviews', modules: ['GOODS_REVIEW'], group: 'content' },
   { key: 'questions', label: 'پرسش و پاسخ', icon: 'i-heroicons-chat-bubble-left-right', to: '/panel/questions', modules: ['GOODS_QUESTION'], flag: 'goodsQuestionsEnabled', group: 'content' },
   { key: 'settings', label: 'تنظیمات فروشگاه', icon: 'i-heroicons-cog-6-tooth', to: '/panel/settings', modules: ['SYSTEM_SETTINGS', 'PAYMENT_GATEWAY', 'MY_ORGANIZATION'], group: 'settings' },
@@ -76,6 +77,7 @@ export const FALLBACK_MENUS_BY_ROLE = {
     { key: 'discounts' },
     { key: 'shipping' },
     { key: 'wallets' },
+    { key: 'purchase-orders' },
     { key: 'settings' },
     { key: 'notifications' },
     { key: 'profile' },

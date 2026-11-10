@@ -180,43 +180,49 @@ export default (apiCaller) => ({
     return apiCaller.post('api/invoices/pdf', { data: { id }, responseType: 'blob' })
   },
 
+  // ========== PURCHASE ORDERS (module PURCHASE_ORDER; verified 2026-11-11 against BACK PurchaseOrderController) ==========
+  // POST api/purchase-orders/list {supplierId?, status?, page (1-based), size ≤100} → PageResponse<PurchaseOrderDTO>, page 1-based.
   listPurchaseOrders(config) {
     return apiCaller.post('api/purchase-orders/list', config)
   },
 
+  // POST api/purchase-orders/get {id} → PurchaseOrderDTO with items.
   getPurchaseOrder(config) {
     return apiCaller.post('api/purchase-orders/get', config)
   },
 
+  // POST api/purchase-orders {supplierId, dateExpected?, note?, items:[{goodsId, quantityOrdered, unitCost}]} → 201 PurchaseOrderDTO (DRAFT).
   createPurchaseOrder(config) {
-    return apiCaller.post('api/purchase-orders/create', config)
+    return apiCaller.post('api/purchase-orders', config)
   },
 
+  // PUT api/purchase-orders {id, supplierId, dateExpected?, note?, items} → PurchaseOrderDTO. DRAFT only; items are replaced.
   updatePurchaseOrder(config) {
-    return apiCaller.post('api/purchase-orders/update', config)
+    return apiCaller.put('api/purchase-orders', config)
   },
 
+  // POST api/purchase-orders/submit {id}: DRAFT → ORDERED. Workflow-bindable (202 when pending).
+  submitPurchaseOrder(config) {
+    return apiCaller.post('api/purchase-orders/submit', config)
+  },
+
+  // POST api/purchase-orders/receive {purchaseOrderId, warehouseId, note?, lines:[{itemId, quantity, batchNumber?, manufactureDate?, expiryDate?}]}.
+  receivePurchaseOrder(config) {
+    return apiCaller.post('api/purchase-orders/receive', config)
+  },
+
+  // POST api/purchase-orders/close {id}: PARTIALLY_RECEIVED → CLOSED.
+  closePurchaseOrder(config) {
+    return apiCaller.post('api/purchase-orders/close', config)
+  },
+
+  // POST api/purchase-orders/cancel {id}: DRAFT | ORDERED → CANCELLED.
+  cancelPurchaseOrder(config) {
+    return apiCaller.post('api/purchase-orders/cancel', config)
+  },
+
+  // POST api/purchase-orders/delete {id}: DRAFT | CANCELLED only; 204.
   deletePurchaseOrder(config) {
     return apiCaller.post('api/purchase-orders/delete', config)
-  },
-
-  listPurchaseOrderItems(config) {
-    return apiCaller.post('api/purchase-order-items/list', config)
-  },
-
-  getPurchaseOrderItem(config) {
-    return apiCaller.post('api/purchase-order-items/get', config)
-  },
-
-  createPurchaseOrderItem(config) {
-    return apiCaller.post('api/purchase-order-items/create', config)
-  },
-
-  updatePurchaseOrderItem(config) {
-    return apiCaller.post('api/purchase-order-items/update', config)
-  },
-
-  deletePurchaseOrderItem(config) {
-    return apiCaller.post('api/purchase-order-items/delete', config)
   },
 })

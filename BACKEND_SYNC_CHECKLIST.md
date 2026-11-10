@@ -56,7 +56,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 
 ## C. Panel (staff)
 - [x] C1. Returns administration (`admin/returns*`, `admin/order-refunds/{id}/paid`)
-- [ ] C2. Purchase orders: submit / receive / close / cancel
+- [x] C2. Purchase orders: submit / receive / close / cancel
 - [x] C3. Discount codes CRUD
 - [x] C4. Shipping methods CRUD (`admin/shipping-methods`)
 - [x] C5. Store payment gateways (`admin/payment-gateways`)
@@ -105,3 +105,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - C6+B1 (2026-11-11, Haiku): wallet admin (list/detail/adjust) and checkout shipping methods + slots (CheckoutModal extracted from cart.vue). eslint clean + build OK; not exercised against the dev backend. Follow-up: stores/cart.js `total` still adds placeholder shipping.
 - B2 (2026-11-11, Haiku): checkout discount code, gateways, wallet payment, terms; cart total no longer adds placeholder shipping. eslint 0 errors + build OK; not exercised against the dev backend. Follow-up: fixed 500,000 free-shipping hint in pages/cart.vue (~line 236) should become method-driven.
 - C1 (2026-11-11, Haiku): staff returns list/detail (approve/reject/cancel/receive/refund), order refunds card, cancel paid order, staff-created return. eslint 0 errors + build OK; not exercised against the dev backend.
+- C2 (2026-11-11, Haiku): purchase orders list/new/detail/receive + supplier quick-create; old PO wrappers had wrong paths and were rewritten. eslint clean + build OK; not exercised against the dev backend.
