@@ -4,6 +4,19 @@ Backend source: `C:\Users\Aria Aghakhani\PouyanPars\PouyanPlatform` (main). Cont
 and `docs/FRONTEND_FEATURES_BY_USER.md`. Created 2026-11-10 from a route-by-route diff of the backend controllers against
 this repo.
 
+Detailed per-item plan (routes, files, tests, sub-steps): `BACKEND_SYNC_PLAN.md` (written by a Sonnet planner).
+Each item/sub-step is implemented by a Haiku subagent; the main session reviews the diff, builds, commits, pushes (PR #66)
+and ticks the item. Execute in the plan's section 4 order, NOT the A/B/C order:
+P0, P1, P2, P3, A4, B9, B10, B8, B7, B5, B6, B3, B4, C4, C5, C3, C6, B1, B2, C1, C2, C7-C15, B11, C17, C16, C18, C19-C22.
+Defaults taken for the plan's open decisions: D1 money shown as backend sends (admin inputs labelled «ریال»), D2 grouped
+sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wrapper only.
+
+## Prerequisites (from the plan, section 2)
+- [ ] P0. Grouped sidebar mechanism (`utils/panelMenus.js`, `useUserPanelTabs.js`, `pages/panel.vue`)
+- [ ] P1. File download + blob responses (`plugins/api.js` responseType, `composables/useFileDownload.js`)
+- [ ] P2. `composables/usePagedList.js` + `components/panel/PanelEmptyState.vue`
+- [ ] P3. Jalali dates (`utils/jalali.js`, `components/panel/JalaliDateInput.vue`)
+
 ## Loop rules (one item per iteration)
 1. Pick the first unchecked item below.
 2. Read that module's `CLAUDE.md`, `DESIGN_SYSTEM.md`, and the backend controller + DTOs for the item. Verify against
