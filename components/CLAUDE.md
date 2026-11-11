@@ -45,7 +45,7 @@ Global presentational and feature components for the public storefront shell (he
 
 ## Data flow and dependencies
 - `pages/login.vue` is the sole consumer of `components/auth/*`, owning all state and wiring every step's emits; steps swap via a `currentStep` string machine (`phone → password/register → otp-login/otp-register/forgot-password-otp → reset-password`).
-- `pages/panel/dashboard.vue` picks `AdminDashboard`/`OwnerDashboard`/`CustomerDashboard` based on `useUserPanelTabs().getUserRole()` — the only role gating in this module; the dashboard components themselves have no auth checks.
+- `pages/panel/dashboard.vue` picks `AdminDashboard`/`OwnerDashboard`/`CustomerDashboard` based on `useUserPanelTabs().getUserRole()`, and shows none of them to staff without `DASHBOARD READ` (2026-11-12) — the only role gating in this module; the dashboard components themselves have no auth checks.
 - `CustomerDashboard.vue` depends on `useCustomerDashboard` (mocked) and `useCartStore`/`useToast` for add-to-cart actions.
 - `Header.vue` depends on `useCartStore`, `useColorMode`, `this.$auth.loggedIn` to route "profile" clicks to `/panel` vs `/login?redirect=/panel`.
 - `ChatbotWidget.vue`/`AuthModal.vue` both call `useNuxtApp().$auth.setToken(...)` directly rather than via a dedicated composable.

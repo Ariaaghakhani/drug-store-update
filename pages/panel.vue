@@ -344,7 +344,7 @@ const userFullName = computed(() => {
   const user = userStore.currentUser || app.$auth.user
   if (!user?.person) return 'دوست عزیز'
   return (
-    `${user.person.firstName} ${user.person.lastName}`.trim() || 'دوست عزیز'
+    `${user.person.firstName || ''} ${user.person.lastName || ''}`.trim() || 'دوست عزیز'
   )
 })
 
