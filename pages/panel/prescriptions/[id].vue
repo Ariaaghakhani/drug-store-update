@@ -10,27 +10,20 @@
       </UButton>
     </div>
 
-    <CustomerPrescriptionDetail v-if="!isStaff" :id="route.params.id" />
-
-    <UCard v-else>
-      <PanelEmptyState
-        icon="i-heroicons-document-text"
-        title="بررسی نسخه‌ی مشتری"
-        text="نمای کارمند برای بررسی و پاسخ به نسخه در مرحله‌ی بعد اضافه می‌شود"
-      />
-    </UCard>
+    <StaffPrescriptionDetail v-if="isStaff" :id="route.params.id" />
+    <CustomerPrescriptionDetail v-else :id="route.params.id" />
   </div>
 </template>
 
 <script setup>
-import PanelEmptyState from '@/components/panel/PanelEmptyState.vue'
 import CustomerPrescriptionDetail from '@/components/panel/prescriptions/CustomerPrescriptionDetail.vue'
+import StaffPrescriptionDetail from '@/components/panel/prescriptions/StaffPrescriptionDetail.vue'
 
 const route = useRoute()
 const { getUserRole } = useUserPanelTabs()
 
-// Staff get a placeholder until the staff view is built (C17b). Customers see their own prescription.
+// Staff (any non-customer role) get the admin view; customers see their own prescription.
 const isStaff = computed(() => getUserRole() !== 'customer')
 
-useHead({ title: 'جزئیات نسخه | پنل کاربری' })
+useHead({ title: isStaff.value ? 'جزئیات نسخه | پنل مدیریت' : 'جزئیات نسخه | پنل کاربری' })
 </script>

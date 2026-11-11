@@ -50,4 +50,62 @@ export default (apiCaller) => ({
   uploadPrescriptionReceipt(id, config) {
     return apiCaller.post(`api/prescriptions/my/${id}/receipt`, config)
   },
+
+  // ---- staff (module PRESCRIPTION). Always /api/admin/prescriptions/**, whatever the `staff` flag says ----
+
+  // staff. PrescriptionInsuranceDTO[] (active and inactive), ordered by kind, sortOrder, name
+  listInsurances() {
+    return apiCaller.get('api/admin/prescriptions/insurances')
+  },
+
+  // staff. body {name (req, <=100), kind BASIC|SUPPLEMENTARY (req), sortOrder 0..10000, active}; 201; duplicate name per kind → 409
+  createInsurance(config) {
+    return apiCaller.post('api/admin/prescriptions/insurances', config)
+  },
+
+  // staff. same body as createInsurance; active omitted = unchanged. 409 on a duplicate name
+  updateInsurance(id, config) {
+    return apiCaller.put(`api/admin/prescriptions/insurances/${id}`, config)
+  },
+
+  // staff. removes the insurance from the list; earlier prescriptions keep its name
+  deleteInsurance(id) {
+    return apiCaller.delete(`api/admin/prescriptions/insurances/${id}`)
+  },
+
+  // staff. body {status (req) AVAILABLE|PARTIALLY_AVAILABLE|UNAVAILABLE|INVALID, note<=1000, drugPrice>=0, courierFee>=0};
+  // a new answer replaces the earlier one; 409 after the customer confirmed or the prescription was cancelled
+  respondPrescription(id, config) {
+    return apiCaller.post(`api/admin/prescriptions/${id}/respond`, config)
+  },
+
+  // staff. RECEIPT_SUBMITTED only (else 409) → paymentStatus PAID
+  approveReceipt(id) {
+    return apiCaller.post(`api/admin/prescriptions/${id}/receipt/approve`)
+  },
+
+  // staff. body {reason (req, <=500)}, shown to the customer; RECEIPT_SUBMITTED only (else 409)
+  rejectReceipt(id, config) {
+    return apiCaller.post(`api/admin/prescriptions/${id}/receipt/reject`, config)
+  },
+
+  // staff. CONFIRMED with PICKUP or CUSTOMER_COURIER; CARD_TO_CARD needs PAID first (else 409) → READY
+  markReady(id) {
+    return apiCaller.post(`api/admin/prescriptions/${id}/ready`)
+  },
+
+  // staff. CONFIRMED with STORE_COURIER; CARD_TO_CARD needs PAID first (else 409) → SHIPPED
+  markShipped(id) {
+    return apiCaller.post(`api/admin/prescriptions/${id}/ship`)
+  },
+
+  // staff. READY or SHIPPED only (else 409) → DELIVERED; an ON_DELIVERY payment becomes PAID
+  markDelivered(id) {
+    return apiCaller.post(`api/admin/prescriptions/${id}/deliver`)
+  },
+
+  // staff. DELETE /api/admin/prescriptions/{id}: soft delete with the photo and the receipts. Returns ApiResponse<null>
+  deletePrescription(id) {
+    return apiCaller.delete(`api/admin/prescriptions/${id}`)
+  },
 })
