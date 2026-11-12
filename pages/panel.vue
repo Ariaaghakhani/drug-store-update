@@ -14,7 +14,10 @@
                 <div
                   class="pb-6 border-b border-gray-200 dark:border-gray-700"
                 >
-                  <BrandLogo />
+                  <!-- same as the storefront Header: the logo goes to the home page -->
+                  <NuxtLink to="/" aria-label="صفحه اصلی" class="inline-flex rounded-lg">
+                    <BrandLogo />
+                  </NuxtLink>
                 </div>
 
                 <!-- Navigation Menu -->
