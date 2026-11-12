@@ -35,7 +35,7 @@ Global presentational and feature components for the public storefront shell (he
 - `auth/PhoneStep` — props `phoneNumber`, `loading`; emits `update:phoneNumber`, `submit`.
 - `auth/PasswordStep` — props `password`, `error`, `loading`; emits `update:password`, `update:error`, `submit`, `switchToOtp`, `forgotPassword`, `goBack`.
 - `auth/OtpStep` — props `digits` (array), `error`, `timer`, `loading`, `context` (`'login'|'register'|'forgot-password'`); emits `update:digits`, `update:error`, `submit`, `resend`, `switchToPassword`, `goBack`; exposes `focusFirst()` via `defineExpose`. "Switch to password" button only shown when `context === 'login'`.
-- `auth/RegisterStep` / `ResetPasswordStep` — prop `form: Object` (required, must contain an `errors` sub-object the component mutates directly), `loading`; emit `update:form`, `submit`, `goBack`.
+- `auth/RegisterStep` / `ResetPasswordStep` — prop `form: Object` (required, must contain an `errors` sub-object the component mutates directly), `loading`; emit `update:form`, `submit`, `goBack`. **(2026-11-12)** `RegisterStep`'s `form` also carries `acceptedTerms` (+ `errors.acceptedTerms`): a «قوانین و شرایط را خوانده‌ام و می‌پذیرم» checkbox linking `/terms`, required before `submit` (BACK answers 400 `terms.acceptance.required` without it once the store has published terms; always required client-side, see the `shortcut:` comment).
 - `auth/AuthHero` — no props, decorative only, hidden below `md:`.
 - `dashboard/customer/*` — accept `loading: Boolean` + data props, emit `track`/`shop`/`viewAll`/`upload`/`add` (`order`, previously `RefillReminders.vue`'s emit, no longer exists — that component was removed).
 - `AdminDashboard`/`OwnerDashboard` — no props/emits; read their composables directly (see Key files).

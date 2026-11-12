@@ -148,7 +148,8 @@ const registerForm = ref({
   name: '',
   password: '',
   passwordConfirm: '',
-  errors: { name: '', password: '', passwordConfirm: '' },
+  acceptedTerms: false,
+  errors: { name: '', password: '', passwordConfirm: '', acceptedTerms: '' },
 })
 
 // Reset Password State
@@ -395,8 +396,9 @@ const handleOtpLoginSubmit = async (acceptedPlatformTerms = false) => {
 const handleOtpRegisterSubmit = async () => {
   isLoading.value = true
   otpError.value = ''
-  const firstName = registerForm.value.name.split(' ')[0]
-  const lastName = registerForm.value.name.split(' ')[1]
+  // Everything after the first word is the surname (a three-word name used to lose its last word)
+  const [firstName, ...rest] = registerForm.value.name.trim().split(/\s+/)
+  const lastName = rest.join(' ') || undefined
   try {
     const otpCode = otpDigits.value.join('')
     const response = await app.$api.auth.register({
@@ -407,10 +409,16 @@ const handleOtpRegisterSubmit = async () => {
         otpCode: otpCode,
         firstName: firstName,
         lastName: lastName,
+        // BACK requires it whenever the store has published terms (400 terms.acceptance.required)
+        acceptedTerms: registerForm.value.acceptedTerms === true,
       },
       mode: 'register',
     })
-    await finalizeLogin(response.data.data)
+    const data = response.data.data
+    // BACK's register response carries `user.roles: []` (the role row isn't loaded into that DTO yet), which
+    // getUserRole() reads as staff. Sign-up always creates a customer (AuthServiceImpl.register), so fill it in.
+    if (data?.user && !data.user.roles?.length) data.user.roles = ['ROLE_CUSTOMER']
+    await finalizeLogin(data)
   } catch (error) {
     console.log(error)
     toast.error('کد تایید نادرست است.', 'لطفا از صحت کد وارد شده مطمئن شوید')
@@ -700,7 +708,8 @@ const resetAll = () => {
     name: '',
     password: '',
     passwordConfirm: '',
-    errors: { name: '', password: '', passwordConfirm: '' },
+    acceptedTerms: false,
+    errors: { name: '', password: '', passwordConfirm: '', acceptedTerms: '' },
   }
 
   resetPasswordForm.value = {
