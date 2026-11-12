@@ -124,7 +124,7 @@
                             <span class="text-brand-500 dark:text-brand-400">{{ userFullName }}</span>
                           </span>
                           <span class="block text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-                            کد مشتری {{ customerId }}
+                            {{ roleLabel }}
                           </span>
                         </span>
                         <UIcon
@@ -388,7 +388,7 @@ const onAvatarPicked = (event) => {
   if (file) avatar.changeWithFeedback(file)
 }
 
-const ROLE_LABELS = { owner: 'مدیر فروشگاه', admin: 'کارکنان فروشگاه', customer: 'مشتری' }
+const ROLE_LABELS = { owner: 'مدیر داروخانه', admin: 'کارکنان داروخانه', customer: 'مشتری' }
 const roleLabel = computed(() => ROLE_LABELS[getUserRole()])
 
 // Groups render with separators; the first is the photo + name header (#account slot)
@@ -429,11 +429,6 @@ const userInitials = computed(() => {
   return (first + last).toUpperCase() || 'ک'
 })
 
-const customerId = computed(() => {
-  const user = userStore.currentUser || app.$auth.user
-  if (!user?.id) return '----'
-  return String(user.id).slice(-6)
-})
 
 const todayWeekday = computed(() =>
   new Date().toLocaleDateString('fa-IR', { weekday: 'long' })
