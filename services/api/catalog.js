@@ -4,16 +4,18 @@
  */
 export default (apiCaller) => ({
   // ========== CATALOGS (Generic Lookup) — base path is /api/catalogs (plural) ==========
+  // GET root; there is no /list
   listCatalogs(config) {
-    return apiCaller.post('api/catalogs/list', config)
+    return apiCaller.get('api/catalogs', config)
   },
 
   getCatalog(config) {
     return apiCaller.post('api/catalogs/get', config)
   },
 
+  // POST root `CatalogDTO {type, code, title, description?}`; code is required, unique per type and never changes
   createCatalog(config) {
-    return apiCaller.post('api/catalogs/create', config)
+    return apiCaller.post('api/catalogs', config)
   },
 
   updateCatalog(config) {
