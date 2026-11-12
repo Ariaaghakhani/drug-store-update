@@ -377,7 +377,7 @@ Wrapped in `UCard :ui="{ body: 'p-0' }"` with `overflow-x-auto`. `<thead>` uses 
 - **Loading grid:** `USkeleton` ×12, `h-80 w-full`, in the product grid columns.
 - **No results (`medications/index.vue`):** `i-heroicons-magnifying-glass` w-20 + "محصولی یافت نشد".
 - **Failed load (panel lists):** never show a failed fetch as "nothing here". Use the empty-state layout with `i-heroicons-exclamation-triangle` and a `neutral soft` retry button, or `i-heroicons-lock-closed` and no button for a 403, and hide metrics that would read as zero.
-- **Toast:** top-center, 3s, RTL (`app.config.ts`); use `color: 'success'` and `color: 'error'`. Never pass `'green'` or `'red'`.
+- **Toast:** top-center, 3s, RTL (`app.config.ts`): icon + title/description on the right (`text-start`), close ✕ on the left. The toaster renders inside `app.vue`'s `dir="rtl"`, so never add `flex-row-reverse`/`text-end` to the toast slots (that flipped it back to LTR until 2026-11-13); modals' default header is already right (title right, ✕ left); use `color: 'success'` and `color: 'error'`. Never pass `'green'` or `'red'`.
 
 ### USkeleton
 - Default animation overridden globally in `app.config.ts` to use `.skeleton-shimmer` (replaces `animate-pulse`).
