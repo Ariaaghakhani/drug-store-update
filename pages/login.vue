@@ -72,6 +72,41 @@
         </div>
       </div>
     </UContainer>
+
+    <!-- Store admins must accept the platform agreement before a panel login (BACK 403 platform.terms.acceptance.required) -->
+    <UModal
+      v-model:open="termsOpen"
+      title="قرارداد پلتفرم"
+      description="برای ورود به پنل، قرارداد پلتفرم را بخوانید و بپذیرید"
+    >
+      <template #body>
+        <div class="space-y-6 select-text">
+          <template v-if="termsLoading">
+            <USkeleton v-for="n in 3" :key="n" class="h-4 w-full" />
+          </template>
+          <p v-else-if="!platformTerms.length" class="text-sm text-gray-500 dark:text-gray-400">
+            متن قرارداد در دسترس نیست. با پذیرش، نسخه‌ی منتشرشده‌ی فعلی را می‌پذیرید.
+          </p>
+          <template v-else>
+            <section v-for="doc in platformTerms" :key="doc.id">
+              <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                {{ doc.title }}
+                <span v-if="doc.version" class="text-xs font-normal text-gray-500 dark:text-gray-400">(نسخه {{ doc.version }})</span>
+              </h3>
+              <p class="mt-2 text-sm leading-7 whitespace-pre-line text-gray-700 dark:text-gray-300">{{ htmlToText(doc.content) }}</p>
+            </section>
+          </template>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex w-full gap-2 justify-end">
+          <UButton color="neutral" variant="outline" :disabled="isLoading" @click="termsOpen = false">انصراف</UButton>
+          <UButton color="primary" :loading="isLoading" :disabled="termsLoading" @click="acceptPlatformTerms">
+            می‌پذیرم و وارد می‌شوم
+          </UButton>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
@@ -271,7 +306,36 @@ const handlePhoneSubmit = async () => {
   }
 }
 
-const handlePasswordSubmit = async () => {
+// Platform agreement: a store admin's panel login answers 403 until they accept it; the same request is then repeated
+// with acceptedPlatformTerms (an OTP code is not consumed by the 403, so it can be resent as is).
+const termsOpen = ref(false)
+const termsLoading = ref(false)
+const platformTerms = ref([])
+let retryWithTerms = null
+
+const isTermsRequired = (error) => error?.response?.data?.errorCode === 'platform.terms.acceptance.required'
+
+const askPlatformTerms = async (retry) => {
+  retryWithTerms = retry
+  termsOpen.value = true
+  termsLoading.value = true
+  try {
+    const response = await app.$api.storefront.getPlatformTerms()
+    platformTerms.value = response.data.data ?? []
+  } catch {
+    platformTerms.value = []
+  } finally {
+    termsLoading.value = false
+  }
+}
+
+const acceptPlatformTerms = async () => {
+  if (!retryWithTerms) return
+  await retryWithTerms(true)
+  termsOpen.value = false
+}
+
+const handlePasswordSubmit = async (acceptedPlatformTerms = false) => {
   isLoading.value = true
   passwordError.value = ''
 
@@ -282,10 +346,15 @@ const handlePasswordSubmit = async () => {
         password: loginPassword.value,
         phone: phoneNumber.value,
         loginType: 'PASSWORD',
+        ...(acceptedPlatformTerms === true && { acceptedPlatformTerms: true }),
       },
     })
     await finalizeLogin(response.data.data)
   } catch (error) {
+    if (isTermsRequired(error)) {
+      askPlatformTerms(handlePasswordSubmit)
+      return
+    }
     console.log(error)
     passwordError.value = 'رمز عبور نادرست است.'
   } finally {
@@ -293,7 +362,7 @@ const handlePasswordSubmit = async () => {
   }
 }
 
-const handleOtpLoginSubmit = async () => {
+const handleOtpLoginSubmit = async (acceptedPlatformTerms = false) => {
   isLoading.value = true
   otpError.value = ''
 
@@ -303,11 +372,16 @@ const handleOtpLoginSubmit = async () => {
       data: {
         phone: phoneNumber.value,
         otpCode: otpCode,
+        ...(acceptedPlatformTerms === true && { acceptedPlatformTerms: true }),
       },
     })
 
     await finalizeLogin(response.data.data)
-  } catch {
+  } catch (error) {
+    if (isTermsRequired(error)) {
+      askPlatformTerms(handleOtpLoginSubmit)
+      return
+    }
     toast.error(
       'خطا در ارسال کد یکبار مصرف',
       'لطفا دوباره تلاش کنید',

@@ -1,5 +1,4 @@
 <template>
-  <!-- wrapper takes panel.vue's fallthrough h-full, so the card keeps its own height -->
   <div v-if="noDashboardAccess">
     <UCard :ui="{ body: 'p-5' }">
       <div class="flex flex-col items-center justify-center text-center py-16 gap-3">
@@ -29,6 +28,8 @@ const role = computed(() => getUserRole())
 
 // Every api/dashboard/admin|owner/* call needs DASHBOARD READ; without it BACK answers 403 and the cards would show
 // fake zeros. Missing/empty permissions mean "not loaded" (see useUserPanelTabs), so those keep the role dashboard.
+// The no-access card sits in a plain <div> so panel.vue's fallthrough h-full lands on the wrapper, not the card.
+// No template comment above the v-if chain: it would make a second root node (Nuxt page transitions need one).
 const noDashboardAccess = computed(() => {
   if (role.value === 'customer') return false
   const granted = userStore.permissions

@@ -71,6 +71,11 @@ export default (apiCaller) => ({
     return apiCaller.get(`api/terms/${encodeURIComponent(type)}`)
   },
 
+  // Public: the platform (SYSTEM) agreement a store admin accepts at panel login → TermsAndConditionsDTO[]
+  getPlatformTerms() {
+    return apiCaller.get('api/terms/platform')
+  },
+
   getReturnPolicy() {
     return apiCaller.get('api/return-policy')
   },
