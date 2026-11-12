@@ -58,7 +58,7 @@ const showEmailModal = ref(false)
 const emailVerified = ref(false)
 const emailAddress = ref('')
 const smsNotifications = ref(true)
-const maskedPhone = '0912•••6789'
+const maskedPhone = computed(() => maskMobile(userStore.currentUser?.username))
 const memberSince = 'اردیبهشت ۱۴۰۳'
 const stats = { orders: 12, addresses: 3, prescriptions: 8 }
 
