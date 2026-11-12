@@ -99,13 +99,16 @@
               <!-- Profile Banner -->
               <UCard class="hidden md:block">
                 <div class="flex items-center gap-4 flex-wrap sm:flex-nowrap">
-                  <div
-                    class="w-14 h-14 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center shadow-md flex-shrink-0"
+                  <NuxtLink
+                    to="/panel/profile"
+                    aria-label="عکس پروفایل، رفتن به اطلاعات شخصی"
+                    class="w-14 h-14 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full overflow-hidden flex items-center justify-center shadow-md flex-shrink-0 ring-2 ring-transparent hover:ring-brand-500 dark:hover:ring-brand-400 transition"
                   >
-                    <span class="text-xl font-bold text-white">{{
+                    <img v-if="avatar.url.value" :src="avatar.url.value" alt="" class="w-full h-full object-cover" />
+                    <span v-else class="text-xl font-bold text-white">{{
                       userInitials
                     }}</span>
-                  </div>
+                  </NuxtLink>
                   <div class="flex-1 min-w-0">
                     <h3
                       class="text-base font-black text-gray-900 dark:text-white"
@@ -163,13 +166,16 @@
             <div
               class="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800"
             >
-              <div
-                class="w-12 h-12 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center flex-shrink-0"
+              <NuxtLink
+                to="/panel/profile"
+                aria-label="عکس پروفایل، رفتن به اطلاعات شخصی"
+                class="w-12 h-12 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
               >
-                <span class="text-base font-bold text-white">{{
+                <img v-if="avatar.url.value" :src="avatar.url.value" alt="" class="w-full h-full object-cover" />
+                <span v-else class="text-base font-bold text-white">{{
                   userInitials
                 }}</span>
-              </div>
+              </NuxtLink>
               <div class="flex flex-1 min-w-0 flex-wrap *:w-full gap-y-2">
                 <p class="font-semibold text-gray-900 dark:text-white truncate">
                   {{ userFullName }}
@@ -339,6 +345,10 @@ onMounted(() => {
 })
 onBeforeUnmount(notifications.stopPolling)
 
+// Own photo in the header; the avatar links to /panel/profile, where it is changed
+const avatar = useMyAvatar()
+onMounted(avatar.load)
+
 // Computed
 const userFullName = computed(() => {
   const user = userStore.currentUser || app.$auth.user
@@ -408,6 +418,7 @@ const handleLogout = async () => {
     // Revokes this device's refresh cookie; BACK identifies the session from the cookie, and a failure mustn't block logout
     await app.$api.auth.logout().catch(() => {})
     notifications.reset()
+    avatar.reset()
     app.$auth.reset()
     toast.add({
       title: 'خروج موفق',

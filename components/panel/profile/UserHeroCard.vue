@@ -32,16 +32,33 @@
       <UCard v-else key="content">
         <div class="flex items-center gap-5 pb-5 border-b border-gray-100 dark:border-gray-800">
           <div class="relative flex-shrink-0">
-            <div class="w-[72px] h-[72px] rounded-full bg-brand-500/15 border-2 border-brand-500/30 flex items-center justify-center">
-              <span class="text-2xl font-semibold text-brand-500">{{ initials }}</span>
+            <!-- the photo itself is the picker -->
+            <button
+              type="button"
+              class="w-[72px] h-[72px] rounded-full overflow-hidden bg-brand-500/15 border-2 border-brand-500/30 flex items-center justify-center hover:border-brand-500 dark:hover:border-brand-400 transition-colors disabled:cursor-wait"
+              :disabled="avatarSaving"
+              :aria-label="avatarUrl ? 'تغییر عکس پروفایل' : 'افزودن عکس پروفایل'"
+              @click="fileInput?.click()"
+            >
+              <img v-if="avatarUrl" :src="avatarUrl" alt="" class="w-full h-full object-cover" />
+              <span v-else class="text-2xl font-semibold text-brand-500 dark:text-brand-400">{{ initials }}</span>
+            </button>
+            <div
+              v-if="avatarSaving"
+              class="absolute inset-0 rounded-full bg-white/70 dark:bg-gray-900/70 flex items-center justify-center"
+            >
+              <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 text-brand-500 dark:text-brand-400 animate-spin" />
             </div>
             <button
+              type="button"
               class="absolute bottom-0 end-0 w-[22px] h-[22px] rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center shadow-sm hover:border-brand-500 dark:hover:border-brand-400 group transition-colors"
+              :disabled="avatarSaving"
+              aria-label="انتخاب عکس پروفایل"
               @click="fileInput?.click()"
             >
               <UIcon name="i-heroicons-camera" class="w-3 h-3 text-gray-400 group-hover:text-brand-500 dark:group-hover:text-brand-400 transition-colors" />
             </button>
-            <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onAvatarChange" />
+            <input ref="fileInput" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" @change="onAvatarChange" />
           </div>
 
           <div>
@@ -50,6 +67,29 @@
             <div class="flex gap-1.5 mt-2.5 flex-wrap">
               <UBadge color="success" variant="subtle" size="sm">حساب تأیید شده</UBadge>
               <UBadge color="warning" variant="subtle" size="sm">کد ملی تأیید نشده</UBadge>
+            </div>
+            <div class="flex gap-1 mt-2 -ms-2">
+              <UButton
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                icon="i-heroicons-camera"
+                :disabled="avatarSaving"
+                @click="fileInput?.click()"
+              >
+                {{ avatarUrl ? 'تغییر عکس' : 'افزودن عکس' }}
+              </UButton>
+              <UButton
+                v-if="avatarUrl"
+                color="error"
+                variant="ghost"
+                size="xs"
+                icon="i-heroicons-trash"
+                :disabled="avatarSaving"
+                @click="emit('avatar-remove')"
+              >
+                حذف عکس
+              </UButton>
             </div>
           </div>
         </div>
@@ -80,14 +120,18 @@ defineProps({
   initials: String,
   memberSince: String,
   stats: Object,
+  avatarUrl: { type: String, default: null },
+  avatarSaving: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['avatar-change'])
+const emit = defineEmits(['avatar-change', 'avatar-remove'])
 
 const fileInput = ref(null)
 
 const onAvatarChange = (event) => {
   const file = event.target.files?.[0]
+  // reset so picking the same file again still fires change
+  event.target.value = ''
   if (file) emit('avatar-change', file)
 }
 </script>

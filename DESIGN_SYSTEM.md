@@ -323,7 +323,7 @@ Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, `object-cover
 ### Panel / pharmacist (`panel.vue` + `layouts/panel.vue`)
 - Desktop: `UCard` sidebar (logo, nav from `useUserPanelTabs().getMenuItems()`, quick links, logout in red).
 - Active link: `!bg-teal-50 dark:!bg-teal-900/20 !text-teal-600 dark:!text-teal-400 font-medium`.
-- Profile banner with gradient avatar `from-teal-400 to-teal-600`, initials.
+- Profile banner with gradient avatar `from-teal-400 to-teal-600`, initials, or the user's photo (`object-cover`, `overflow-hidden`) when set. The header avatar is a link to `/panel/profile` (hover `ring-2 ring-brand-500`); on the profile card the avatar circle itself opens the file picker, with a camera badge and ghost `xs` "تغییر عکس" / `error` "حذف عکس" buttons, and a spinner overlay while saving.
 - Mobile: fixed bottom nav (home / products / profile) + slide-up profile sheet.
 - Roles: customer / admin / owner (labels مشتری / مدیر / مالک).
 
