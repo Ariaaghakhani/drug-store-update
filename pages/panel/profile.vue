@@ -10,8 +10,8 @@
         :stats="stats"
         :avatar-url="avatar.url.value"
         :avatar-saving="avatar.saving.value"
-        @avatar-change="handleAvatarChange"
-        @avatar-remove="handleAvatarRemove"
+        @avatar-change="avatar.changeWithFeedback"
+        @avatar-remove="avatar.removeWithFeedback"
       />
       <UserInfoCard :loading="pending" :form="form" @edit="showProfileModal = true" />
       <UserContactDetails
@@ -149,29 +149,6 @@ const saveProfile = async (newForm) => {
 
 // Own photo through api/auth/me/avatar: every logged-in user may set it, no role grant needed
 const avatar = useMyAvatar()
-
-const handleAvatarChange = async (file) => {
-  const problem = avatarFileError(file)
-  if (problem) {
-    toast.add({ title: 'عکس پذیرفته نشد', description: problem, color: 'error' })
-    return
-  }
-  try {
-    await avatar.change(file)
-    toast.add({ title: 'عکس پروفایل به‌روز شد', color: 'success' })
-  } catch (error) {
-    toast.add({ title: 'آپلود عکس ناموفق بود', description: error?.response?.data?.message, color: 'error' })
-  }
-}
-
-const handleAvatarRemove = async () => {
-  try {
-    await avatar.remove()
-    toast.add({ title: 'عکس پروفایل حذف شد', color: 'success' })
-  } catch (error) {
-    toast.add({ title: 'حذف عکس ناموفق بود', description: error?.response?.data?.message, color: 'error' })
-  }
-}
 
 onMounted(avatar.load)
 

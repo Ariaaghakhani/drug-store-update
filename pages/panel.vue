@@ -99,30 +99,62 @@
               <!-- Profile Banner -->
               <UCard class="hidden md:block">
                 <div class="flex items-center gap-4 flex-wrap sm:flex-nowrap">
-                  <NuxtLink
-                    to="/panel/profile"
-                    aria-label="عکس پروفایل، رفتن به اطلاعات شخصی"
-                    class="w-14 h-14 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full overflow-hidden flex items-center justify-center shadow-md flex-shrink-0 ring-2 ring-transparent hover:ring-brand-500 dark:hover:ring-brand-400 transition"
-                  >
-                    <img v-if="avatar.url.value" :src="avatar.url.value" alt="" class="w-full h-full object-cover" />
-                    <span v-else class="text-xl font-bold text-white">{{
-                      userInitials
-                    }}</span>
-                  </NuxtLink>
+                  <!-- Photo + name open the account menu -->
                   <div class="flex-1 min-w-0">
-                    <h3
-                      class="text-base font-black text-gray-900 dark:text-white"
+                    <UDropdownMenu
+                      dir="rtl"
+                      :items="accountMenuItems"
+                      :content="{ align: 'start' }"
+                      :ui="{ content: 'font-dana w-64' }"
                     >
-                      سلام،
-                      <span class="text-brand-500 dark:text-brand-400">{{
-                        userFullName
-                      }}</span>
-                    </h3>
-                    <p
-                      class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate"
-                    >
-                      کد مشتری {{ customerId }}
-                    </p>
+                      <button
+                        type="button"
+                        aria-label="منوی حساب کاربری"
+                        class="group flex items-center gap-4 max-w-full rounded-xl p-1 -m-1 text-start hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
+                      >
+                        <span
+                          class="w-14 h-14 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full overflow-hidden flex items-center justify-center shadow-md flex-shrink-0"
+                        >
+                          <img v-if="avatar.url.value" :src="avatar.url.value" alt="" class="w-full h-full object-cover" />
+                          <span v-else class="text-xl font-bold text-white">{{ userInitials }}</span>
+                        </span>
+                        <span class="min-w-0">
+                          <span class="block text-base font-black text-gray-900 dark:text-white">
+                            سلام،
+                            <span class="text-brand-500 dark:text-brand-400">{{ userFullName }}</span>
+                          </span>
+                          <span class="block text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                            کد مشتری {{ customerId }}
+                          </span>
+                        </span>
+                        <UIcon
+                          name="i-heroicons-chevron-down"
+                          class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-data-[state=open]:rotate-180"
+                        />
+                      </button>
+
+                      <template #account>
+                        <div class="flex items-center gap-3 w-full py-1">
+                          <span
+                            class="w-10 h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
+                          >
+                            <img v-if="avatar.url.value" :src="avatar.url.value" alt="" class="w-full h-full object-cover" />
+                            <span v-else class="text-sm font-bold text-white">{{ userInitials }}</span>
+                          </span>
+                          <span class="min-w-0 text-start">
+                            <span class="block text-sm font-bold text-gray-900 dark:text-white truncate">{{ userFullName }}</span>
+                            <span class="block text-xs font-normal text-gray-500 dark:text-gray-400">{{ roleLabel }}</span>
+                          </span>
+                        </div>
+                      </template>
+                    </UDropdownMenu>
+                    <input
+                      ref="avatarInput"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      class="hidden"
+                      @change="onAvatarPicked"
+                    />
                   </div>
                   <div class="flex-shrink-0 text-end">
                     <p class="text-xl font-black text-gray-900 dark:text-white leading-tight">
@@ -345,9 +377,40 @@ onMounted(() => {
 })
 onBeforeUnmount(notifications.stopPolling)
 
-// Own photo in the header; the avatar links to /panel/profile, where it is changed
+// Own photo in the header; photo + name open the account menu below
 const avatar = useMyAvatar()
 onMounted(avatar.load)
+
+const avatarInput = ref(null)
+const onAvatarPicked = (event) => {
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  if (file) avatar.changeWithFeedback(file)
+}
+
+const ROLE_LABELS = { owner: 'مدیر فروشگاه', admin: 'کارکنان فروشگاه', customer: 'مشتری' }
+const roleLabel = computed(() => ROLE_LABELS[getUserRole()])
+
+// Groups render with separators; the first is the photo + name header (#account slot)
+const accountMenuItems = computed(() => [
+  [{ type: 'label', slot: 'account' }],
+  [
+    { label: 'داشبورد', icon: 'i-heroicons-rectangle-group', to: '/panel/dashboard' },
+    {
+      label: avatar.url.value ? 'تغییر عکس' : 'افزودن عکس',
+      icon: 'i-heroicons-camera',
+      onSelect: () => avatarInput.value?.click(),
+    },
+    ...(avatar.url.value
+      ? [{ label: 'حذف عکس', icon: 'i-heroicons-trash', onSelect: avatar.removeWithFeedback }]
+      : []),
+  ],
+  [
+    { label: 'اطلاعات شخصی', icon: 'i-heroicons-user', to: '/panel/profile' },
+    { label: 'رمز عبور و امنیت', icon: 'i-heroicons-shield-check', to: '/panel/security' },
+  ],
+  [{ label: 'خروج از حساب', icon: 'i-heroicons-arrow-right-on-rectangle', color: 'error', onSelect: handleLogout }],
+])
 
 // Computed
 const userFullName = computed(() => {

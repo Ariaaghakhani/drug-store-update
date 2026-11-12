@@ -51,5 +51,28 @@ export function useMyAvatar() {
 
   const reset = () => (url.value = null)
 
-  return { url, saving, load, change, remove, reset }
+  // The same flow with checks and toasts, shared by the profile card and the panel header menu
+  const toast = useAppToast()
+
+  async function changeWithFeedback(file) {
+    const problem = avatarFileError(file)
+    if (problem) return toast.error('عکس پذیرفته نشد', problem)
+    try {
+      await change(file)
+      toast.success('عکس پروفایل به‌روز شد')
+    } catch (error) {
+      toast.error('آپلود عکس ناموفق بود', error?.response?.data?.message)
+    }
+  }
+
+  async function removeWithFeedback() {
+    try {
+      await remove()
+      toast.success('عکس پروفایل حذف شد')
+    } catch (error) {
+      toast.error('حذف عکس ناموفق بود', error?.response?.data?.message)
+    }
+  }
+
+  return { url, saving, load, change, remove, reset, changeWithFeedback, removeWithFeedback }
 }
