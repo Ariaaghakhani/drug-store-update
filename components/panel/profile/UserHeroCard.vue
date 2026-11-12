@@ -88,7 +88,7 @@
         <!-- the user's own counts (customers only); value null = still loading -->
         <div
           v-if="stats.length"
-          class="grid pt-5 mt-5 border-t border-gray-100 dark:border-gray-800 divide-x divide-x-reverse divide-gray-100 dark:divide-gray-800"
+          class="grid pt-5 mt-5 border-t border-gray-100 dark:border-gray-800 divide-x divide-gray-100 dark:divide-gray-800"
           :class="stats.length === 3 ? 'grid-cols-3' : 'grid-cols-2'"
         >
           <div v-for="item in stats" :key="item.label" class="text-center">
