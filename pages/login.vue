@@ -414,11 +414,7 @@ const handleOtpRegisterSubmit = async () => {
       },
       mode: 'register',
     })
-    const data = response.data.data
-    // BACK's register response carries `user.roles: []` (the role row isn't loaded into that DTO yet), which
-    // getUserRole() reads as staff. Sign-up always creates a customer (AuthServiceImpl.register), so fill it in.
-    if (data?.user && !data.user.roles?.length) data.user.roles = ['ROLE_CUSTOMER']
-    await finalizeLogin(data)
+    await finalizeLogin(response.data.data)
   } catch (error) {
     console.log(error)
     toast.error('کد تایید نادرست است.', 'لطفا از صحت کد وارد شده مطمئن شوید')
