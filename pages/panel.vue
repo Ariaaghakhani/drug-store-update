@@ -365,7 +365,7 @@ definePageMeta({
 
 const app = useNuxtApp()
 const toast = useToast()
-const { getMenuItems, getUserRole, refreshMenus } = useUserPanelTabs()
+const { getMenuItems, getUserRole, getRoleLabel, refreshMenus } = useUserPanelTabs()
 
 // Keep the cached menus in sync with BACK (permissions can change between logins)
 onMounted(refreshMenus)
@@ -391,8 +391,7 @@ const onAvatarPicked = (event) => {
   if (file) avatar.changeWithFeedback(file)
 }
 
-const ROLE_LABELS = { owner: 'مدیر داروخانه', admin: 'کارکنان داروخانه', customer: 'مشتری' }
-const roleLabel = computed(() => ROLE_LABELS[getUserRole()])
+const roleLabel = computed(() => getRoleLabel())
 
 // Groups render with separators; the first is the photo + name header (#account slot)
 const accountMenuItems = computed(() => [

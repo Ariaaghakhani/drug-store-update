@@ -2,35 +2,28 @@
   <div class="relative">
     <Transition name="sk">
       <UCard v-if="loading" key="sk">
-        <div class="flex items-center gap-5 pb-5 border-b border-gray-100 dark:border-gray-800">
+        <div class="flex items-center gap-5">
           <USkeleton class="w-[72px] h-[72px] rounded-full flex-shrink-0" />
           <div class="space-y-2">
             <USkeleton class="h-5 w-32" />
-            <USkeleton class="h-3 w-24" />
-            <div class="flex gap-1.5 mt-1">
-              <USkeleton class="h-5 w-20 rounded-full" />
-              <USkeleton class="h-5 w-24 rounded-full" />
-            </div>
+            <USkeleton class="h-5 w-20 rounded-full" />
+            <USkeleton class="h-6 w-24 rounded-lg" />
           </div>
         </div>
-        <div class="grid grid-cols-3 pt-5">
-          <div class="text-center space-y-2">
+        <div
+          v-if="stats.length"
+          class="grid pt-5 mt-5 border-t border-gray-100 dark:border-gray-800"
+          :class="stats.length === 3 ? 'grid-cols-3' : 'grid-cols-2'"
+        >
+          <div v-for="item in stats" :key="item.label" class="text-center space-y-2">
             <USkeleton class="h-7 w-8 mx-auto" />
-            <USkeleton class="h-3 w-12 mx-auto" />
-          </div>
-          <div class="text-center border-x border-gray-100 dark:border-gray-800 space-y-2">
-            <USkeleton class="h-7 w-8 mx-auto" />
-            <USkeleton class="h-3 w-20 mx-auto" />
-          </div>
-          <div class="text-center space-y-2">
-            <USkeleton class="h-7 w-8 mx-auto" />
-            <USkeleton class="h-3 w-20 mx-auto" />
+            <USkeleton class="h-3 w-16 mx-auto" />
           </div>
         </div>
       </UCard>
 
       <UCard v-else key="content">
-        <div class="flex items-center gap-5 pb-5 border-b border-gray-100 dark:border-gray-800">
+        <div class="flex items-center gap-5">
           <div class="relative flex-shrink-0">
             <!-- the photo itself is the picker -->
             <button
@@ -63,10 +56,8 @@
 
           <div>
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ fullName }}</h2>
-            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">عضو از {{ memberSince }}</p>
-            <div class="flex gap-1.5 mt-2.5 flex-wrap">
-              <UBadge color="success" variant="subtle" size="sm">حساب تأیید شده</UBadge>
-              <UBadge color="warning" variant="subtle" size="sm">کد ملی تأیید نشده</UBadge>
+            <div v-if="roleLabel" class="flex gap-1.5 mt-2 flex-wrap">
+              <UBadge color="primary" variant="subtle" size="sm">{{ roleLabel }}</UBadge>
             </div>
             <div class="flex gap-1 mt-2 -ms-2">
               <UButton
@@ -94,18 +85,16 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-3 pt-5">
-          <div class="text-center">
-            <p class="text-xl font-semibold text-brand-500">{{ stats.orders.toLocaleString('fa-IR') }}</p>
-            <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-1">سفارش‌ها</p>
-          </div>
-          <div class="text-center border-x border-gray-100 dark:border-gray-800">
-            <p class="text-xl font-semibold text-brand-500">{{ stats.addresses.toLocaleString('fa-IR') }}</p>
-            <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-1">آدرس‌های ذخیره‌شده</p>
-          </div>
-          <div class="text-center">
-            <p class="text-xl font-semibold text-brand-500">{{ stats.prescriptions.toLocaleString('fa-IR') }}</p>
-            <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-1">داروهای نسخه‌ای</p>
+        <!-- the user's own counts (customers only); value null = still loading -->
+        <div
+          v-if="stats.length"
+          class="grid pt-5 mt-5 border-t border-gray-100 dark:border-gray-800 divide-x divide-x-reverse divide-gray-100 dark:divide-gray-800"
+          :class="stats.length === 3 ? 'grid-cols-3' : 'grid-cols-2'"
+        >
+          <div v-for="item in stats" :key="item.label" class="text-center">
+            <USkeleton v-if="item.value === null" class="h-7 w-8 mx-auto" />
+            <p v-else class="text-xl font-semibold text-brand-500 dark:text-brand-400">{{ item.value.toLocaleString('fa-IR') }}</p>
+            <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-1">{{ item.label }}</p>
           </div>
         </div>
       </UCard>
@@ -118,8 +107,9 @@ defineProps({
   loading: Boolean,
   fullName: String,
   initials: String,
-  memberSince: String,
-  stats: Object,
+  roleLabel: { type: String, default: '' },
+  // [{label, value}]; empty = no stats row (staff)
+  stats: { type: Array, default: () => [] },
   avatarUrl: { type: String, default: null },
   avatarSaving: { type: Boolean, default: false },
 })

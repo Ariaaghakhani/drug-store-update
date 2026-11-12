@@ -1,4 +1,10 @@
 export default (apiCaller) => ({
+  // The logged-in user's own orders, any logged-in user (OrderCustomerController); params {page (0-based), size 1..100, status?}
+  // → PageResponse<OrderDTO>
+  listMyOrders(config) {
+    return apiCaller.get('api/orders/my', config)
+  },
+
   listOrders(config) {
     return apiCaller.post('api/orders/list', config)
   },

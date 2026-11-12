@@ -3,6 +3,8 @@ import { PANEL_MENUS, FALLBACK_MENUS_BY_ROLE } from '~/utils/panelMenus.js'
 
 const menuByKey = new Map(PANEL_MENUS.map((menu) => [menu.key, menu]))
 
+const ROLE_LABELS = { owner: 'مدیر داروخانه', admin: 'کارکنان داروخانه', customer: 'مشتری' }
+
 // Registry entry + optional overrides; `id` mirrors `key` for the panel.vue templates.
 const buildItem = (key, overrides = {}) => {
   const base = menuByKey.get(key)
@@ -107,8 +109,12 @@ export const useUserPanelTabs = () => {
     }
   }
 
+  // Persian label of getUserRole(), worded for a pharmacy; shown in the panel header, its account menu and the profile card
+  const getRoleLabel = () => ROLE_LABELS[getUserRole()]
+
   return {
     getUserRole,
+    getRoleLabel,
     getRoutesForRole,
     getMenuItems,
     hasAccessToRoute,

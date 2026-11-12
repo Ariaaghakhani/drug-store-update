@@ -25,6 +25,12 @@ export default (apiCaller) => ({
   },
 
   // ========== PRESCRIPTIONS ==========
+  // The logged-in user's own prescriptions (PrescriptionCustomerController); only in a store with the medical section,
+  // otherwise 403. params {page (0-based), size 1..100, status?} → PageResponse<PrescriptionDTO>
+  listMyPrescriptions(config) {
+    return apiCaller.get('api/prescriptions/my', config)
+  },
+
   listPrescriptions(config) {
     return apiCaller.post('api/prescriptions/list', config)
   },

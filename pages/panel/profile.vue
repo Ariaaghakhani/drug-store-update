@@ -6,7 +6,7 @@
         :loading="pending"
         :full-name="userFullName"
         :initials="userInitials"
-        :member-since="memberSince"
+        :role-label="getRoleLabel()"
         :stats="stats"
         :avatar-url="avatar.url.value"
         :avatar-saving="avatar.saving.value"
@@ -62,8 +62,37 @@ const emailVerified = ref(false)
 const emailAddress = ref('')
 const smsNotifications = ref(true)
 const maskedPhone = '0912•••6789'
-const memberSince = 'اردیبهشت ۱۴۰۳'
-const stats = { orders: 12, addresses: 3, prescriptions: 8 }
+// The user's own counts, for customers only: staff don't buy, and the store's numbers live on the dashboard.
+// A count stays null while loading; the prescriptions box drops out when the store has no medical section (403).
+const { getUserRole, getRoleLabel } = useUserPanelTabs()
+const counts = reactive({ orders: null, addresses: null, prescriptions: null })
+const hasPrescriptions = ref(true)
+const stats = computed(() => {
+  if (getUserRole() !== 'customer') return []
+  const items = [
+    { label: 'سفارش‌ها', value: counts.orders },
+    { label: 'آدرس‌های ذخیره‌شده', value: counts.addresses },
+  ]
+  if (hasPrescriptions.value) items.push({ label: 'نسخه‌های ارسالی', value: counts.prescriptions })
+  return items
+})
+
+const loadCounts = async () => {
+  if (getUserRole() !== 'customer') return
+  const personId = userStore.currentUser?.person?.id
+  const firstPage = { params: { page: 0, size: 1 } }
+  const [orders, addresses, prescriptions] = await Promise.allSettled([
+    app.$api.orders.listMyOrders(firstPage),
+    personId ? app.$api.address.getAddresses({ data: { personId } }) : Promise.reject(new Error('no person')),
+    app.$api.medical.listMyPrescriptions(firstPage),
+  ])
+  // a failed count shows 0 rather than a fake number
+  counts.orders = orders.status === 'fulfilled' ? orders.value.data.data?.totalElements ?? 0 : 0
+  counts.addresses = addresses.status === 'fulfilled' ? (addresses.value.data.data ?? []).length : 0
+  if (prescriptions.status === 'fulfilled') counts.prescriptions = prescriptions.value.data.data?.totalElements ?? 0
+  else hasPrescriptions.value = false
+}
+onMounted(loadCounts)
 
 const form = ref({
   firstName: '',
