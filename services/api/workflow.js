@@ -4,7 +4,8 @@
  * Every route exists only when the store has workflow switched on (`workflow.enabled`): a 403 (no grant) or 404 (route
  * missing) on any call means "workflow unavailable for this store" (see `isWorkflowUnavailable` in utils/workflowMeta.js).
  * Payload = `res.data.data` (no RAW endpoints here). `taskId` is a string, so it is always `encodeURIComponent`-ed;
- * instance and definition ids are numbers. C20–C22 add the monitoring, designer and calendar sections below.
+ * instance and definition ids are numbers. Sections: task inbox (C19), run reads (C19), run monitoring (C20); C21 (bindings,
+ * calendar, custom events) and C22 (designer) append their own sections below.
  */
 const TASKS = 'api/admin/workflow/tasks'
 const INSTANCES = 'api/admin/workflow/instances'
@@ -85,5 +86,42 @@ export default (apiCaller) => ({
   // Blob of one run attachment (attachmentId from getInstance().attachments[].id); consume with useFileDownload()
   instanceAttachment(id, attachmentId) {
     return apiCaller.get(`${INSTANCES}/${id}/attachments/${attachmentId}`, { responseType: 'blob' })
+  },
+
+  // ========== RUN MONITORING (C20, module WORKFLOW_MONITOR) ==========
+  // Note: the run detail and attachment reads above need WORKFLOW_TASK, the calls below need WORKFLOW_MONITOR.
+
+  // GET, 0-based `page`, `size` 1..100, newest first, via config.params {status? RUNNING|COMPLETED|REJECTED|RETURNED|CANCELLED|FAILED
+  // (any other value is a 400), subject? (code), entityId? (string), definitionId?, startedByUserId?, from?, to? (both yyyy-MM-dd; `to`
+  // is inclusive, both filter the START day), page, size} → PageResponse<WorkflowInstanceDTO>. The DTO carries codes only
+  // (`subject`, `action`), no titles: take them from listSubjects()
+  listInstances(config) {
+    return apiCaller.get(INSTANCES, config)
+  },
+
+  // module WORKFLOW_DESIGN (not MONITOR: a monitor without the designer grant gets a 403 and must fall back to codes).
+  // [{code, title, actions[{code, title}], fields[{key, title, type NUMBER|TEXT|BOOLEAN|ID}], events[{code, title}]}], sorted by code.
+  // `events` are the built-in ones only; custom events (C21) come from listCustomEvents()
+  listSubjects() {
+    return apiCaller.get('api/admin/workflow/subjects')
+  },
+
+  // POST, no body. Re-queues the failed system steps (3 more tries). Answers the WorkflowInstanceDetailDTO. 409
+  // `workflow.instance.not.running` (run ended) or `workflow.instance.no.incident` (nothing failed)
+  retryInstance(id) {
+    return apiCaller.post(`${INSTANCES}/${id}/retry`)
+  },
+
+  // body {reason (required, <=500)}. Only a RUNNING run (409 `workflow.instance.not.running` otherwise). The record goes back to its
+  // state before the request, as after a rejection. Answers the WorkflowInstanceDTO (status CANCELLED, endReason = reason)
+  cancelInstance(id, config) {
+    return apiCaller.post(`${INSTANCES}/${id}/cancel`, config)
+  },
+
+  // POST api/admin/workflow/events, body {subject (<=50), entityId (<=64, string), event (<=50)}. Moves every RUNNING run of that
+  // RECORD (not one run) that waits for this event on. Answers the Integer number of steps that moved on (0 = nothing was waiting).
+  // 400 `workflow.event.unknown` when the event is neither built in for the subject nor a custom event
+  publishEvent(config) {
+    return apiCaller.post('api/admin/workflow/events', config)
   },
 })

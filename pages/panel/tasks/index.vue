@@ -21,6 +21,8 @@
       </template>
     </PanelPageHeader>
 
+    <WorkflowTabs />
+
     <UCard>
       <div v-if="!unavailable" class="flex flex-wrap items-center justify-between gap-3 mb-5">
         <UTabs v-model="filters.scope" :items="tabItems" :content="false" variant="link" color="primary" />
@@ -152,6 +154,7 @@
 <script setup>
 import PanelPageHeader from '@/components/panel/PanelPageHeader.vue'
 import PanelEmptyState from '@/components/panel/PanelEmptyState.vue'
+import WorkflowTabs from '@/components/panel/workflow/WorkflowTabs.vue'
 import { formatJalali } from '~/utils/jalali.js'
 import { isWorkflowUnavailable, taskTitle } from '~/utils/workflowMeta.js'
 

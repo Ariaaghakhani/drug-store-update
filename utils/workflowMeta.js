@@ -1,7 +1,7 @@
 // Labels, colors and helpers for BACK's workflow enums. The Persian labels are copied from BACK's `WorkflowPageLabels.java`
 // (verified 2026-11-12). `*_META` maps are `{label, color}` with a Nuxt UI color token, `*_LABELS` maps are plain strings;
 // read both through `metaOf` / `labelOf` (utils/enumMeta.js) so an unknown BACK value never breaks a screen.
-// Sections: runs and decisions (C19), definitions and calendar (C20–C22), designer labels (C21), helpers.
+// Sections: runs and decisions (C19), definitions and calendar (C20–C22), designer labels (C21), helpers (C19, C20).
 
 // ---------- runs and decisions (C19) ----------
 export const INSTANCE_STATUS_META = {
@@ -117,6 +117,9 @@ export const entityIdLabel = (id) => {
   const text = String(id ?? '')
   return /^\d+$/.test(text) ? Number(text).toLocaleString('fa-IR') : text
 }
+
+// A purely numeric record id is a number (fa-IR digits, no direction fix); any other id is a code and stays left-to-right
+export const entityIdDir = (id) => (/^\d+$/.test(String(id ?? '')) ? undefined : 'ltr')
 
 // Card/page title of a task or run: BACK's ready-made summary title, else «<subject title> #<entity id>»
 export const taskTitle = (task) => {
