@@ -425,6 +425,16 @@ const accountMenuItems = computed(() => [
   [{ label: 'خروج از حساب', icon: 'i-heroicons-arrow-right-on-rectangle', color: 'error', onSelect: handleLogout }],
 ])
 
+// Open workflow tasks (mine + claimable) for the «کارتابل» menu badge; same polling pattern, staff with WORKFLOW_TASK only
+const workflowTasks = useWorkflowTaskCount()
+onMounted(() => {
+  workflowTasks.refresh()
+  workflowTasks.start()
+})
+onBeforeUnmount(workflowTasks.stop)
+// The user can load after the panel mounts (hard reload): count as soon as it is known
+watch(() => userStore.currentUser?.id, () => workflowTasks.refresh())
+
 // Computed
 const userFullName = computed(() => {
   const user = userStore.currentUser || app.$auth.user
@@ -462,7 +472,13 @@ const roleBadgeColor = computed(() => {
   return colors[userRole.value] || 'gray'
 })
 
-const menuItems = computed(() => getMenuItems())
+// The tasks entry carries the open count as a Persian-digit badge (undefined when there is nothing open)
+const menuItems = computed(() => {
+  const openTasks = (workflowTasks.count.value?.mine ?? 0) + (workflowTasks.count.value?.claimable ?? 0)
+  return getMenuItems().map((item) =>
+    item.key === 'tasks' && openTasks > 0 ? { ...item, badge: openTasks.toLocaleString('fa-IR') } : item
+  )
+})
 
 const _colorMode = useColorMode()
 const colorMode = computed(() => _colorMode.value)
@@ -490,6 +506,7 @@ const handleLogout = async () => {
     await app.$api.auth.logout().catch(() => {})
     notifications.reset()
     avatar.reset()
+    workflowTasks.reset()
     app.$auth.reset()
     toast.add({
       title: 'خروج موفق',

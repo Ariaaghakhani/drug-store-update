@@ -36,6 +36,7 @@ import commerceAdmin from '@/services/api/commerceAdmin.js'
 import storefront from '@/services/api/storefront.js'
 import notification from '@/services/api/notification.js'
 import storeSettings from '@/services/api/storeSettings.js'
+import workflow from '@/services/api/workflow.js'
 
 export default (apiCaller, apiInstances) => ({
   // ========== AUTHENTICATION ==========
@@ -99,6 +100,9 @@ export default (apiCaller, apiInstances) => ({
 
   // ========== PANEL ROUTES ==========
   address: address(apiCaller),
+
+  // ========== WORKFLOW ==========
+  workflow: workflow(apiCaller),
 
   // ========== API INSTANCES ==========
   instances: apiInstances,

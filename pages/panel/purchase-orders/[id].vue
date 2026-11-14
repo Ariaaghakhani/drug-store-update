@@ -213,6 +213,12 @@
               </table>
             </div>
           </UCard>
+
+          <EntityWorkflowCard
+            subject="PURCHASE_ORDER"
+            :entity-id="po.id"
+            :reload-key="`${po.status}-${po.workflow?.pending ?? false}`"
+          />
         </div>
       </Transition>
     </div>
@@ -239,6 +245,7 @@ import PanelConfirmDialog from '@/components/panel/PanelConfirmDialog.vue'
 import StatusBadge from '@/components/panel/StatusBadge.vue'
 import WorkflowPendingBadge from '@/components/panel/WorkflowPendingBadge.vue'
 import PurchaseOrderForm from '@/components/panel/purchase-orders/PurchaseOrderForm.vue'
+import EntityWorkflowCard from '@/components/panel/workflow/EntityWorkflowCard.vue'
 import ReceiveModal from '@/components/panel/purchase-orders/ReceiveModal.vue'
 import { formatMoney } from '~/utils/money.js'
 import { formatJalali } from '~/utils/jalali.js'

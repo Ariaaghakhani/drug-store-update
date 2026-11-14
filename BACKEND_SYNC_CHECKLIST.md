@@ -73,7 +73,7 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - [ ] C16. SMS account + SMS campaigns
 - [x] C17. Prescriptions administration + insurances
 - [ ] C18. Reports (`report/*`), audit search, backups
-- [ ] C19. Workflow: task inbox (list, count, detail, claim, decide, comment, attachments, reassign)
+- [x] C19. Workflow: task inbox (list, count, detail, claim, decide, comment, attachments, reassign)
 - [ ] C20. Workflow: run monitoring (instances, filters, retry, cancel, answers)
 - [ ] C21. Workflow: bindings, calendar + holidays, custom events
 - [ ] C22. Workflow: designer (definitions, validate, publish, versions, export/import)
@@ -114,3 +114,4 @@ sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wr
 - C14+C15 (2026-11-11, Haiku): imports page (goods Excel, images, opening stock), stock movements, insights tabs (wishlist, stock alerts, search logs). eslint clean + build OK; not exercised against the dev backend. Note: crm.js doc comment calls the import body raw but it is ApiResponse-wrapped.
 - B11 (2026-11-11, Haiku): customer prescriptions (list, submit, detail, confirm, receipt) gated by prescriptionEnabled. eslint clean + build OK; not exercised against the dev backend. Staff view of /panel/prescriptions is C17. Stale prescription calls remain in services/api/medical.js (unused).
 - C17 (2026-11-11): staff prescriptions: admin list with filters, insurances modal, detail with respond, receipt approve/reject, ready/ship/deliver, cancel, delete. eslint clean + build OK; endpoints checked against PrescriptionAdminController and PrescriptionInsuranceAdminController; not exercised against the dev backend.
+- C19 (2026-11-14, Sonnet): workflow task inbox: /panel/tasks list (mine / claimable, counts, overdue switch), task detail with timeline, claim/unclaim, decide with comment + attachments, note, reassign (WORKFLOW_MONITOR), «کارتابل» sidebar badge (60 s polling), workflow-runs card on purchase-order and staff return pages. Wrappers and labels checked against WorkflowTaskController / WorkflowInstanceController / WorkflowPageLabels (main 2026-11-12). eslint: no errors in the C19 files (pre-existing unused `roleBadgeColor` in panel.vue) + build OK; not exercised against the dev backend. Open: the card's «جزئیات اجرا» link targets /panel/workflow/instances/<id>, which arrives with C20; «ثبت یادداشت» needs BACK's 2026-11 decision-comment SQL migration applied.

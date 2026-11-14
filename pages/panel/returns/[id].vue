@@ -223,6 +223,14 @@
             </div>
           </UCard>
 
+          <!-- Approval runs of this return (staff only; the card hides itself when there are none) -->
+          <EntityWorkflowCard
+            v-if="isStaff"
+            subject="ORDER_RETURN"
+            :entity-id="ret.id"
+            :reload-key="`${ret.status}-${ret.workflow?.pending ?? false}`"
+          />
+
           <!-- Tracking code (customer sends the parcel back; staff only read it above) -->
           <UCard v-if="showTracking">
             <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-1">کد رهگیری مرسوله</h4>
@@ -345,6 +353,7 @@ import WorkflowPendingBadge from '@/components/panel/WorkflowPendingBadge.vue'
 import ReturnApproveModal from '@/components/panel/returns/ReturnApproveModal.vue'
 import ReturnReceiveModal from '@/components/panel/returns/ReturnReceiveModal.vue'
 import ReturnRefundModal from '@/components/panel/returns/ReturnRefundModal.vue'
+import EntityWorkflowCard from '@/components/panel/workflow/EntityWorkflowCard.vue'
 import { apiErrorMessage, isPending } from '~/utils/apiError.js'
 import { formatMoney } from '~/utils/money.js'
 
