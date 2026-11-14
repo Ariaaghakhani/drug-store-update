@@ -14,7 +14,10 @@
                 <div
                   class="pb-6 border-b border-gray-200 dark:border-gray-700"
                 >
-                  <BrandLogo />
+                  <!-- same as the storefront Header: the logo goes to the home page -->
+                  <NuxtLink to="/" aria-label="صفحه اصلی" class="inline-flex rounded-lg">
+                    <BrandLogo />
+                  </NuxtLink>
                 </div>
 
                 <!-- Navigation Menu -->
@@ -99,27 +102,62 @@
               <!-- Profile Banner -->
               <UCard class="hidden md:block">
                 <div class="flex items-center gap-4 flex-wrap sm:flex-nowrap">
-                  <div
-                    class="w-14 h-14 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center shadow-md flex-shrink-0"
-                  >
-                    <span class="text-xl font-bold text-white">{{
-                      userInitials
-                    }}</span>
-                  </div>
+                  <!-- Photo + name open the account menu -->
                   <div class="flex-1 min-w-0">
-                    <h3
-                      class="text-base font-black text-gray-900 dark:text-white"
+                    <UDropdownMenu
+                      dir="rtl"
+                      :items="accountMenuItems"
+                      :content="{ align: 'start' }"
+                      :ui="{ content: 'font-dana w-64' }"
                     >
-                      سلام،
-                      <span class="text-brand-500 dark:text-brand-400">{{
-                        userFullName
-                      }}</span>
-                    </h3>
-                    <p
-                      class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate"
-                    >
-                      کد مشتری {{ customerId }}
-                    </p>
+                      <button
+                        type="button"
+                        aria-label="منوی حساب کاربری"
+                        class="group flex items-center gap-4 max-w-full rounded-xl p-1 -m-1 text-start hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
+                      >
+                        <span
+                          class="w-14 h-14 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full overflow-hidden flex items-center justify-center shadow-md flex-shrink-0"
+                        >
+                          <img v-if="avatar.url.value" :src="avatar.url.value" alt="" class="w-full h-full object-cover" />
+                          <span v-else class="text-xl font-bold text-white">{{ userInitials }}</span>
+                        </span>
+                        <span class="min-w-0">
+                          <span class="block text-base font-black text-gray-900 dark:text-white">
+                            سلام،
+                            <span class="text-brand-500 dark:text-brand-400">{{ userFullName }}</span>
+                          </span>
+                          <span class="block text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                            {{ roleLabel }}
+                          </span>
+                        </span>
+                        <UIcon
+                          name="i-heroicons-chevron-down"
+                          class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform group-data-[state=open]:rotate-180"
+                        />
+                      </button>
+
+                      <template #account>
+                        <div class="flex items-center gap-3 w-full py-1">
+                          <span
+                            class="w-10 h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
+                          >
+                            <img v-if="avatar.url.value" :src="avatar.url.value" alt="" class="w-full h-full object-cover" />
+                            <span v-else class="text-sm font-bold text-white">{{ userInitials }}</span>
+                          </span>
+                          <span class="min-w-0 text-start">
+                            <span class="block text-sm font-bold text-gray-900 dark:text-white truncate">{{ userFullName }}</span>
+                            <span class="block text-xs font-normal text-gray-500 dark:text-gray-400">{{ roleLabel }}</span>
+                          </span>
+                        </div>
+                      </template>
+                    </UDropdownMenu>
+                    <input
+                      ref="avatarInput"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      class="hidden"
+                      @change="onAvatarPicked"
+                    />
                   </div>
                   <div class="flex-shrink-0 text-end">
                     <p class="text-xl font-black text-gray-900 dark:text-white leading-tight">
@@ -163,13 +201,16 @@
             <div
               class="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800"
             >
-              <div
-                class="w-12 h-12 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center flex-shrink-0"
+              <NuxtLink
+                to="/panel/profile"
+                aria-label="عکس پروفایل، رفتن به اطلاعات شخصی"
+                class="w-12 h-12 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
               >
-                <span class="text-base font-bold text-white">{{
+                <img v-if="avatar.url.value" :src="avatar.url.value" alt="" class="w-full h-full object-cover" />
+                <span v-else class="text-base font-bold text-white">{{
                   userInitials
                 }}</span>
-              </div>
+              </NuxtLink>
               <div class="flex flex-1 min-w-0 flex-wrap *:w-full gap-y-2">
                 <p class="font-semibold text-gray-900 dark:text-white truncate">
                   {{ userFullName }}
@@ -324,7 +365,7 @@ definePageMeta({
 
 const app = useNuxtApp()
 const toast = useToast()
-const { getMenuItems, getUserRole, refreshMenus } = useUserPanelTabs()
+const { getMenuItems, getUserRole, getRoleLabel, refreshMenus } = useUserPanelTabs()
 
 // Keep the cached menus in sync with BACK (permissions can change between logins)
 onMounted(refreshMenus)
@@ -338,6 +379,40 @@ onMounted(() => {
   notifications.startPolling()
 })
 onBeforeUnmount(notifications.stopPolling)
+
+// Own photo in the header; photo + name open the account menu below
+const avatar = useMyAvatar()
+onMounted(avatar.load)
+
+const avatarInput = ref(null)
+const onAvatarPicked = (event) => {
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  if (file) avatar.changeWithFeedback(file)
+}
+
+const roleLabel = computed(() => getRoleLabel())
+
+// Groups render with separators; the first is the photo + name header (#account slot)
+const accountMenuItems = computed(() => [
+  [{ type: 'label', slot: 'account' }],
+  [
+    { label: 'داشبورد', icon: 'i-heroicons-rectangle-group', to: '/panel/dashboard' },
+    {
+      label: avatar.url.value ? 'تغییر عکس' : 'افزودن عکس',
+      icon: 'i-heroicons-camera',
+      onSelect: () => avatarInput.value?.click(),
+    },
+    ...(avatar.url.value
+      ? [{ label: 'حذف عکس', icon: 'i-heroicons-trash', onSelect: avatar.removeWithFeedback }]
+      : []),
+  ],
+  [
+    { label: 'اطلاعات شخصی', icon: 'i-heroicons-user', to: '/panel/profile' },
+    { label: 'رمز عبور و امنیت', icon: 'i-heroicons-shield-check', to: '/panel/security' },
+  ],
+  [{ label: 'خروج از حساب', icon: 'i-heroicons-arrow-right-on-rectangle', color: 'error', onSelect: handleLogout }],
+])
 
 // Computed
 const userFullName = computed(() => {
@@ -356,11 +431,6 @@ const userInitials = computed(() => {
   return (first + last).toUpperCase() || 'ک'
 })
 
-const customerId = computed(() => {
-  const user = userStore.currentUser || app.$auth.user
-  if (!user?.id) return '----'
-  return String(user.id).slice(-6)
-})
 
 const todayWeekday = computed(() =>
   new Date().toLocaleDateString('fa-IR', { weekday: 'long' })
@@ -408,6 +478,7 @@ const handleLogout = async () => {
     // Revokes this device's refresh cookie; BACK identifies the session from the cookie, and a failure mustn't block logout
     await app.$api.auth.logout().catch(() => {})
     notifications.reset()
+    avatar.reset()
     app.$auth.reset()
     toast.add({
       title: 'خروج موفق',

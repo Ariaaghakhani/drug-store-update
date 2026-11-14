@@ -9,7 +9,9 @@
       >
         <!-- Brand Section -->
         <div class="sm:col-span-2 lg:col-span-1">
-          <BrandLogo class="mb-4" force-dark />
+          <NuxtLink to="/" aria-label="صفحه اصلی" class="inline-flex mb-4 rounded-lg">
+            <BrandLogo force-dark />
+          </NuxtLink>
           <p class="text-sm leading-7 mb-6 text-gray-400">
             داروخانه آنلاین قابل اعتماد شما که راه‌حل‌های سلامت و تندرستی را با
             فناوری پیشرفته و مراقبت شخصی‌سازی شده ارائه می‌دهد.

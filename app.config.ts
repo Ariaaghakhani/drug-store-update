@@ -27,10 +27,12 @@ export default defineAppConfig({
     },
     toast: {
       slots: {
-        root: 'relative group overflow-hidden bg-default shadow-lg rounded-lg ring ring-default p-4 flex flex-row-reverse gap-2.5 focus:outline-none', // Added flex-row-reverse
+        // The toaster renders inside app.vue's dir="rtl", so plain flex already puts icon + text on the right and the
+        // close button on the left; flex-row-reverse/text-end flipped it back to LTR
+        root: 'relative group overflow-hidden bg-default shadow-lg rounded-lg ring ring-default p-4 flex gap-2.5 focus:outline-none',
         wrapper: 'w-0 flex-1 flex flex-col',
-        title: 'text-sm font-medium font-dana text-highlighted text-end', // Added text-right
-        description: 'text-sm text-muted text-end font-dana', // Added text-right
+        title: 'text-sm font-medium font-dana text-highlighted text-start',
+        description: 'text-sm text-muted text-start font-dana',
         icon: 'shrink-0 size-5',
         avatar: 'shrink-0',
         avatarSize: '2xl',

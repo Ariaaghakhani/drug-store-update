@@ -323,7 +323,7 @@ Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, `object-cover
 ### Panel / pharmacist (`panel.vue` + `layouts/panel.vue`)
 - Desktop: `UCard` sidebar (logo, nav from `useUserPanelTabs().getMenuItems()`, quick links, logout in red).
 - Active link: `!bg-teal-50 dark:!bg-teal-900/20 !text-teal-600 dark:!text-teal-400 font-medium`.
-- Profile banner with gradient avatar `from-teal-400 to-teal-600`, initials.
+- Profile banner with gradient avatar `from-teal-400 to-teal-600`, initials, or the user's photo (`object-cover`, `overflow-hidden`) when set. The header avatar is a link to `/panel/profile` (hover `ring-2 ring-brand-500`); on desktop the banner's photo + name are one ghost button (`rounded-xl hover:bg-gray-50`, chevron that turns on `data-state=open`) opening a `w-64` account `UDropdownMenu`: header item (photo `w-10`, bold name, muted role), then grouped items with heroicons, logout last in `color="error"`; on the profile card the avatar circle itself opens the file picker, with a camera badge and ghost `xs` "تغییر عکس" / `error` "حذف عکس" buttons, and a spinner overlay while saving.
 - Mobile: fixed bottom nav (home / products / profile) + slide-up profile sheet.
 - Roles: customer / admin / owner (labels مشتری / مدیر / مالک).
 
@@ -381,7 +381,7 @@ Wrapped in `UCard :ui="{ body: 'p-0' }"` with `overflow-x-auto`. `<thead>` uses 
 - **Loading grid:** `USkeleton` ×12, `h-80 w-full`, in the product grid columns.
 - **No results (`medications/index.vue`):** `i-heroicons-magnifying-glass` w-20 + "محصولی یافت نشد".
 - **Failed load (panel lists):** never show a failed fetch as "nothing here". Use the empty-state layout with `i-heroicons-exclamation-triangle` and a `neutral soft` retry button, or `i-heroicons-lock-closed` and no button for a 403, and hide metrics that would read as zero.
-- **Toast:** top-center, 3s, RTL (`app.config.ts`); use `color: 'success'` and `color: 'error'`. Never pass `'green'` or `'red'`.
+- **Toast:** top-center, 3s, RTL (`app.config.ts`): icon + title/description on the right (`text-start`), close ✕ on the left. The toaster renders inside `app.vue`'s `dir="rtl"`, so never add `flex-row-reverse`/`text-end` to the toast slots (that flipped it back to LTR until 2026-11-13); modals' default header is already right (title right, ✕ left); use `color: 'success'` and `color: 'error'`. Never pass `'green'` or `'red'`.
 
 ### USkeleton
 - Default animation overridden globally in `app.config.ts` to use `.skeleton-shimmer` (replaces `animate-pulse`).

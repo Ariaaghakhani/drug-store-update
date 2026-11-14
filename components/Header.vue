@@ -300,7 +300,9 @@
           <div
             class="flex bg-white dark:bg-gray-900 items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800"
           >
-            <BrandLogo :size="32" text-class="text-lg" />
+            <NuxtLink to="/" aria-label="صفحه اصلی" class="inline-flex rounded-lg" @click="closeMobileMenu">
+              <BrandLogo :size="32" text-class="text-lg" />
+            </NuxtLink>
             <button
               class="p-2 rounded-lg text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
               @click="closeMobileMenu"
