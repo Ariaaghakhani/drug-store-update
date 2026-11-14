@@ -1,0 +1,121 @@
+# Backend sync checklist
+
+Backend source: `C:\Users\Aria Aghakhani\PouyanPars\PouyanPlatform` (main). Contracts: its `docs/FRONTEND_CHANGELOG.md`
+and `docs/FRONTEND_FEATURES_BY_USER.md`. Created 2026-11-10 from a route-by-route diff of the backend controllers against
+this repo.
+
+Detailed per-item plan: **`BACKEND_SYNC_PLAN_V2.md`** (Opus, 2026-11-10, verified against backend main; wins over `BACKEND_SYNC_PLAN.md`). Execute its "Execution order" step list; no decisions are left open.
+Each item/sub-step is implemented by a Haiku subagent; the main session reviews the diff, builds, commits, pushes (PR #66)
+and ticks the item. Execute in the plan's section 4 order, NOT the A/B/C order:
+P0, P1, P2, P3, A4, B9, B10, B8, B7, B5, B6, B3, B4, C4, C5, C3, C6, B1, B2, C1, C2, C7-C15, B11, C17, C16, C18, C19-C22.
+Defaults taken for the plan's open decisions: D1 money shown as backend sends (admin inputs labelled «ریال»), D2 grouped
+sidebar yes, D3 Jalali inputs yes, D4 workflow designer JSON fallback, D5 B10 wrapper only.
+
+## Prerequisites (from the plan, section 2)
+- [x] P0. Grouped sidebar mechanism (`utils/panelMenus.js`, `useUserPanelTabs.js`, `pages/panel.vue`)
+- [x] P1. File download + blob responses (`plugins/api.js` responseType, `composables/useFileDownload.js`)
+- [x] P2. `composables/usePagedList.js` + `components/panel/PanelEmptyState.vue`
+- [x] P3. Jalali dates (`utils/jalali.js`, `components/panel/JalaliDateInput.vue`)
+
+## Loop rules (one item per iteration)
+1. Pick the first unchecked item below.
+2. Read that module's `CLAUDE.md`, `DESIGN_SYSTEM.md`, and the backend controller + DTOs for the item. Verify against
+   source, do not guess.
+3. Implement: wrapper in `services/api/<domain>.js` (register in `index.js` if new), then the screen/page. Follow
+   `CLAUDE.md` conventions (JS `<script setup>`, logical RTL props, valid Nuxt UI colors, `fa-IR` numbers, skeletons).
+4. Update the touched modules' `CLAUDE.md` in the same change, and `DESIGN_SYSTEM.md` if a new pattern appears.
+5. Test: `npx eslint` on touched files, `npm run build`, and exercise the screen against the dev backend when reachable
+   (else say so in the Done log). Fix failures before committing.
+6. Tick the item, add a one-line note (incl. what was tested), commit (one commit per item), `git push` the branch
+   (user authorised push per item on 2026-11-10), then continue with the next.
+7. Stop the loop and ask the user if an item needs a product/design decision or a backend answer. Record it under
+   "Blocked".
+
+## A. Cross-cutting
+- [x] A1. `plugins/api.js`: global handler for HTTP 202 `{pending, requestId, instanceId, status}` (toast
+      «ثبت شد و منتظر تأیید است», do not treat `data` as the saved record) and 409 `workflow.action.pending`
+- [x] A2. Docs: categories tree is public now (`services/api/CLAUDE.md`, `BACKEND_REQUESTS.md` item 1 resolved)
+- [x] A3. Store flags: make sure every storefront section/page respects `useStoreProfile` flags
+      (`orderingEnabled`+banner, `prescriptionEnabled`, `wishlistEnabled`, `walletEnabled`, `stockAlertsEnabled`,
+      `goodsQuestionsEnabled`, `expiryRequired`, `variantsEnabled`)
+- [x] A4. Terms pending dialog after login (`GET auth/me/terms/pending`, `POST auth/me/terms/accept`)
+
+## B. Storefront / customer
+- [x] B1. Checkout: shipping methods + pickup slots (`GET shipping/methods`, `/{id}/slots`) in `cart.vue`
+- [x] B2. Checkout: discount code, wallet payment (`useWallet`), gateways list (`GET payment/gateways`)
+- [x] B3. My orders: `GET orders/my`, order items, invoice PDF (`invoices/pdf`)
+- [x] B4. Customer returns: returnable items, request, photos, list/detail, cancel, tracking code
+- [x] B5. Reviews: write/list/delete mine (`reviews/my*`) on product page + panel
+- [x] B6. Questions: ask/list/delete mine (`questions/my*`)
+- [~] B7. Blog: delete my comment (`DELETE blog/comments/{id}`)
+- [x] B8. Captcha (`captcha/status`, `POST captcha`) on login/register/contact
+- [x] B9. Password policy hint under password fields (`GET auth/password-policy`)
+- [x] B10. Province cities by slug (`locations/provinces/by-slug/{slug}/cities`) if still useful
+- [x] B11. Customer prescriptions (only if `prescriptionEnabled`): options, send, list/detail/image, confirm, cancel,
+      receipt
+
+## C. Panel (staff)
+- [x] C1. Returns administration (`admin/returns*`, `admin/order-refunds/{id}/paid`)
+- [x] C2. Purchase orders: submit / receive / close / cancel
+- [x] C3. Discount codes CRUD
+- [x] C4. Shipping methods CRUD (`admin/shipping-methods`)
+- [x] C5. Store payment gateways (`admin/payment-gateways`)
+- [x] C6. Wallet administration (`admin/wallets*`)
+- [x] C7. Store customers (CRUD, import, export)
+- [x] C8. Review moderation (`admin/reviews*`) and Q&A moderation (`admin/questions*`)
+- [x] C9. Blog administration: posts, tags, comments
+- [x] C10. Contact messages + contact settings
+- [x] C11. About us, terms (+acceptances), return policy admin
+- [x] C12. Store settings, password policy, my-organization
+- [x] C13. Attributes + category assignment, goods variants
+- [x] C14. Goods import, goods-images import, opening-stock import
+- [x] C15. Stock movements, top wishlist / stock alerts, search-query logs
+- [x] C16. SMS account + SMS campaigns
+- [x] C17. Prescriptions administration + insurances
+- [x] C18. Reports (`report/*`), audit search (backups: platform-only, not built)
+- [x] C19. Workflow: task inbox (list, count, detail, claim, decide, comment, attachments, reassign)
+- [x] C20. Workflow: run monitoring (instances, filters, retry, cancel, answers)
+- [x] C21. Workflow: bindings, calendar, custom events (official holidays: platform-only, shown read-only)
+- [ ] C22. Workflow: designer (definitions, validate, publish, versions, export/import)
+
+## Blocked / needs a decision
+- Platform admin (`TenantController`, SMS quotas, `admin/access`): served by the backend's Thymeleaf panel. Not planned.
+
+## Done log
+- A1 (2026-11-10): `plugins/api.js` toasts 202 pending + sets `pending:true` on the result; 409 left to callers' normal error display.
+- A2 (2026-11-10): stale "category tree 401 for guests" notes updated (storefront.js, useStoreCategories.js, services/api/CLAUDE.md, BACKEND_REQUESTS.md). Runtime behaviour unchanged.
+- A3 (2026-11-10): audited flags; only gap was `variantsEnabled` (product-page variant picker) — now gated. Others already gated; wallet-at-checkout belongs to B2, prescription pages to B11. Tested: eslint (only pre-existing warnings) + `npm run build` OK.
+- P0 (2026-11-10, Haiku): grouped-sidebar mechanism (GROUP_LABELS + headings/dividers in desktop nav). No entry uses `group` yet so the sidebar is unchanged. Lint: only a pre-existing unused `roleBadgeColor` error in panel.vue. Build pending with P1.
+- P1 (2026-11-10, Haiku): `config.responseType` pass-through in plugins/api.js (+ cache-key suffix), `composables/useFileDownload.js` (download/previewUrl). Lint OK. First real use: B3 invoice PDF.
+- P3 (2026-11-10, Haiku): utils/jalali.js (Intl-based) + JalaliDateInput.vue. Node-verified: 1405/01/01→2026-03-21, 1403/12/30→2025-03-20, invalid days→null, 1400–1410 round-trip 0 mismatches. UInput blur/Enter not yet exercised in a browser (first consumer C3).
+- P2 (2026-11-10, Haiku): `usePagedList` (stale-response guard, filters reset to page 1) + `PanelEmptyState`. Lint OK; first consumer will exercise it (B4/C4).
+- A4 (2026-11-10, Haiku): pending-terms dialog (usePendingTerms + TermsPendingDialog, mounted in app.vue; non-dismissible, htmlToText, errors swallowed). eslint + build OK; not exercised in a browser/dev backend (needs a user with a newly published terms version).
+- B9 (2026-11-10, Haiku): `usePasswordRules` + live rule list in RegisterStep/ResetPasswordStep/ChangePasswordModal (fallback min 8 if the call fails; policy cached per app load). eslint OK; not exercised in a browser.
+- B10 (2026-11-10, Haiku): wrapper only (`address.getCitiesBySlug`), no UI. Route verified in LocationController. eslint + build OK.
+- B8a (2026-11-10, Haiku): `CaptchaField` + auth wrappers + contact page. eslint: only 2 pre-existing no-dynamic-delete errors in contact.vue. B8b (login/register/forgot OTP) still to do.
+- B8b (2026-11-10, Haiku): captcha on password login, login-OTP send, register send-otp, forgot-password send-otp (+resends; OTP step resend-only). Bodies verified against AuthServiceImpl; verify-otp untouched. eslint 0 errors, build OK; not exercised in a browser.
+- B7 (2026-11-10, Haiku) PARTIAL: delete button for comments remembered in this browser (localStorage), since BlogCommentDTO has no `mine`; request filed as BACKEND_REQUESTS.md §3. A just-posted PENDING comment isn't listed so it gets the button only after approval. eslint + build OK; not exercised in a browser.
+- B5 (2026-11-10, Haiku): customer reviews — «نظر شما» block in ProductReviews (star picker, edit/delete, non-buyer hint), /panel/reviews «نظرهای من» (usePagedList), reviewMeta, wrappers. Customer sidebar entry has group '' (no lone heading). Staff moderation is C8. eslint clean + build OK; not exercised in a browser.
+- B6 (2026-11-10, Haiku): customer questions — ask form in ProductQuestions (anonymous/private switches), /panel/questions «پرسش‌های من», questionMeta, wrappers. No 202 branch (customer writes return 200). Staff moderation is C8. eslint clean + build OK; not exercised in a browser.
+- B3 (2026-11-10, Haiku): CustomerOrders now uses GET orders/my via usePagedList (status filter stays client-side, narrows the current page only); invoice number + «دانلود فاکتور» PDF download on the order page (first use of useFileDownload). eslint clean + build OK; not exercised in a browser. Follow-up for BACK: a status param on /api/orders/my.
+- B4a (2026-11-10, Haiku): returns wrappers (services/api/returns.js, staff flag), returnMeta, /panel/returns list + detail (cancel, tracking code, photos), menu entry. Money shown as تومان pending decision D1. Photos fetched via instances.default (same as tickets; bypasses 401 refresh). eslint clean + build OK; not exercised in a browser. B4b (request modal + photos) still to do.
+- B4b (2026-11-10, Haiku): ReturnRequestModal + ReturnPhotosField (≤5 images, 20 MB) + «درخواست مرجوعی» on delivered paid orders. Gap: no way to re-upload a photo from the detail page if one fails at creation (follow-up). eslint clean + build OK; not exercised in a browser.
+- C4 (2026-11-11, Haiku, plan V2 steps S0+C4a-c): shipping admin list/form/rates/slots/hours; shared panel utils (money, enumMeta, apiError, PanelFormModal etc.) landed in f086051. eslint clean + build OK; not exercised against the dev backend.
+- C5+C3 (2026-11-11, Haiku): payment gateways under /panel/settings (shell + tabs) and discount codes admin (list + form). eslint clean + build OK; not exercised against the dev backend.
+- C6+B1 (2026-11-11, Haiku): wallet admin (list/detail/adjust) and checkout shipping methods + slots (CheckoutModal extracted from cart.vue). eslint clean + build OK; not exercised against the dev backend. Follow-up: stores/cart.js `total` still adds placeholder shipping.
+- B2 (2026-11-11, Haiku): checkout discount code, gateways, wallet payment, terms; cart total no longer adds placeholder shipping. eslint 0 errors + build OK; not exercised against the dev backend. Follow-up: fixed 500,000 free-shipping hint in pages/cart.vue (~line 236) should become method-driven.
+- C1 (2026-11-11, Haiku): staff returns list/detail (approve/reject/cancel/receive/refund), order refunds card, cancel paid order, staff-created return. eslint 0 errors + build OK; not exercised against the dev backend.
+- C2 (2026-11-11, Haiku): purchase orders list/new/detail/receive + supplier quick-create; old PO wrappers had wrong paths and were rewritten. eslint clean + build OK; not exercised against the dev backend.
+- C7+C8 (2026-11-11, Haiku): store customers (list/form/import/export) and staff review + Q&A moderation inside the existing reviews/questions pages. eslint clean + build OK; not exercised against the dev backend.
+- C9 (2026-11-11, Haiku): blog admin (posts list/form/publish/images, tags tab, comments tab). eslint clean + build OK; not exercised against the dev backend.
+- C10+C11 (2026-11-11, Haiku): contact messages + notify phones; about-us/return-policy/terms tabs + acceptances card on user page. eslint clean + build OK; not exercised against the dev backend.
+- C12 (2026-11-11, Haiku): settings editor, store type, password policy, organization + logo under /panel/settings tabs. eslint clean + build OK; not exercised against the dev backend.
+- C13 (2026-11-11, Haiku): attributes CRUD, category assignments, product variants (generate/create). eslint clean + build OK; not exercised against the dev backend. Note: products/new.vue still labels price «قیمت (تومان)» while staff money elsewhere is Rial.
+- C14+C15 (2026-11-11, Haiku): imports page (goods Excel, images, opening stock), stock movements, insights tabs (wishlist, stock alerts, search logs). eslint clean + build OK; not exercised against the dev backend. Note: crm.js doc comment calls the import body raw but it is ApiResponse-wrapped.
+- B11 (2026-11-11, Haiku): customer prescriptions (list, submit, detail, confirm, receipt) gated by prescriptionEnabled. eslint clean + build OK; not exercised against the dev backend. Staff view of /panel/prescriptions is C17. Stale prescription calls remain in services/api/medical.js (unused).
+- C17 (2026-11-11): staff prescriptions: admin list with filters, insurances modal, detail with respond, receipt approve/reject, ready/ship/deliver, cancel, delete. eslint clean + build OK; endpoints checked against PrescriptionAdminController and PrescriptionInsuranceAdminController; not exercised against the dev backend.
+- C19 (2026-11-14, Sonnet): workflow task inbox: /panel/tasks list (mine / claimable, counts, overdue switch), task detail with timeline, claim/unclaim, decide with comment + attachments, note, reassign (WORKFLOW_MONITOR), «کارتابل» sidebar badge (60 s polling), workflow-runs card on purchase-order and staff return pages. Wrappers and labels checked against WorkflowTaskController / WorkflowInstanceController / WorkflowPageLabels (main 2026-11-12). eslint: no errors in the C19 files (pre-existing unused `roleBadgeColor` in panel.vue) + build OK; not exercised against the dev backend. Open: the card's «جزئیات اجرا» link targets /panel/workflow/instances/<id>, which arrives with C20; «ثبت یادداشت» needs BACK's 2026-11 decision-comment SQL migration applied.
+- C20 (2026-11-14, Sonnet): workflow run monitoring: /panel/workflow shell (redirects to the first readable section, `WorkflowTabs`), runs list with status/subject/record/start-day filters, run detail (open tasks with reassign, incidents with retry, waits with publish-event, answers, attachments, timeline, cancel with reason), `workflow` menu entry. Checked against WorkflowInstanceController / WorkflowEventController / WorkflowSubjectController (main 2026-11-12). eslint clean + build OK; not exercised against the dev backend. Notes: reading one run needs WORKFLOW_TASK (list/actions need WORKFLOW_MONITOR), so a monitor-only user sees run ids as plain text; subject titles need WORKFLOW_DESIGN (falls back to codes); design-only or calendar-only users see «گردش کار در دسترس نیست» on /panel/workflow until C21/C22 add their sections.
+- C16 (2026-11-14, Sonnet): /panel/sms with «کمپین‌ها» (monthly usage card, campaign list, detail with recipients/cancel/retry-failed and 15 s polling while sending, new campaign with debounced preview, test send and confirm) and «حساب پیامک» (status, credit, save, check, test, back to platform account); `sms` menu entry. Checked against StoreSmsAccountController / SmsCampaignController (main 2026-11-12). Review added a confirm before retry-failed (it re-sends and costs quota). eslint clean + build OK; not exercised against the dev backend. Notes: account credit shows only after save or «بررسی اعتبار» (not in the GET); quiet hours text uses the platform default (22 to 8), the live values are not exposed.
+- C18 (2026-11-14, Sonnet): /panel/reports (card grid, run modal with inputs per parameter type, result table, Excel download, PDF in a new tab when the report has a template) and /panel/audit (filters applied with «جستجو», 1-based paging, expandable rows with old/new values as text); `reports` and `audit` menu entries; audit.js cut down to `searchAudit`, the unused guessed report wrappers removed from analytics.js. Checked against ReportController / AuditController (main 2026-11-12). eslint clean + build OK; not exercised against the dev backend. Not built (platform-only): backups and the report builder. Notes: `select` parameters are free text (BACKEND_REQUESTS.md §4); a failed Excel/PDF request shows only the generic file error (blob bodies are not read); an audit «تا» date without a time is sent as 23:59:59.
+- C21 (2026-11-14, Sonnet): workflow area gains «اتصال‌ها» (/panel/workflow/bindings: bind a published process to a subject + action, unbind with confirm), «تقویم» (/panel/workflow/calendar: working weekdays and hours, the store's closed/working days per Jalali year, official holidays read-only) and «رویدادها» (/panel/workflow/events: custom events per subject, code checked against BACK's pattern); design-only and calendar-only users now land on a real page. Checked against WorkflowBindingController / WorkflowCalendarController / WorkflowCustomEventController / WorkflowSubjectController (main 2026-11-12). eslint clean + build OK; not exercised against the dev backend. Notes: the bind picker loads at most 100 published processes per subject; write buttons always show (only READ grants are known) and BACK answers 403; `GET subjects` events include the store's custom events.

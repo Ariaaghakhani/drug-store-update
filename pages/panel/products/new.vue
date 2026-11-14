@@ -90,6 +90,21 @@
             }"
           />
         </div>
+
+        <!-- Model product: sold through its variants, and the choice is fixed after creation -->
+        <div v-if="variantsEnabled" class="flex items-center justify-between gap-4 py-1 border-t border-gray-100 dark:border-gray-800 pt-4">
+          <div class="min-w-0">
+            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">محصول دارای تنوع (رنگ، سایز، …)</span>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">بعد از ساخت قابل تغییر نیست؛ مدل خودش فروخته نمی‌شود</p>
+          </div>
+          <USwitch
+            v-model="form.isModel"
+            size="lg"
+            :ui="{
+              base: 'data-[state=checked]:bg-brand-500 dark:data-[state=checked]:bg-brand-400 data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-gray-600',
+            }"
+          />
+        </div>
       </div>
 
       <div class="flex gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-800">
@@ -118,6 +133,7 @@ const app = useNuxtApp()
 const toast = useToast()
 const rolesStore = useRolesStore()
 const { getUserRole } = useUserPanelTabs()
+const { variantsEnabled } = useStoreProfile()
 
 const canCreate = computed(() => {
   const role = rolesStore.roles.find((r) => r.id === getUserRole())
@@ -175,6 +191,7 @@ const form = reactive({
   priceRaw: '',
   expiryDate: '',
   isPrescriptionRequired: false,
+  isModel: false,
   images: [],
 })
 
@@ -202,6 +219,8 @@ const handleCreate = async () => {
       nameEn: form.nameEn.trim() || undefined,
       price: Number(form.priceRaw) || 0,
       isPrescriptionRequired: form.isPrescriptionRequired,
+      // Create only: a model is never sold itself, its variants are added on the product page
+      isModel: variantsEnabled.value && form.isModel,
       expiryDate: form.expiryDate || undefined,
       categoryIds: form.categoryIds.map(Number),
       tagIds: form.tagIds.map(Number),

@@ -33,6 +33,13 @@
       </p>
     </div>
 
+    <CaptchaField
+      ref="captchaField"
+      v-model="localCaptcha"
+      :subject="phoneNumber"
+      :error="captchaError"
+    />
+
     <button
       type="submit"
       :disabled="loading || !localPassword"
@@ -87,11 +94,25 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  phoneNumber: {
+    type: String,
+    default: '',
+  },
+  // {captchaId, captchaAnswer}, owned by pages/login.vue
+  captcha: {
+    type: Object,
+    default: () => ({ captchaId: null, captchaAnswer: null }),
+  },
+  captchaError: {
+    type: String,
+    default: '',
+  },
 })
 
 const emit = defineEmits([
   'update:password',
   'update:error',
+  'update:captcha',
   'submit',
   'switchToOtp',
   'forgotPassword',
@@ -105,6 +126,15 @@ const localPassword = computed({
     emit('update:error', '')
   },
 })
+
+const captchaField = ref(null)
+const localCaptcha = computed({
+  get: () => props.captcha,
+  set: (value) => emit('update:captcha', value),
+})
+
+// login.vue calls captcha.force() / captcha.reset() after a captcha.* error or any failed attempt
+defineExpose({ captcha: captchaField })
 
 const showPassword = ref(false)
 

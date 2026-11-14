@@ -5,14 +5,56 @@
       <h3 class="text-xl font-black text-gray-900 dark:text-white">
         جزئیات <span class="text-brand-500">سفارش</span>
       </h3>
-      <UButton
-        to="/panel/orders"
-        color="neutral"
-        variant="outline"
-        icon="i-heroicons-arrow-right"
-      >
-        بازگشت به سفارشات
-      </UButton>
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Staff, paid orders: a return on the customer's behalf, and a cancel while the store still holds the goods -->
+        <UButton
+          v-if="isStaff && canStaffAct"
+          color="neutral"
+          variant="outline"
+          icon="i-heroicons-arrow-uturn-left"
+          @click="staffReturnOpen = true"
+        >
+          ثبت مرجوعی برای مشتری
+        </UButton>
+        <UButton
+          v-if="isStaff && canStaffCancel"
+          color="error"
+          variant="outline"
+          icon="i-heroicons-x-circle"
+          @click="cancelOpen = true"
+        >
+          لغو سفارش
+        </UButton>
+        <!-- Customer only: staff keep the page as it was -->
+        <UButton
+          v-if="canRequestReturn"
+          color="neutral"
+          variant="outline"
+          icon="i-heroicons-arrow-uturn-left"
+          @click="returnModalOpen = true"
+        >
+          درخواست مرجوعی
+        </UButton>
+        <UButton
+          v-for="invoice in invoices"
+          :key="invoice.id"
+          color="neutral"
+          variant="outline"
+          icon="i-heroicons-arrow-down-tray"
+          :loading="downloadingId === invoice.id"
+          @click="downloadInvoice(invoice)"
+        >
+          دانلود فاکتور
+        </UButton>
+        <UButton
+          to="/panel/orders"
+          color="neutral"
+          variant="outline"
+          icon="i-heroicons-arrow-right"
+        >
+          بازگشت به سفارشات
+        </UButton>
+      </div>
     </div>
 
     <div class="relative">
@@ -69,6 +111,12 @@
                 <dt class="text-gray-500 dark:text-gray-400">تاریخ تحویل</dt>
                 <dd class="font-semibold text-gray-900 dark:text-white">
                   {{ formatDate(order.deliveredAt) }}
+                </dd>
+              </div>
+              <div v-if="invoices.length">
+                <dt class="text-gray-500 dark:text-gray-400">شماره فاکتور</dt>
+                <dd class="font-semibold text-gray-900 dark:text-white">
+                  {{ invoiceNumbers }}
                 </dd>
               </div>
             </dl>
@@ -136,6 +184,36 @@
               کد پستی: {{ order.shippingAddress.postalCode }}
             </p>
           </UCard>
+
+          <!-- Staff only: manual refunds of this order (hides itself on 403) -->
+          <OrderRefundsCard
+            v-if="isStaff"
+            :order-id="order.id"
+            :wallet-enabled="walletEnabled"
+          />
+
+          <ReturnRequestModal
+            v-if="canRequestReturn"
+            :open="returnModalOpen"
+            :order-id="order.id"
+            @update:open="returnModalOpen = $event"
+          />
+
+          <template v-if="isStaff && canStaffAct">
+            <ReturnRequestModal
+              :open="staffReturnOpen"
+              :order-id="order.id"
+              staff
+              @update:open="staffReturnOpen = $event"
+            />
+
+            <CancelPaidOrderModal
+              v-if="canStaffCancel"
+              v-model:open="cancelOpen"
+              :order-id="order.id"
+              @saved="onOrderCancelled"
+            />
+          </template>
         </div>
 
         <div v-else key="empty" class="text-center py-16">
@@ -161,6 +239,10 @@
 </template>
 
 <script setup>
+import ReturnRequestModal from '@/components/panel/returns/ReturnRequestModal.vue'
+import OrderRefundsCard from '@/components/panel/orders/OrderRefundsCard.vue'
+import CancelPaidOrderModal from '@/components/panel/orders/CancelPaidOrderModal.vue'
+
 // orderStatusMeta(order) comes from utils/orderStatus.js (keyed by OrderDTO.statusCode)
 const FULFILLMENT_META = {
   SHIPPED: { label: 'ارسال شده', color: 'info' },
@@ -173,9 +255,43 @@ const FULFILLMENT_PREPARING = { label: 'در حال آماده‌سازی', colo
 const route = useRoute()
 const app = useNuxtApp()
 const { formatPrice } = useFormat()
+const { getUserRole } = useUserPanelTabs()
+const { download } = useFileDownload()
+const { walletEnabled } = useStoreProfile()
+
+// Staff = any non-customer role. Staff-only blocks (refunds, returns on behalf of the customer, cancel) key off this.
+const isStaff = computed(() => getUserRole() !== 'customer')
 
 const loading = ref(true)
 const order = ref(null)
+
+// Invoices are shown to customers only (staff keep this page unchanged, so no extra call for them)
+const isCustomer = computed(() => getUserRole() === 'customer')
+const invoices = ref([])
+const downloadingId = ref(null)
+const invoiceNumbers = computed(() =>
+  invoices.value.map((invoice) => Number(invoice.invoiceNumber).toLocaleString('fa-IR')).join('، ')
+)
+
+// A return can be asked only for a paid, delivered order (BACK's ReturnableOrderDTO.open also checks the window)
+const canRequestReturn = computed(
+  () =>
+    isCustomer.value &&
+    order.value?.statusCode === 'PAID' &&
+    order.value?.fulfillmentStatus === 'DELIVERED'
+)
+const returnModalOpen = ref(false)
+
+// Staff act on paid orders only. A cancel is refused once the parcel left or arrived (SHIPPED / DELIVERED)
+const canStaffAct = computed(() => order.value?.statusCode === 'PAID')
+const canStaffCancel = computed(
+  () => canStaffAct.value && !['SHIPPED', 'DELIVERED'].includes(order.value?.fulfillmentStatus)
+)
+const staffReturnOpen = ref(false)
+const cancelOpen = ref(false)
+
+// The order and its refunds changed: reload both (the refunds card remounts with the order)
+const onOrderCancelled = () => fetchOrder()
 
 const items = computed(() => order.value?.items ?? [])
 
@@ -210,6 +326,26 @@ const formatDate = (value) => {
   return date.toLocaleDateString('fa-IR')
 }
 
+// A failed invoice lookup just hides the download button; the order itself still renders
+async function fetchInvoices(orderId) {
+  if (!isCustomer.value) return
+  try {
+    const response = await app.$api.orders.byOrder({ data: { orderId } })
+    invoices.value = response.data.data ?? []
+  } catch {
+    invoices.value = []
+  }
+}
+
+const downloadInvoice = async (invoice) => {
+  downloadingId.value = invoice.id
+  try {
+    await download(app.$api.orders.downloadInvoicePdf(invoice.id), `invoice-${invoice.invoiceNumber}.pdf`)
+  } finally {
+    downloadingId.value = null
+  }
+}
+
 async function fetchOrder() {
   loading.value = true
   try {
@@ -220,6 +356,7 @@ async function fetchOrder() {
   } finally {
     loading.value = false
   }
+  if (order.value) fetchInvoices(order.value.id)
 }
 
 onMounted(fetchOrder)

@@ -26,9 +26,15 @@ export default (apiCaller) => ({
     return apiCaller.get(`api/blog/posts/${encodeURIComponent(slug)}/comments`, config)
   },
 
-  // login needed; body {content (≤2000), parentId?}; the comment shows after staff approval
+  // login needed; body {content (≤2000), parentId?}; 201 → BlogCommentDTO (payload.id = the new comment id, PENDING until staff approves)
   addComment(slug, config) {
     return apiCaller.post(`api/blog/posts/${encodeURIComponent(slug)}/comments`, config)
+  },
+
+  // login needed; soft-deletes one of the caller's own comments (and its replies); 200 with null data;
+  // someone else's comment (or an unknown id) → 404
+  deleteComment(id) {
+    return apiCaller.delete(`/api/blog/comments/${encodeURIComponent(id)}`)
   },
 
   listTags() {

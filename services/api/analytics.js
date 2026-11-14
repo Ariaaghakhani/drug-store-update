@@ -1,6 +1,6 @@
 /**
  * Analytics & Dashboard Service
- * Dashboard, KPIs, reports, and analytics
+ * Dashboard and KPIs (reports live in reports.js)
  */
 export default (apiCaller) => ({
   // ========== DASHBOARD ==========
@@ -44,43 +44,5 @@ export default (apiCaller) => ({
   // ========== CUSTOMER DASHBOARD (any logged-in user, own data) ==========
   getCustomerDashboardSummary(config) {
     return apiCaller.get('api/dashboard/customer/summary', config)
-  },
-
-  // ========== REPORTS ==========
-  listReports(config) {
-    return apiCaller.post('api/reports/list', config)
-  },
-
-  getReport(config) {
-    return apiCaller.post('api/reports/get', config)
-  },
-
-  generateReport(config) {
-    return apiCaller.post('api/reports/generate', config)
-  },
-
-  downloadReport(config) {
-    return apiCaller.post('api/reports/download', config)
-  },
-
-  // ========== REPORT MANAGEMENT ==========
-  listReportTemplates(config) {
-    return apiCaller.post('api/reports/manage/templates', config)
-  },
-
-  createReportTemplate(config) {
-    return apiCaller.post('api/reports/manage/create-template', config)
-  },
-
-  updateReportTemplate(config) {
-    return apiCaller.post('api/reports/manage/update-template', config)
-  },
-
-  deleteReportTemplate(config) {
-    return apiCaller.post('api/reports/manage/delete-template', config)
-  },
-
-  scheduleReport(config) {
-    return apiCaller.post('api/reports/manage/schedule', config)
   },
 })

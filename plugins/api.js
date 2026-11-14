@@ -53,6 +53,8 @@ export const apiCaller = (apiCallerInstances, nuxtApp) => {
     const apiCallerInstance = apiCallerInstances[instance]
     const fetchOptions = { method: method.toUpperCase(), params: config.params || undefined }
     if (method !== 'get') fetchOptions.body = config.data || undefined
+    // 'blob' for file downloads (PDF/attachments); onResponse then wraps the Blob as { data: Blob }
+    if (config.responseType) fetchOptions.responseType = config.responseType
 
     try {
       return await apiCallerInstance(url, fetchOptions)
@@ -80,7 +82,9 @@ export const apiCaller = (apiCallerInstances, nuxtApp) => {
 
   return {
     get(url, config = {}) {
-      const cacheKey = url + (config.params ? JSON.stringify(config.params) : '')
+      // responseType is part of the key so a blob GET never shares a promise with a JSON GET on the same URL
+      const cacheKey =
+        url + (config.params ? JSON.stringify(config.params) : '') + (config.responseType ? `#${config.responseType}` : '')
 
       if (apiPromisesCache.has(cacheKey)) {
         return apiPromisesCache.get(cacheKey)
@@ -116,6 +120,7 @@ export const apiCaller = (apiCallerInstances, nuxtApp) => {
 
 export default defineNuxtPlugin((nuxtApp) => {
   const runtimeConfig = useRuntimeConfig()
+  const toast = useToast()
 
   // Without X-Tenant the backend falls back to Origin/SYSTEM, which usually has no goods: the storefront
   // would load "fine" but empty. Say so loudly in dev instead of failing silently.
@@ -125,8 +130,20 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const onResponse = ({ response }) => {
     if (response?.ok) {
+      // A staff write bound to an approval workflow answers 202 `{ data: { pending, requestId, ... } }`:
+      // it was saved but will only run after approval, so `data` is NOT the saved record. Tell the
+      // user once here and flag the result so callers can skip their own "saved" toast/refresh.
+      const pending = response.status === 202 && response._data?.data?.pending === true
       response._data = {
         data: response._data,
+        ...(pending && { pending: true }),
+      }
+      if (pending && import.meta.client) {
+        toast.add({
+          title: response._data.data.message || 'ثبت شد و منتظر تأیید است',
+          color: 'info',
+          icon: 'i-heroicons-clock',
+        })
       }
     }
   }

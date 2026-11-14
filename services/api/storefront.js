@@ -17,7 +17,7 @@ export default (apiCaller) => ({
   },
 
   // CategoryDTO[] roots with nested `children` {id, name, parentId, level, code, sortOrder, children}.
-  // NOT public on BACK yet (401 for a guest) — see BACKEND_REQUESTS.md; callers must treat 401/403 as "no categories".
+  // Public since BACK #470 (2026-11-04). Callers still treat 401/403 as "no categories" defensively.
   getCategoryTree(config) {
     return apiCaller.get('api/categories/tree', {
       params: { scope: 'PRODUCT' },
@@ -58,6 +58,44 @@ export default (apiCaller) => ({
   // config.params {page, size} → PageResponse<GoodsQuestionDTO> (answered + public only; empty when the store turned Q&A off)
   listGoodsQuestions(goodsId, config) {
     return apiCaller.get(`api/questions/goods/${goodsId}`, config)
+  },
+
+  // ========== MY REVIEWS (customer, any login; BACK GoodsReviewCustomerController, module GOODS_REVIEW_CUSTOMER) ==========
+  // {goodsId, canReview, review: MyGoodsReviewDTO|null}; canReview = a paid order holds the goods (else submit is 403)
+  getMyReviewState(goodsId) {
+    return apiCaller.get(`api/reviews/my/goods/${goodsId}`)
+  },
+
+  // body {goodsId, rating 1..5, comment?} → MyGoodsReviewDTO (status PENDING); re-submitting edits the one review per goods
+  submitReview(config) {
+    return apiCaller.post('api/reviews/my', config)
+  },
+
+  // config.params {page, size, rating?} → PageResponse<MyGoodsReviewDTO {id,rating,comment,authorName,createdAt,storeReply,storeReplyAt,goodsId,goodsName,status,updatedAt}>, newest first
+  listMyReviews(config) {
+    return apiCaller.get('api/reviews/my', config)
+  },
+
+  // 404 for another user's review
+  deleteMyReview(id) {
+    return apiCaller.delete(`api/reviews/my/${id}`)
+  },
+
+  // ========== MY QUESTIONS (customer, any login, no purchase needed; BACK GoodsQuestionCustomerController, module GOODS_QUESTION_CUSTOMER) ==========
+  // body {goodsId, question (1..1000), anonymous?, privateQuestion?} → MyGoodsQuestionDTO with status PENDING (200, not 202).
+  // Store Q&A switched off → 409 goods.question.disabled (error.response.data.message is the store's Persian text)
+  askQuestion(config) {
+    return apiCaller.post('api/questions/my', config)
+  },
+
+  // config.params {goodsId?, page, size} → PageResponse<MyGoodsQuestionDTO {id,question,answer,answerSignature,authorName,anonymous,createdAt,answeredAt,goodsId,goodsName,privateQuestion,status}>, newest first; not blocked when Q&A is off
+  listMyQuestions(config) {
+    return apiCaller.get('api/questions/my', config)
+  },
+
+  // 404 for another user's question
+  deleteMyQuestion(id) {
+    return apiCaller.delete(`api/questions/my/${id}`)
   },
 
   // ========== INFO PAGES (public) ==========

@@ -8,7 +8,9 @@ Checked against the backend source in `PouyanPlatform` (`PublicEndpoints`, `Cate
 
 ---
 
-## 1. REQUIRED — make the category tree public (guest gets 401 today)
+## 1. ~~REQUIRED — make the category tree public~~ — RESOLVED 2026-11-04 (BACK #470, `GET /api/categories/tree` is public)
+
+_Kept below for the nice-to-have asks (`goodsCount`/`withGoodsOnly`, category icon). The original problem text follows._
 
 **Problem.** The home page category row and the category filter on `/medications` have nothing to show: a guest calling
 `GET /api/categories/tree` gets **401**. `PublicEndpoints` has no entry for `/api/categories*`
@@ -77,6 +79,54 @@ curl -H "X-Tenant: <tenant>" -H "Origin: <store origin>" "https://<backend>/api/
 - API returns brands but `logoUrl` is `null` → upload a `Brand` attachment (primary); the tile then falls back to an icon.
 
 No code change on the backend is expected for this item unless the check shows a bug.
+
+---
+
+## 3. REQUEST — `mine` flag on blog comments (B7 delete my comment) — PENDING
+
+Frontend date: 2026-11-10. Checked against `BlogCommentDTO`, `BlogCommentServiceImpl` and `BlogPublicController`.
+
+**خلاصه به فارسی:** کاربر فقط روی کامنت‌هایی که همین مرورگر ثبت کرده دکمه «حذف» می‌بیند. برای اینکه کامنت‌های خود کاربر
+(حتی در انتظار تأیید) از هر مرورگری قابل حذف باشند، لازم است BACK فیلد `mine` را اضافه کند.
+
+**Problem.** `DELETE /api/blog/comments/{id}` works (login; 200 with null data; another user's or unknown id → 404), and
+`POST /api/blog/posts/{slug}/comments` returns 201 with the new `BlogCommentDTO`, including its `id`. But the public list
+(`GET /api/blog/posts/{slug}/comments`) returns `BlogCommentDTO` with no way to tell whose comment is whose, and a
+caller's own PENDING comments are not returned at all. So the storefront can only show «حذف» on comments written in
+this browser (remembered ids in `localStorage` `blog-my-comments:<userId>`). Another device, a cleared browser, or
+a comment approved after the browser was reset gets no delete button.
+
+**Ask.**
+1. Add `mine: boolean` to `BlogCommentDTO` in the public list and in the add-comment response: `true` when the comment's
+   `userId` equals the caller's id (`false` for guests and for everyone else's comments). Replies follow the same rule.
+2. For a logged-in caller, also return the caller's own PENDING top-level comments and their replies in
+   `GET /api/blog/posts/{slug}/comments` (flagged `mine: true`, `status: PENDING`), so the author can see and delete them.
+   Other users' pending comments stay hidden.
+
+**Done when:** a logged-in customer sees their own pending and approved comments with `mine: true` on a fresh browser,
+and `DELETE` works on them. No frontend change is needed afterwards beyond reading the flag (the remembered-id
+fallback can then be removed).
+
+---
+
+## 4. REQUEST — expose the options of `select` report parameters (C18a reports) — PENDING
+
+**خلاصه به فارسی:** پارامتر گزارش از نوع `select` گزینه‌هایش را فقط در SQL سمت سرور دارد و به پنل نمی‌رسد؛ پنل ناچار
+یک کادر متنی برای وارد کردن شناسه نشان می‌دهد. لازم است BACK فهرست گزینه‌ها را در دسترس بگذارد.
+
+**Problem.** `POST /api/report/all` returns each parameter as `{type, label, required, defaultValue}`. For `type: "select"`
+the options come from `optionsSql`, which is `WRITE_ONLY` in `ReportParameterDefinition`, so it is never sent. The service
+method `ReportService.getParameterOptions(code)` already builds `{name: [{value, label}]}`, but `ReportController` has no
+route for it (only `/generate`, `/data`, `/all`, `/current-roles`). The panel's report modal therefore shows a plain text
+input with the hint «فهرست گزینه‌ها از سرور در دسترس نیست؛ شناسه را وارد کنید», and the pharmacist has to know the warehouse
+or category id by heart.
+
+**Ask.** Add a store-level route in `ReportController` (module REPORT, READ), for example
+`POST /api/report/options {code}` → `ApiResponse<Map<String, List<{value, label}>>>` from `getParameterOptions(code)`
+(same access check as `/data`: 404 unknown code, 403 no access). A parameter whose options SQL fails already yields an empty list.
+
+**Done when:** the endpoint exists. The frontend then replaces the text input of each `select` parameter with a
+`USelect` fed from it (value sent as before: BACK's resolver already turns a numeric value into a `Long`).
 
 ---
 

@@ -310,9 +310,16 @@ Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, `object-cover
 - Hover convention: `hover:text-teal-500 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950`.
 
 ### Cart dropdown / cart page (`cart.vue`)
-- Free-shipping threshold: **500,000 تومان**; below it, shipping = **59,900 تومان**, else رایگان.
-- Order summary card: subtotal, shipping, bold total in `text-brand-300` 2xl.
+- No shipping figure in the cart: the «هزینه ارسال» row reads «در مرحله‌ی بعد محاسبه می‌شود» (muted `text-xs`), and «جمع کل» is the items total only (`cartStore.total` = `subtotal`, no shipping, no discount).
+- Real shipping (method cost, free-shipping threshold, pickup), discounts and the payable total come from the checkout quote, see "Checkout modal" below.
+- Order summary card: items total («جمع محصولات»), shipping row, bold total in `text-brand-300` 2xl.
+- The cart's free-shipping hint («تا ارسال رایگان») still uses a fixed 500,000 تومان; real thresholds are per shipping method at checkout.
 - Empty state: centered `i-heroicons-shopping-cart` (w-24, gray-300) + "سبد خرید شما خالی است" + CTA to `/medications`.
+
+### Checkout modal (`components/checkout/CheckoutModal.vue`)
+- Discount code: `UInput dir="ltr"` + `UButton color="neutral" variant="outline"` «اعمال». A rejected code shows its reason as `text-error text-xs` under the input (never a toast). An accepted code shows a summary row: «تخفیف کد» + the code in `<bdi dir="ltr">`, a `UButton size="xs" color="error" variant="link"` «حذف کد», and the amount prefixed with "−" in `text-success`.
+- Wallet: a bordered row (`rounded-xl border-2`) with the label «پرداخت از کیف پول (موجودی …)» and a `USwitch size="lg"` using the brand `:ui` override (same as panel toggles). Covered and remaining amounts are `text-xs` lines under it.
+- No gateway: `text-error text-xs` «درگاه پرداختی فعال نیست»; the online method button is disabled with `opacity-50 cursor-not-allowed`.
 
 ### Chatbot (`ChatbotWidget.vue`)
 - Floating `UButton` bottom-right (`fixed bottom-8 right-8`); opens a `rounded-2xl` panel.
@@ -323,9 +330,17 @@ Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, `object-cover
 ### Panel / pharmacist (`panel.vue` + `layouts/panel.vue`)
 - Desktop: `UCard` sidebar (logo, nav from `useUserPanelTabs().getMenuItems()`, quick links, logout in red).
 - Active link: `!bg-teal-50 dark:!bg-teal-900/20 !text-teal-600 dark:!text-teal-400 font-medium`.
+- Grouped sidebar: menu entries with a `group` (key of `GROUP_LABELS` in `utils/panelMenus.js`) get a heading `<p class="px-4 pt-4 pb-1 text-xs font-medium text-gray-400 dark:text-gray-500">` when the group changes, and a `my-3 border-t border-gray-200 dark:border-gray-700` divider between grouped and ungrouped entries.
 - Profile banner with gradient avatar `from-teal-400 to-teal-600`, initials, or the user's photo (`object-cover`, `overflow-hidden`) when set. The header avatar is a link to `/panel/profile` (hover `ring-2 ring-brand-500`); on desktop the banner's photo + name are one ghost button (`rounded-xl hover:bg-gray-50`, chevron that turns on `data-state=open`) opening a `w-64` account `UDropdownMenu`: header item (photo `w-10`, bold name, muted role), then grouped items with heroicons, logout last in `color="error"`; on the profile card the avatar circle itself opens the file picker, with a camera badge and ghost `xs` "تغییر عکس" / `error` "حذف عکس" buttons, and a spinner overlay while saving.
 - Mobile: fixed bottom nav (home / products / profile) + slide-up profile sheet.
 - Roles: customer / admin / owner (labels مشتری / مدیر / مالک).
+
+### Captcha field (public forms)
+- `components/CaptchaField.vue` (v-model `{captchaId, captchaAnswer}`): hidden unless the backend says a captcha is required; then the challenge image, a `dir="ltr"` answer `UInput` and a `ghost` refresh icon button. On a `captcha.*` error call `force()` + `reset()` and show «کد امنیتی نادرست است».
+- Login/register/reset: the field sits in the step that sends the request (password, register, reset-password). On the OTP step it is resend-only: hidden until a resend fails with `captcha.*`, then opened by `openCaptcha()` and closed after a successful resend. Verify-OTP never shows it.
+
+### Jalali date input (panel forms)
+- Use `components/panel/JalaliDateInput.vue` for every date field (v-model is a Gregorian ISO string; the user types `۱۴۰۵/۰۱/۰۱`, Persian or Latin digits). `dir="ltr"` text input in a `UFormField`, error text `تاریخ نامعتبر` on blur/Enter, optional clear `ghost` icon button; `withTime` adds `HH:mm`. Never use `<input type="date">` (Gregorian only).
 
 ### Notifications (bell, inbox row, push opt-in)
 - **Bell (`NotificationBell.vue`):** icon-only `UButton color="neutral" variant="ghost" square size="lg" icon="i-heroicons-bell"` (`w-10 h-10`) wrapped in `UChip color="error" size="md" inset`: a dot only when anything is unread, never a number. Opens a `UPopover` (`align: 'end'`), `w-80` panel with `dir="rtl" font-dana`: header row (`text-sm font-bold` title + `neutral soft xs` "خواندن همه"), `max-h-96` scrolling list, footer link `text-brand-500 dark:text-brand-400` "مشاهده همه اعلان‌ها".
@@ -354,6 +369,11 @@ Layout order (RTL): image (`aspect-square rounded-xl bg-gray-100`, `object-cover
 - Pattern: `<USelectMenu v-model="form.categoryIds" :items="categoryMenuItems" multiple value-key="value" placeholder="..." class="w-full" />`.
 - Populate `items` from the corresponding list endpoint on mount; fall back to an empty array on fetch failure rather than blocking the form.
 
+### Star rating (reviews)
+- Display: `UIcon` `i-heroicons-star-solid` / `i-heroicons-star` at `w-4 h-4` (lists) or `w-5 h-5` (summaries), `text-yellow-400 dark:text-yellow-300`.
+- Picker: five icon-only `UButton color="neutral" variant="ghost" square` with `i-heroicons-star-solid` for picked stars and `i-heroicons-star` otherwise; the tint is a `:class` (`text-yellow-400` vs `text-gray-300 dark:text-gray-600`) and each button has an `aria-label` like «۳ ستاره». Sits inside `UFormField` so its error shows under the stars.
+- A storefront block whose page already has a primary CTA (product page add-to-cart) submits with `color="neutral" variant="solid"`, so the view keeps one primary.
+
 ### UCard (panel pattern)
 - Default body padding: `p-4 sm:p-6`. Remove for edge-to-edge rows: `:ui="{ body: 'p-0' }"`.
 - Panel card structure: header strip (`flex items-center gap-2 px-4 sm:px-6 py-4 border-b`) with `w-4 h-4 text-brand-500` icon + `text-sm font-medium` title, then `divide-y divide-gray-100 dark:divide-gray-800` rows with `px-4 sm:px-6 py-4` each.
@@ -373,8 +393,28 @@ Wrapped in `UCard :ui="{ body: 'p-0' }"` with `overflow-x-auto`. `<thead>` uses 
 
 **Quantity inputs:** use a text `UInput` with `inputmode="numeric" dir="ltr"`, not `type="number"`, which rejects digits from a Persian keyboard. Parse with `parseQuantity` (`utils/inventoryMeta.js`) and show limits through `UFormField`'s `help`/`error`.
 
+**Photo picker (uploads):** `components/panel/returns/ReturnPhotosField.vue` (v-model `File[]`; the field itself uploads nothing). A `grid-cols-3 sm:grid-cols-5 gap-3` grid of `aspect-square rounded-xl` thumbnails, each with a remove button that is always visible (not hover-only, so it works on touch), and a dashed `border-2 border-dashed` add tile that is hidden at the limit. Overflow past the limit and rejected files show an inline `text-xs text-error` line under the grid. Accept only the formats the backend takes (JPG/PNG/WebP), with the backend's size cap. Thumbnails are object URLs, revoked on removal and on unmount.
+
+**Import result (bulk Excel, C7c):** `components/panel/ImportResultSummary.vue` (props `counts [{label, value, color}]`, `errors`, `columns [{key, label, ltr?}]`). A `grid-cols-2 sm:grid-cols-4 gap-3` row of `rounded-xl border` tiles (label `text-xs` muted, value `text-xl font-black` in the color token, `toLocaleString('fa-IR')`), then, when there are failed rows, a «ردیف‌های ناموفق (n)» `text-sm font-medium text-error` line over a `max-h-64 overflow-auto rounded-xl border` table with a `sticky top-0` header. Codes and phones columns use `ltr` (`dir="ltr"`, `font-mono`). The upload itself sits in a `UModal`: a neutral outline «دانلود قالب» and a `FilePickButton` (`.xlsx`) that uploads on pick; the modal closes with a neutral soft «بستن» and reloads the list only if something was created.
+
+**Bulk file pick, then one upload (C14b):** when the user picks several files whose upload needs a setting first (here the replace switch), the picks stay in the page and show as «n فایل · total size» with a «پاک کردن انتخاب» ghost button. The one `primary` upload button sits in that row and is the view's primary. A failed upload keeps the picks. The result is `ImportResultSummary` tiles with `errors=[]`, then a `max-h-96` per-file table: file name `ltr` mono, product link (`font-mono text-brand-600`), status `StatusBadge` («عکس اصلی» success / «عکس فرعی» neutral) or the server error in `text-error`. Used by `pages/panel/imports/index.vue`.
+
+**Progress stepper (customer prescription, B11c):** an `ol` of equal-width columns (`flex-1 min-w-0 flex-col items-center text-center`), one per step. Each step is a `w-8 h-8 rounded-full` circle (`text-xs font-bold`): done and current are `bg-brand-500 text-white dark:bg-brand-400` (done shows `i-heroicons-check`), upcoming are `bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400`. The label sits under it (`text-xs`, bold ink for reached steps, muted for the rest). The current step carries `aria-current="step"`. Steps that end the flow (cancelled, unavailable, invalid) are replaced by a red alert panel (`rounded-xl bg-error/10 dark:bg-error/20 p-4`), not by a stepper.
+
+**Ranked list (C15b):** unpaged top-N lists (`pages/panel/insights/index.vue`) use the admin table with a `w-16` rank column (muted `font-black`, `fa-IR` digits) as the first column, then the product link (or search text) and the counts. Zero stock shows a `StatusBadge` «ناموجود» (`error`). Each tab keeps its own skeleton / 403 / error / empty state, and a feature switched off in the store profile shows a note in its tab instead of rows.
+
 ### Metric card grid (admin)
 `grid grid-cols-2 lg:grid-cols-4 gap-4`. Each `UCard :ui="{ body: 'p-4' }"` holds `flex items-center gap-3`: icon container (`w-10 h-10 rounded-xl`) + div with `text-xs text-gray-500` label above `text-xl font-black` value formatted with `.toLocaleString('fa-IR')`.
+
+**Panel form modal / confirm:** `components/panel/PanelFormModal.vue` (title row with an optional `w-5 h-5 text-brand-500` icon, `form` body with `space-y-4 font-dana`, footer = `neutral soft` cancel + one `primary` submit; `width` `md|lg|2xl`; the submit button points at the form with `form=`, so Enter and the button share one path) and `components/panel/PanelConfirmDialog.vue` (message + optional note `UTextarea` labelled by `noteLabel`; `noteRequired` disables confirm while the note is blank; the note resets on each open). Both are `dismissible="!loading"`. Destructive confirms pass `confirmColor="error"`. `PanelFormModal` takes `submit-color="error"` for a destructive form (e.g. cancelling a paid order, C1e); the default stays `primary`.
+
+**Money input:** `components/panel/MoneyInput.vue` (v-model Number|null, `UFormField` label «… (ریال)», `UInput inputmode="numeric" dir="ltr"`). Staff screens only (CONV A: amounts are Rial, shown as sent). Persian or Latin digits and `,`/`٬` separators are accepted; bad text shows «فقط عدد» and emits null. The help line under the field is `formatMoney()` («۱٬۲۰۰٬۰۰۰ ریال»). Read the value through `utils/money.js` (`parseMoney`, `formatMoney`), never `.toLocaleString` on its own.
+
+**Section tabs:** `components/panel/PanelSectionTabs.vue` (horizontal `NuxtLink` pills, route-driven active state; `exact` for an index tab). Active = `bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400`; inactive = `text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800`. Use it to switch sub-pages inside one panel section, not as a page title.
+
+**Radio cards (single choice with a summary, C12b):** a `role="radiogroup"` grid (`grid gap-3 sm:grid-cols-2 lg:grid-cols-3`) of `<button role="radio" aria-checked>` tiles, `rounded-xl border p-4`. The selected tile is `border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-900/20` with a `i-heroicons-check-circle-solid` `w-5 h-5 text-brand-500` mark; the rest are `bg-white dark:bg-gray-800` with `hover:bg-gray-50`. Each tile shows its title (`text-sm font-semibold`) and a muted `text-xs` summary. Used by `pages/panel/settings/store.vue`.
+
+**Settings rows (SYSTEM_SETTINGS, C12a):** one row per setting in a `UCard :ui="{ body: 'p-0' }"`, `divide-y`. The left side is the label (`text-sm font-semibold`), a source `StatusBadge` (own value primary, platform/default neutral) and the key (`dir="ltr"`, `font-mono`, muted). The right side is the control (`w-full md:w-80`): a switch or a choice `USelect` saves on change; other types get a `UFormField` with a ghost «ذخیره» when dirty and a soft «بازگشت به پیش‌فرض» when the store has its own value. A platform-required rule is a disabled, on `USwitch` with an `info` «الزام پلتفرم» badge. Used by `components/panel/settings/SettingField.vue` and `pages/panel/settings/password.vue`.
 
 ### Empty / loading / error states
 - **Empty (cart/search):** centered large gray icon + bold heading + muted line + CTA.

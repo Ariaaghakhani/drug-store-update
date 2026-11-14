@@ -76,6 +76,16 @@
                           <p :class="['text-[11px] font-medium', strengthTextColor]">{{ strengthLabel }}</p>
                         </div>
                       </Transition>
+                      <ul aria-label="شرط‌های رمز عبور" class="space-y-1">
+                        <li
+                          v-for="rule in ruleList"
+                          :key="rule.text"
+                          :class="['flex items-center gap-1.5 text-xs', rule.met ? 'text-success dark:text-green-400' : 'text-error dark:text-red-400']"
+                        >
+                          <UIcon :name="rule.met ? 'i-heroicons-check-circle' : 'i-heroicons-x-circle'" class="w-4 h-4 shrink-0" />
+                          {{ rule.text }}
+                        </li>
+                      </ul>
                       <UInput v-model="confirmPassword" type="password" placeholder="تکرار رمز عبور جدید" size="md" class="w-full" />
                       <p v-if="formError" class="text-[11px] font-medium text-error">{{ formError }}</p>
                     </div>
@@ -130,6 +140,8 @@ const isSubmitting = ref(false)
 const currentPasswordError = ref('')
 const formError = ref('')
 
+const { ruleList, validate: validatePassword } = usePasswordRules(newPassword)
+
 const passwordStrength = computed(() => {
   const p = newPassword.value
   if (!p) return 0
@@ -155,6 +167,12 @@ const submitPassword = async () => {
 
   if (newPassword.value !== confirmPassword.value) {
     formError.value = 'رمز عبور جدید و تکرار آن یکسان نیستند'
+    return
+  }
+
+  const policyError = validatePassword(newPassword.value)
+  if (policyError) {
+    formError.value = policyError
     return
   }
 

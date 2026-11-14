@@ -1,0 +1,578 @@
+<!-- pages/panel/returns/[id].vue -->
+<template>
+  <div class="space-y-4">
+    <div class="flex items-center justify-between gap-3">
+      <h3 class="text-xl font-black text-gray-900 dark:text-white">
+        جزئیات <span class="text-brand-500">مرجوعی</span>
+      </h3>
+      <UButton :to="backPath" color="neutral" variant="outline" icon="i-heroicons-arrow-right">
+        بازگشت به مرجوعی‌ها
+      </UButton>
+    </div>
+
+    <div class="relative">
+      <Transition name="sk">
+        <div v-if="loading" key="skeleton" class="space-y-4">
+          <USkeleton class="h-24 w-full rounded-xl" />
+          <USkeleton class="h-40 w-full rounded-xl" />
+          <USkeleton class="h-20 w-3/4 rounded-xl" />
+        </div>
+
+        <div v-else-if="ret" key="content" class="space-y-4">
+          <!-- Header -->
+          <UCard>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-base font-bold text-gray-900 dark:text-white">
+                درخواست #{{ ret.id.toLocaleString('fa-IR') }}
+              </span>
+              <UBadge :color="returnStatusMeta(ret.status).color" variant="subtle" size="xs">
+                {{ returnStatusMeta(ret.status).label }}
+              </UBadge>
+              <WorkflowPendingBadge :state="ret.workflow" />
+              <UBadge v-if="isStaff && ret.byStaff" color="info" variant="subtle" size="xs">
+                ثبت توسط فروشگاه
+              </UBadge>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <NuxtLink
+                :to="`/panel/orders/${ret.orderId}`"
+                class="hover:text-brand-500 dark:hover:text-brand-400 underline-offset-2 hover:underline"
+              >
+                سفارش #{{ ret.orderId.toLocaleString('fa-IR') }}
+              </NuxtLink>
+              · ثبت شده در {{ formatDateTime(ret.createdAt) }}
+            </p>
+
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mt-4 text-sm">
+              <div v-if="isStaff">
+                <dt class="text-xs text-gray-500 dark:text-gray-400">مشتری</dt>
+                <dd class="text-gray-900 dark:text-white mt-0.5">{{ ret.customerName || '—' }}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-gray-500 dark:text-gray-400">دلیل مرجوعی</dt>
+                <dd class="text-gray-900 dark:text-white mt-0.5">{{ ret.reasonLabel || returnReasonLabel(ret.reason) }}</dd>
+              </div>
+              <div v-if="ret.returnMethod">
+                <dt class="text-xs text-gray-500 dark:text-gray-400">نحوه بازگرداندن کالا</dt>
+                <dd class="text-gray-900 dark:text-white mt-0.5">
+                  {{ ret.returnMethodLabel || returnMethodLabel(ret.returnMethod) }}
+                </dd>
+              </div>
+              <div v-if="ret.decidedAt">
+                <dt class="text-xs text-gray-500 dark:text-gray-400">تاریخ تصمیم فروشگاه</dt>
+                <dd class="text-gray-900 dark:text-white mt-0.5">{{ formatDateTime(ret.decidedAt) }}</dd>
+              </div>
+              <div v-if="ret.receivedAt">
+                <dt class="text-xs text-gray-500 dark:text-gray-400">تاریخ دریافت کالا</dt>
+                <dd class="text-gray-900 dark:text-white mt-0.5">{{ formatDateTime(ret.receivedAt) }}</dd>
+              </div>
+              <div v-if="isStaff && ret.customerTrackingCode">
+                <dt class="text-xs text-gray-500 dark:text-gray-400">کد رهگیری مرسوله‌ی مشتری</dt>
+                <dd class="text-gray-900 dark:text-white mt-0.5" dir="ltr">{{ ret.customerTrackingCode }}</dd>
+              </div>
+            </dl>
+
+            <p v-if="ret.details" class="text-sm text-gray-700 dark:text-gray-300 mt-4 whitespace-pre-line">
+              {{ ret.details }}
+            </p>
+
+            <p v-if="isStaff" class="text-xs text-gray-500 dark:text-gray-400 mt-4">
+              شرایط مرجوعی پذیرفته‌شده:
+              <template v-if="ret.refundPolicyVersion">
+                نسخه {{ ret.refundPolicyVersion }}
+                <template v-if="ret.refundPolicyAcceptedAt">· {{ formatDateTime(ret.refundPolicyAcceptedAt) }}</template>
+              </template>
+              <template v-else>ثبت نشده</template>
+            </p>
+          </UCard>
+
+          <!-- Staff actions (decided by the status; every action is disabled while a workflow approval is pending) -->
+          <UCard v-if="isStaff && staffHasActions">
+            <div class="flex items-center gap-2 flex-wrap">
+              <UButton
+                v-if="ret.status === 'REQUESTED'"
+                color="primary"
+                icon="i-heroicons-check-circle"
+                :disabled="locked"
+                @click="showApprove = true"
+              >
+                تأیید
+              </UButton>
+              <UButton
+                v-if="ret.status === 'REQUESTED'"
+                color="error"
+                variant="soft"
+                icon="i-heroicons-x-circle"
+                :disabled="locked"
+                @click="showReject = true"
+              >
+                رد
+              </UButton>
+              <UButton
+                v-if="ret.status === 'APPROVED'"
+                color="primary"
+                icon="i-heroicons-inbox-arrow-down"
+                :disabled="locked"
+                @click="showReceive = true"
+              >
+                ثبت دریافت کالا
+              </UButton>
+              <UButton
+                v-if="ret.status === 'RECEIVED'"
+                color="primary"
+                icon="i-heroicons-banknotes"
+                :disabled="locked"
+                @click="showRefund = true"
+              >
+                ثبت بازپرداخت
+              </UButton>
+              <UButton
+                v-if="canCancel"
+                color="neutral"
+                variant="outline"
+                icon="i-heroicons-no-symbol"
+                :disabled="locked"
+                @click="openCancel"
+              >
+                لغو
+              </UButton>
+            </div>
+          </UCard>
+
+          <!-- Store decision (approval note, rejection or cancellation reason) -->
+          <UCard v-if="ret.decisionNote">
+            <div class="rounded-xl bg-brand-50 dark:bg-brand-900/20 p-3">
+              <p class="text-xs font-bold text-brand-600 dark:text-brand-400 mb-1">پاسخ فروشگاه</p>
+              <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">{{ ret.decisionNote }}</p>
+            </div>
+          </UCard>
+
+          <!-- Items -->
+          <UCard :ui="{ body: 'p-0' }">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                  <tr>
+                    <th class="text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3 text-start">کالا</th>
+                    <th class="text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3 text-start">تعداد</th>
+                    <th class="text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3 text-start">قیمت واحد</th>
+                    <th v-if="isStaff" class="text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3 text-start">سالم</th>
+                    <th v-if="isStaff" class="text-xs font-medium text-gray-500 dark:text-gray-400 px-6 py-3 text-start">خراب</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                  <tr v-for="line in ret.items ?? []" :key="line.id">
+                    <td class="px-6 py-3 text-gray-900 dark:text-white">{{ line.goodsName }}</td>
+                    <td class="px-6 py-3 text-gray-700 dark:text-gray-300">
+                      {{ (line.quantity ?? 0).toLocaleString('fa-IR') }}
+                    </td>
+                    <td class="px-6 py-3 text-gray-700 dark:text-gray-300">{{ money(line.unitPrice) }}</td>
+                    <td v-if="isStaff" class="px-6 py-3 text-gray-700 dark:text-gray-300">
+                      {{ line.restockedQuantity != null ? line.restockedQuantity.toLocaleString('fa-IR') : '—' }}
+                    </td>
+                    <td v-if="isStaff" class="px-6 py-3 text-gray-700 dark:text-gray-300">
+                      {{ line.damagedQuantity != null ? line.damagedQuantity.toLocaleString('fa-IR') : '—' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </UCard>
+
+          <!-- Amounts (the suggested amount is staff-only, so it is usually absent here) -->
+          <UCard v-if="ret.refundAmount != null || ret.suggestedRefund != null">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+              <div v-if="ret.suggestedRefund != null">
+                <dt class="text-xs text-gray-500 dark:text-gray-400">مبلغ پیشنهادی بازپرداخت</dt>
+                <dd class="text-gray-900 dark:text-white mt-0.5">{{ money(ret.suggestedRefund) }}</dd>
+              </div>
+              <div v-if="ret.refundAmount != null">
+                <dt class="text-xs text-gray-500 dark:text-gray-400">مبلغ بازپرداخت</dt>
+                <dd class="text-gray-900 dark:text-white mt-0.5">{{ money(ret.refundAmount) }}</dd>
+                <NuxtLink
+                  v-if="isStaff"
+                  :to="`/panel/orders/${ret.orderId}#refunds`"
+                  class="text-xs text-brand-500 dark:text-brand-400 hover:underline"
+                >
+                  پیگیری در بازپرداخت‌های سفارش
+                </NuxtLink>
+              </div>
+            </dl>
+          </UCard>
+
+          <!-- Photos (binary files: each one is fetched as a blob and shown through an object URL) -->
+          <UCard v-if="ret.photos?.length">
+            <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-3">عکس‌های کالا</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div
+                v-for="photo in ret.photos"
+                :key="photo.id"
+                class="aspect-square rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 bg-gray-100 dark:bg-gray-800"
+              >
+                <USkeleton v-if="photoUrls.get(String(photo.id)) === undefined" class="w-full h-full rounded-none" />
+                <img
+                  v-else-if="photoUrls.get(String(photo.id))"
+                  :src="photoUrls.get(String(photo.id))"
+                  :alt="photo.fileName || 'عکس کالای مرجوعی'"
+                  class="w-full h-full object-cover"
+                >
+                <div v-else class="w-full h-full flex items-center justify-center">
+                  <UIcon name="i-heroicons-photo" class="w-8 h-8 text-gray-400 dark:text-gray-600" />
+                </div>
+              </div>
+            </div>
+          </UCard>
+
+          <!-- Approval runs of this return (staff only; the card hides itself when there are none) -->
+          <EntityWorkflowCard
+            v-if="isStaff"
+            subject="ORDER_RETURN"
+            :entity-id="ret.id"
+            :reload-key="`${ret.status}-${ret.workflow?.pending ?? false}`"
+          />
+
+          <!-- Tracking code (customer sends the parcel back; staff only read it above) -->
+          <UCard v-if="showTracking">
+            <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-1">کد رهگیری مرسوله</h4>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+              پس از ارسال کالا، کد رهگیری مرسوله را برای فروشگاه ثبت کنید
+            </p>
+            <form class="flex items-start gap-3 flex-wrap" dir="rtl" @submit.prevent="submitTracking">
+              <UFormField :error="trackingError" class="flex-1 min-w-48">
+                <UInput
+                  v-model="trackingCode"
+                  maxlength="100"
+                  dir="ltr"
+                  placeholder="کد رهگیری"
+                  class="w-full"
+                  @blur="trackingError = validateTracking()"
+                />
+              </UFormField>
+              <UButton type="submit" color="primary" :loading="savingTracking">ثبت کد رهگیری</UButton>
+            </form>
+          </UCard>
+
+          <!-- Cancel for the customer (before the store receives the goods) -->
+          <div v-if="canCancel && !isStaff" class="flex justify-end">
+            <UButton color="error" variant="soft" icon="i-heroicons-x-circle" @click="showCancel = true">
+              لغو درخواست مرجوعی
+            </UButton>
+          </div>
+        </div>
+
+        <!-- Not found / forbidden / failed load: never shown as an empty success -->
+        <PanelEmptyState
+          v-else-if="forbidden"
+          key="forbidden"
+          variant="forbidden"
+          title="دسترسی به این مرجوعی ندارید"
+        />
+        <PanelEmptyState
+          v-else-if="notFound"
+          key="not-found"
+          icon="i-heroicons-arrow-uturn-left"
+          title="مرجوعی یافت نشد"
+          :text="loadError?.message || 'این درخواست وجود ندارد یا به شما تعلق ندارد'"
+        >
+          <template #action>
+            <UButton :to="backPath" color="primary" icon="i-heroicons-arrow-right">
+              بازگشت به مرجوعی‌ها
+            </UButton>
+          </template>
+        </PanelEmptyState>
+        <PanelEmptyState v-else key="error" variant="error" title="دریافت مرجوعی ناموفق بود">
+          <template #action>
+            <UButton color="neutral" variant="soft" icon="i-heroicons-arrow-path" @click="retryLoad">
+              تلاش دوباره
+            </UButton>
+          </template>
+        </PanelEmptyState>
+      </Transition>
+    </div>
+
+    <!-- Customer cancel -->
+    <DeleteConfirmDialog
+      v-model:open="showCancel"
+      title="لغو درخواست مرجوعی"
+      message="آیا از لغو این درخواست مرجوعی مطمئن هستید؟ پس از لغو، برای برگرداندن این کالا باید درخواست تازه ثبت کنید."
+      :item-name="ret ? `درخواست #${ret.id.toLocaleString('fa-IR')}` : ''"
+      confirm-label="لغو درخواست"
+      @confirm="confirmCancel"
+    />
+
+    <template v-if="isStaff && ret">
+      <ReturnApproveModal
+        v-model:open="showApprove"
+        :return-id="ret.id"
+        @done="onDecided"
+      />
+
+      <ReturnReceiveModal
+        v-model:open="showReceive"
+        :ret="ret"
+        @done="onDecided"
+      />
+
+      <ReturnRefundModal
+        v-model:open="showRefund"
+        :ret="ret"
+        @done="onDecided"
+      />
+
+      <PanelConfirmDialog
+        v-model:open="showReject"
+        title="رد مرجوعی"
+        message="درخواست مرجوعی رد می‌شود و دلیل آن به مشتری نشان داده می‌شود."
+        confirm-label="رد درخواست"
+        confirm-color="error"
+        note-label="دلیل رد (به مشتری نشان داده می‌شود)"
+        :note-required="true"
+        :loading="rejecting"
+        @confirm="confirmReject"
+      />
+
+      <PanelConfirmDialog
+        v-model:open="showStaffCancel"
+        title="لغو مرجوعی"
+        message="درخواست مرجوعی لغو می‌شود و دیگر قابل پیگیری نیست."
+        confirm-label="لغو درخواست"
+        confirm-color="error"
+        note-label="دلیل لغو (اختیاری)"
+        :loading="cancelling"
+        @confirm="confirmStaffCancel"
+      />
+    </template>
+  </div>
+</template>
+
+<script setup>
+import DeleteConfirmDialog from '@/components/panel/DeleteConfirmDialog.vue'
+import PanelEmptyState from '@/components/panel/PanelEmptyState.vue'
+import PanelConfirmDialog from '@/components/panel/PanelConfirmDialog.vue'
+import WorkflowPendingBadge from '@/components/panel/WorkflowPendingBadge.vue'
+import ReturnApproveModal from '@/components/panel/returns/ReturnApproveModal.vue'
+import ReturnReceiveModal from '@/components/panel/returns/ReturnReceiveModal.vue'
+import ReturnRefundModal from '@/components/panel/returns/ReturnRefundModal.vue'
+import EntityWorkflowCard from '@/components/panel/workflow/EntityWorkflowCard.vue'
+import { apiErrorMessage, isPending } from '~/utils/apiError.js'
+import { formatMoney } from '~/utils/money.js'
+
+// Staff (any non-customer role) use the admin endpoints and the staff actions; customers keep their own view.
+const route = useRoute()
+const app = useNuxtApp()
+const toast = useAppToast()
+const { previewUrl } = useFileDownload()
+const { getUserRole } = useUserPanelTabs()
+
+const isStaff = computed(() => getUserRole() !== 'customer')
+const backPath = '/panel/returns'
+
+const loading = ref(true)
+const ret = ref(null)
+const loadError = ref(null) // { status, message } when the load failed or the return is missing
+
+const notFound = computed(() => loadError.value?.status === 404)
+const forbidden = computed(() => loadError.value?.status === 403)
+
+// A workflow-pending return takes no further action until BACK finishes the approval
+const locked = computed(() => Boolean(ret.value?.workflow?.pending))
+// Staff actions by status: approve/reject (REQUESTED), receive (APPROVED), refund (RECEIVED); cancel is in the same card
+const staffHasActions = computed(() => ['REQUESTED', 'APPROVED', 'RECEIVED'].includes(ret.value?.status) || canCancel.value)
+
+const formatDateTime = (value) => {
+  if (!value) return ''
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('fa-IR')
+}
+
+// Staff see Rial as BACK sends it (CONV A); the customer view keeps its existing toman label
+const formatToman = (value) => `${Number(value ?? 0).toLocaleString('fa-IR')} تومان`
+const money = (value) => (isStaff.value ? formatMoney(value) : formatToman(value))
+
+// ---------- load ----------
+// `photoUrls` maps photo id (string) -> object URL. undefined = loading, null = failed, string = ready.
+const photoUrls = reactive(new Map())
+let unmounted = false
+
+const revokePhoto = (key) => {
+  const url = photoUrls.get(key)
+  if (typeof url === 'string') URL.revokeObjectURL(url)
+  photoUrls.delete(key)
+}
+
+// Fetches only photos not shown yet and drops the ones that are gone, so a refresh does not re-download everything
+async function syncPhotos(photos) {
+  const keep = new Set(photos.map((photo) => String(photo.id)))
+  ;[...photoUrls.keys()].forEach((key) => {
+    if (!keep.has(key)) revokePhoto(key)
+  })
+  await Promise.all(
+    photos
+      .filter((photo) => !photoUrls.has(String(photo.id)))
+      .map(async (photo) => {
+        const key = String(photo.id)
+        photoUrls.set(key, undefined)
+        const path = app.$api.returns.photoPath(isStaff.value, ret.value.id, photo.id)
+        const url = await previewUrl(app.$api.instances.default(path, { responseType: 'blob' }))
+        // The page left while the file was loading: nothing will revoke this URL later
+        if (unmounted) {
+          if (url) URL.revokeObjectURL(url)
+          return
+        }
+        photoUrls.set(key, url)
+      })
+  )
+}
+
+// Replaces the shown return with a fresh DTO (an action's response). Photos are kept when the response omits them.
+async function applyReturn(dto) {
+  ret.value = { ...dto, photos: dto.photos ?? ret.value?.photos ?? [] }
+  trackingCode.value = dto.customerTrackingCode ?? ''
+  await syncPhotos(ret.value.photos)
+}
+
+async function fetchReturn() {
+  try {
+    const response = await app.$api.returns.getReturn(isStaff.value, route.params.id)
+    ret.value = response.data.data ?? null
+    if (!ret.value) {
+      loadError.value = { status: 404 }
+      return
+    }
+    loadError.value = null
+    trackingCode.value = ret.value.customerTrackingCode ?? ''
+    await syncPhotos(ret.value.photos ?? [])
+  } catch (error) {
+    ret.value = null
+    loadError.value = {
+      status: error?.response?.status ?? 0,
+      message: error?.response?.data?.message,
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+const retryLoad = () => {
+  loading.value = true
+  fetchReturn()
+}
+
+onMounted(fetchReturn)
+
+onBeforeUnmount(() => {
+  unmounted = true
+  ;[...photoUrls.keys()].forEach(revokePhoto)
+})
+
+// ---------- tracking code (customer, APPROVED + CUSTOMER_SENDS; BACK replaces an earlier code) ----------
+const showTracking = computed(
+  () => !isStaff.value && ret.value?.status === 'APPROVED' && ret.value?.returnMethod === 'CUSTOMER_SENDS'
+)
+const trackingCode = ref('')
+const trackingError = ref('')
+const savingTracking = ref(false)
+
+const validateTracking = () => {
+  const value = trackingCode.value.trim()
+  if (!value) return 'کد رهگیری را وارد کنید'
+  if (value.length > 100) return `کد رهگیری حداکثر ${(100).toLocaleString('fa-IR')} نویسه است`
+  return ''
+}
+
+async function submitTracking() {
+  trackingError.value = validateTracking()
+  if (trackingError.value) return
+  savingTracking.value = true
+  try {
+    await app.$api.returns.setReturnTracking(ret.value.id, {
+      data: { trackingCode: trackingCode.value.trim() },
+    })
+    toast.success('کد رهگیری ثبت شد')
+    await fetchReturn()
+  } catch (error) {
+    toast.error('ثبت کد رهگیری ناموفق بود', error?.response?.data?.message)
+  } finally {
+    savingTracking.value = false
+  }
+}
+
+// ---------- cancel (REQUESTED or APPROVED only) ----------
+const canCancel = computed(() => ['REQUESTED', 'APPROVED'].includes(ret.value?.status))
+const showCancel = ref(false) // customer dialog
+const showStaffCancel = ref(false)
+const cancelling = ref(false)
+
+const openCancel = () => {
+  if (isStaff.value) showStaffCancel.value = true
+  else showCancel.value = true
+}
+
+async function confirmCancel() {
+  try {
+    await app.$api.returns.cancelReturn(false, ret.value.id)
+    showCancel.value = false
+    toast.success('درخواست مرجوعی لغو شد')
+  } catch (error) {
+    // 409: the status moved on (e.g. the store already received the goods). Show BACK's reason, then reload
+    showCancel.value = false
+    toast.error('لغو درخواست ناموفق بود', error?.response?.data?.message)
+  }
+  await fetchReturn()
+}
+
+async function confirmStaffCancel(note) {
+  cancelling.value = true
+  try {
+    const res = await app.$api.returns.cancelReturn(true, ret.value.id, { data: { note: note || undefined } })
+    showStaffCancel.value = false
+    if (isPending(res)) return fetchReturn()
+    toast.success('مرجوعی لغو شد')
+    await applyReturn(res.data.data)
+  } catch (error) {
+    showStaffCancel.value = false
+    toast.error(apiErrorMessage(error, 'لغو مرجوعی ناموفق بود'))
+    await fetchReturn()
+  } finally {
+    cancelling.value = false
+  }
+}
+
+// ---------- staff decisions (approve lives in ReturnApproveModal, which emits its outcome) ----------
+const showApprove = ref(false)
+const showReject = ref(false)
+const rejecting = ref(false)
+const showReceive = ref(false)
+const showRefund = ref(false)
+
+async function onDecided({ pending, dto }) {
+  if (pending) return fetchReturn()
+  await applyReturn(dto)
+}
+
+async function confirmReject(note) {
+  rejecting.value = true
+  try {
+    const res = await app.$api.returns.rejectReturn(ret.value.id, { data: { note } })
+    showReject.value = false
+    if (isPending(res)) return fetchReturn()
+    toast.success('درخواست مرجوعی رد شد')
+    await applyReturn(res.data.data)
+  } catch (error) {
+    // 409: the request moved on. Show BACK's reason, close the dialog and reload the current state
+    showReject.value = false
+    toast.error(apiErrorMessage(error, 'رد درخواست ناموفق بود'))
+    await fetchReturn()
+  } finally {
+    rejecting.value = false
+  }
+}
+
+useHead({ title: 'جزئیات مرجوعی | پنل کاربری' })
+</script>
+
+<style scoped>
+.sk-enter-active { transition: opacity 0.25s ease; }
+.sk-leave-active { transition: opacity 0.25s ease; position: absolute; inset: 0; }
+.sk-enter-from, .sk-leave-to { opacity: 0; }
+</style>

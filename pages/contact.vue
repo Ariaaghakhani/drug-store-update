@@ -35,6 +35,7 @@
           <!-- Honeypot: the backend `website` field must stay empty; hidden from real users -->
           <input v-model="form.website" type="text" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
           <p class="text-xs text-gray-500 dark:text-gray-400">وارد کردن حداقل یکی از شماره موبایل یا ایمیل الزامی است.</p>
+          <CaptchaField ref="captchaField" v-model="captcha" :error="captchaError" />
           <UButton type="submit" block color="primary" :loading="sending">ارسال پیام</UButton>
         </form>
       </UCard>
@@ -55,6 +56,10 @@ const form = reactive({ fullName: '', phone: '', email: '', subject: '', message
 const errors = reactive({})
 const sending = ref(false)
 const sent = ref(false)
+// Captcha is shown only when the store requires it; a failed status call leaves it hidden (never blocks the form)
+const captcha = ref({ captchaId: null, captchaAnswer: null })
+const captchaField = ref(null)
+const captchaError = ref('')
 
 function clearError(...keys) {
   keys.forEach((key) => delete errors[key])
@@ -66,6 +71,7 @@ async function submit() {
   Object.assign(errors, result.errors)
   if (!result.isValid) return
 
+  captchaError.value = ''
   sending.value = true
   try {
     await app.$api.storefront.sendContactMessage({
@@ -76,15 +82,24 @@ async function submit() {
         subject: form.subject.trim(),
         message: form.message.trim(),
         website: form.website,
+        ...captcha.value,
       },
     })
     sent.value = true
   } catch (error) {
-    // 429 = the backend rate limit
-    toast.error(
-      error?.response?.status === 429 ? 'تعداد درخواست‌ها زیاد است' : 'ارسال پیام ناموفق بود',
-      error?.response?.data?.message
-    )
+    const errorCode = error?.response?.data?.errorCode
+    if (typeof errorCode === 'string' && errorCode.startsWith('captcha.')) {
+      captchaError.value = 'کد امنیتی نادرست است'
+      captchaField.value?.force()
+    } else {
+      // 429 = the backend rate limit
+      toast.error(
+        error?.response?.status === 429 ? 'تعداد درخواست‌ها زیاد است' : 'ارسال پیام ناموفق بود',
+        error?.response?.data?.message
+      )
+    }
+    // Captcha challenges are single-use, so every failed submit needs a fresh one
+    captchaField.value?.reset()
   } finally {
     sending.value = false
   }

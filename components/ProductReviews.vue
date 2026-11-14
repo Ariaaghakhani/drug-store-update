@@ -56,6 +56,122 @@
       </div>
     </UCard>
 
+    <!-- My review (customer). Guests get a login link; the state comes from GET api/reviews/my/goods/{id} -->
+    <UCard v-if="isLoggedIn" :ui="{ body: 'p-4 sm:p-6' }">
+      <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4">
+        نظر <span class="text-brand-500 dark:text-brand-400">شما</span>
+      </h3>
+
+      <div class="relative">
+        <Transition name="sk">
+          <div v-if="myLoading" key="sk">
+            <USkeleton class="h-24 w-full rounded-lg" />
+          </div>
+
+          <div v-else-if="myFailed" key="failed" class="text-center py-4">
+            <p class="text-gray-600 dark:text-gray-400 mb-4">دریافت وضعیت نظر شما ناموفق بود</p>
+            <UButton color="neutral" variant="soft" icon="i-heroicons-arrow-path" @click="loadMyState">
+              تلاش دوباره
+            </UButton>
+          </div>
+
+          <!-- Existing review (read-only view; edit only while the goods is still purchased) -->
+          <div v-else-if="myState?.review && !editing" key="review" class="space-y-3">
+            <div class="flex items-center justify-between gap-3 flex-wrap">
+              <UBadge :color="reviewStatusMeta(myState.review.status).color" variant="subtle" size="xs">
+                {{ reviewStatusMeta(myState.review.status).label }}
+              </UBadge>
+              <span class="text-xs text-gray-500 dark:text-gray-400">
+                {{ formatDate(myState.review.updatedAt || myState.review.createdAt) }}
+              </span>
+            </div>
+            <div class="flex gap-0.5">
+              <UIcon
+                v-for="star in 5"
+                :key="star"
+                :name="star <= myState.review.rating ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+                class="w-4 h-4 text-yellow-400 dark:text-yellow-300"
+              />
+            </div>
+            <p
+              v-if="myState.review.comment"
+              class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line"
+            >
+              {{ myState.review.comment }}
+            </p>
+            <div class="flex flex-wrap gap-2 justify-end">
+              <UButton
+                v-if="myState.canReview"
+                color="neutral"
+                variant="soft"
+                icon="i-heroicons-pencil-square"
+                @click="startEdit"
+              >
+                ویرایش
+              </UButton>
+              <UButton color="error" variant="soft" icon="i-heroicons-trash" @click="showDelete = true">
+                حذف
+              </UButton>
+            </div>
+          </div>
+
+          <!-- Write or edit form (only for a buyer) -->
+          <form v-else-if="showForm" key="form" class="space-y-4" dir="rtl" @submit.prevent="submitReview">
+            <UFormField label="امتیاز شما" :error="draftError">
+              <div class="flex gap-1">
+                <UButton
+                  v-for="star in 5"
+                  :key="star"
+                  color="neutral"
+                  variant="ghost"
+                  square
+                  :icon="star <= draftRating ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+                  :class="star <= draftRating ? 'text-yellow-400 dark:text-yellow-300' : 'text-gray-300 dark:text-gray-600'"
+                  :aria-label="`${star.toLocaleString('fa-IR')} ستاره`"
+                  @click="draftRating = star"
+                />
+              </div>
+            </UFormField>
+
+            <UFormField label="متن نظر (اختیاری)">
+              <UTextarea v-model="draftComment" :rows="3" :maxlength="1000" class="w-full" />
+            </UFormField>
+
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              نظر شما پس از تأیید فروشگاه در سایت نمایش داده می‌شود
+            </p>
+
+            <div class="flex flex-wrap gap-2 justify-end">
+              <UButton v-if="editing" color="neutral" variant="soft" @click="cancelEdit">انصراف</UButton>
+              <UButton type="submit" color="neutral" variant="solid" :loading="saving" :disabled="!draftRating">
+                {{ editing ? 'ذخیره ویرایش' : 'ثبت نظر' }}
+              </UButton>
+            </div>
+          </form>
+
+          <p v-else-if="showHint" key="hint" class="text-sm text-gray-500 dark:text-gray-400">
+            پس از خرید این کالا می‌توانید نظر بدهید
+          </p>
+        </Transition>
+      </div>
+
+      <DeleteConfirmDialog
+        v-model:open="showDelete"
+        title="حذف نظر"
+        message="آیا از حذف نظر خود مطمئن هستید؟ پس از حذف، نظر شما از سایت حذف می‌شود."
+        item-name=""
+        confirm-label="حذف نظر"
+        @confirm="confirmDelete"
+      />
+    </UCard>
+
+    <UCard v-else :ui="{ body: 'p-4 sm:p-6' }">
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <p class="text-sm text-gray-500 dark:text-gray-400">برای ثبت نظر ابتدا وارد حساب کاربری خود شوید</p>
+        <UButton color="neutral" variant="soft" :to="loginLink">ورود به حساب کاربری</UButton>
+      </div>
+    </UCard>
+
     <!-- Rating filter -->
     <div v-if="summary && summary.reviewCount > 0" class="flex flex-wrap gap-2">
       <UButton
@@ -151,7 +267,8 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, unref, watch } from 'vue'
+import DeleteConfirmDialog from '@/components/panel/DeleteConfirmDialog.vue'
 
 const PAGE_SIZE = 10
 
@@ -159,7 +276,13 @@ const props = defineProps({
   goodsId: { type: [Number, String], required: true },
 })
 
-const { $api } = useNuxtApp()
+const { $api, $auth } = useNuxtApp()
+const route = useRoute()
+const toast = useAppToast()
+
+// `$auth.loggedIn` is a readonly ref on the client and a plain false on the server
+const isLoggedIn = computed(() => Boolean(unref($auth.loggedIn)))
+const loginLink = computed(() => ({ path: '/login', query: { redirect: route.fullPath } }))
 
 // ---------- summary ----------
 const summary = ref(null)
@@ -233,12 +356,112 @@ const setRating = (value) => {
 
 const formatDate = (value) => (value ? new Date(value).toLocaleDateString('fa-IR') : '')
 
+// ---------- my review (customer) ----------
+// myState = {goodsId, canReview, review: MyGoodsReviewDTO|null} from GET api/reviews/my/goods/{goodsId}
+const myState = ref(null)
+const myLoading = ref(false)
+const myFailed = ref(false)
+const editing = ref(false)
+const draftRating = ref(0)
+const draftComment = ref('')
+const draftError = ref('')
+const saving = ref(false)
+const showDelete = ref(false)
+
+const showForm = computed(() => {
+  const state = myState.value
+  return Boolean(state?.canReview) && (!state.review || editing.value)
+})
+const showHint = computed(() => Boolean(myState.value) && !myState.value.canReview && !myState.value.review)
+
+const loadMyState = async () => {
+  if (!isLoggedIn.value) return
+  myLoading.value = true
+  myFailed.value = false
+  try {
+    myState.value = (await $api.storefront.getMyReviewState(props.goodsId)).data.data
+  } catch {
+    myState.value = null
+    myFailed.value = true
+  } finally {
+    myLoading.value = false
+  }
+}
+
+// An approved review changes the public list and summary, so both are refetched after a write
+const refreshPublic = () => {
+  loadSummary()
+  load(true)
+}
+
+const resetDraft = () => {
+  draftRating.value = 0
+  draftComment.value = ''
+  draftError.value = ''
+}
+
+const startEdit = () => {
+  draftRating.value = myState.value.review.rating
+  draftComment.value = myState.value.review.comment ?? ''
+  draftError.value = ''
+  editing.value = true
+}
+
+const cancelEdit = () => {
+  editing.value = false
+  draftError.value = ''
+}
+
+const submitReview = async () => {
+  if (!draftRating.value) {
+    draftError.value = 'امتیاز را انتخاب کنید'
+    return
+  }
+  draftError.value = ''
+  saving.value = true
+  try {
+    const res = await $api.storefront.submitReview({
+      data: { goodsId: Number(props.goodsId), rating: draftRating.value, comment: draftComment.value.trim() },
+    })
+    editing.value = false
+    // 202 pending rule (BACKEND_SYNC_PLAN 1.1): saved but not the record; reload instead of trusting `data`
+    if (res.pending) {
+      await loadMyState()
+      return
+    }
+    myState.value = { ...myState.value, canReview: true, review: res.data.data }
+    toast.success('نظر شما ثبت شد', 'پس از تأیید فروشگاه منتشر می‌شود')
+    refreshPublic()
+  } catch (error) {
+    toast.error('ثبت نظر ناموفق بود', error?.response?.data?.message)
+  } finally {
+    saving.value = false
+  }
+}
+
+const confirmDelete = async () => {
+  try {
+    await $api.storefront.deleteMyReview(myState.value.review.id)
+    showDelete.value = false
+    myState.value = { ...myState.value, review: null }
+    editing.value = false
+    resetDraft()
+    toast.success('نظر شما حذف شد')
+    refreshPublic()
+  } catch (error) {
+    toast.error('حذف نظر ناموفق بود', error?.response?.data?.message)
+  }
+}
+
 watch(
   () => props.goodsId,
   () => {
     rating.value = null
+    editing.value = false
+    resetDraft()
     loadSummary()
     load(true)
+    loadMyState()
   },
   { immediate: true }
 )
