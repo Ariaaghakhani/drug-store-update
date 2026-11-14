@@ -14,6 +14,7 @@ import inventory from '@/services/api/inventory.js'
 import catalog from '@/services/api/catalog.js'
 import catalogAdmin from '@/services/api/catalogAdmin.js'
 import analytics from '@/services/api/analytics.js'
+import reports from '@/services/api/reports.js'
 import communication from '@/services/api/communication.js'
 import user from '@/services/api/user.js'
 import location from '@/services/api/location.js'
@@ -61,6 +62,7 @@ export default (apiCaller, apiInstances) => ({
 
   // ========== ANALYTICS & REPORTS ==========
   analytics: analytics(apiCaller),
+  reports: reports(apiCaller),
 
   // ========== COMMUNICATION ==========
   communication: communication(apiCaller),

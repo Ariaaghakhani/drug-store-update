@@ -109,6 +109,27 @@ fallback can then be removed).
 
 ---
 
+## 4. REQUEST — expose the options of `select` report parameters (C18a reports) — PENDING
+
+**خلاصه به فارسی:** پارامتر گزارش از نوع `select` گزینه‌هایش را فقط در SQL سمت سرور دارد و به پنل نمی‌رسد؛ پنل ناچار
+یک کادر متنی برای وارد کردن شناسه نشان می‌دهد. لازم است BACK فهرست گزینه‌ها را در دسترس بگذارد.
+
+**Problem.** `POST /api/report/all` returns each parameter as `{type, label, required, defaultValue}`. For `type: "select"`
+the options come from `optionsSql`, which is `WRITE_ONLY` in `ReportParameterDefinition`, so it is never sent. The service
+method `ReportService.getParameterOptions(code)` already builds `{name: [{value, label}]}`, but `ReportController` has no
+route for it (only `/generate`, `/data`, `/all`, `/current-roles`). The panel's report modal therefore shows a plain text
+input with the hint «فهرست گزینه‌ها از سرور در دسترس نیست؛ شناسه را وارد کنید», and the pharmacist has to know the warehouse
+or category id by heart.
+
+**Ask.** Add a store-level route in `ReportController` (module REPORT, READ), for example
+`POST /api/report/options {code}` → `ApiResponse<Map<String, List<{value, label}>>>` from `getParameterOptions(code)`
+(same access check as `/data`: 404 unknown code, 403 no access). A parameter whose options SQL fails already yields an empty list.
+
+**Done when:** the endpoint exists. The frontend then replaces the text input of each `select` parameter with a
+`USelect` fed from it (value sent as before: BACK's resolver already turns a numeric value into a `Long`).
+
+---
+
 ## Already confirmed fine (no action)
 
 - `/api/storefront/home`, `/api/storefront/brands[/{id}]`, `/api/storefront/goods/near-expiry`,
