@@ -4,9 +4,9 @@
     <div class="space-y-4">
       <AuthMethodsCard
         :loading="pending"
-        :sms-enabled="smsEnabled"
+        :username="maskedUsername"
         @change-password="showPasswordModal = true"
-        @update:sms-enabled="smsEnabled = $event"
+        @change-username="showPhoneModal = true"
       />
       <ActiveSessionsCard
         :loading="pending"
@@ -32,6 +32,7 @@
     </div>
 
     <ChangePasswordModal v-model:open="showPasswordModal" @saved="onPasswordSaved" />
+    <ChangePhoneModal v-model:open="showPhoneModal" />
   </div>
 </template>
 
@@ -42,12 +43,16 @@ import LoginHistoryCard from '@/components/panel/security/LoginHistoryCard.vue'
 import SecurityAlertsCard from '@/components/panel/security/SecurityAlertsCard.vue'
 import DangerZoneCard from '@/components/panel/security/DangerZoneCard.vue'
 import ChangePasswordModal from '@/components/panel/security/ChangePasswordModal.vue'
+import ChangePhoneModal from '@/components/panel/profile/ChangePhoneModal.vue'
 
 const app = useNuxtApp()
 const toast = useToast()
 
 const pending = ref(true)
-const smsEnabled = ref(false)
+// BACK's username is the mobile; ChangePhoneModal changes both and refreshes the stored user
+const userStore = useUserStore()
+const maskedUsername = computed(() => maskMobile(userStore.currentUser?.username))
+const showPhoneModal = ref(false)
 const showPasswordModal = ref(false)
 
 const activeSessions = ref([])

@@ -129,6 +129,44 @@
         </p>
       </div>
 
+      <!-- Terms: BACK rejects the sign-up without it once the store has published terms -->
+      <div>
+        <label
+          class="flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-colors"
+          :class="
+            localForm.acceptedTerms
+              ? 'bg-brand-500/5 dark:bg-brand-500/10 border-brand-500/40'
+              : localForm.errors.acceptedTerms
+                ? 'border-red-500 dark:border-red-500'
+                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+          "
+        >
+          <input
+            v-model="localForm.acceptedTerms"
+            type="checkbox"
+            class="w-4 h-4 accent-[var(--color-brand-500)] flex-shrink-0"
+            @change="localForm.errors.acceptedTerms = ''"
+          />
+          <span class="text-sm text-gray-700 dark:text-gray-300">
+            <NuxtLink
+              to="/terms"
+              target="_blank"
+              class="font-medium text-brand-500 dark:text-brand-400 hover:underline"
+              @click.stop
+            >
+              قوانین و شرایط
+            </NuxtLink>
+            را خوانده‌ام و می‌پذیرم
+          </span>
+        </label>
+        <p
+          v-if="localForm.errors.acceptedTerms"
+          class="mt-1 text-sm text-red-600 dark:text-red-400"
+        >
+          {{ localForm.errors.acceptedTerms }}
+        </p>
+      </div>
+
       <CaptchaField
         ref="captchaField"
         v-model="localCaptcha"
@@ -218,9 +256,14 @@ const handleSubmit = () => {
 
   if (policyError) errors.password = policyError
 
+  // shortcut: always required, even for a store with no published terms (BACK only needs it then); upgrade by
+  // checking GET api/terms if a store without terms ever goes live
+  const termsOk = localForm.value.acceptedTerms === true
+  errors.acceptedTerms = termsOk ? '' : 'برای ثبت‌نام باید قوانین و شرایط را بپذیرید'
+
   localForm.value.errors = errors
 
-  if (isValid && !policyError) {
+  if (isValid && !policyError && termsOk) {
     emit('submit')
   }
 }

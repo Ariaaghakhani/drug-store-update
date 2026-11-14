@@ -51,7 +51,7 @@
                       <h3 class="text-base font-semibold text-gray-900 dark:text-white">تأیید شماره فعلی</h3>
                       <p class="text-xs text-gray-400 leading-relaxed">کد تأیید به شماره فعلی شما ارسال می‌شود</p>
                     </div>
-                    <UInput model-value="۰۹۱۲***۶۷۸۹" readonly dir="ltr" size="md" class="w-full" :ui="{ base: 'text-center' }" />
+                    <UInput :model-value="currentPhone" readonly dir="ltr" size="md" class="w-full" :ui="{ base: 'text-center' }" />
                     <div class="flex gap-3">
                       <UButton variant="soft" color="neutral" class="flex-1 justify-center" :disabled="loadingStep1" @click="requestCancel">انصراف</UButton>
                       <UButton color="primary" class="flex-1 justify-center" :loading="loadingStep1" @click="handleSendCurrentOtp">ارسال کد تأیید</UButton>
@@ -61,7 +61,7 @@
                   <template v-else-if="step === 2">
                     <div class="text-center space-y-1">
                       <h3 class="text-base font-semibold text-gray-900 dark:text-white">کد تأیید</h3>
-                      <p class="text-xs text-gray-400 leading-relaxed">کد ارسال شده به ۰۹۱۲***۶۷۸۹ را وارد کنید</p>
+                      <p class="text-xs text-gray-400 leading-relaxed">کد ارسال شده به <span dir="ltr">{{ currentPhone }}</span> را وارد کنید</p>
                     </div>
                     <div class="flex justify-center gap-2" dir="ltr">
                       <input
@@ -172,6 +172,9 @@ const emit = defineEmits(['update:open', 'saved'])
 
 const app = useNuxtApp()
 const toast = useAppToast()
+// the username is the mobile
+const userStore = useUserStore()
+const currentPhone = computed(() => maskMobile(userStore.currentUser?.username) || 'شماره فعلی')
 
 const isOpen = computed({
   get: () => props.open,

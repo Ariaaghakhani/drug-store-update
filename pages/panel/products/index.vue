@@ -17,15 +17,26 @@
             </p>
           </div>
         </div>
-        <UButton
-          v-if="canCreate"
-          color="primary"
-          icon="i-heroicons-plus"
-          size="lg"
-          @click="navigateTo('/panel/products/new')"
-        >
-          افزودن محصول
-        </UButton>
+        <div class="flex items-center gap-2 flex-wrap">
+          <UButton
+            to="/panel/products/catalog"
+            color="neutral"
+            variant="outline"
+            icon="i-heroicons-tag"
+            size="lg"
+          >
+            دسته‌بندی، برند و تگ
+          </UButton>
+          <UButton
+            v-if="canCreate"
+            color="primary"
+            icon="i-heroicons-plus"
+            size="lg"
+            @click="navigateTo('/panel/products/new')"
+          >
+            افزودن محصول
+          </UButton>
+        </div>
       </div>
 
       <ProductsFilters

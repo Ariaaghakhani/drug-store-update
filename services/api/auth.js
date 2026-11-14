@@ -124,4 +124,18 @@ export default (apiCaller) => ({
   createCaptcha(config) {
     return apiCaller.post('api/captcha', config)
   },
+
+  // Own profile photo, any logged-in user (no role grant). → MyAvatarDTO {avatarUrl}, null = no photo; the url is public.
+  getMyAvatar(config) {
+    return apiCaller.get('api/auth/me/avatar', config)
+  },
+
+  // multipart `file` (JPEG, PNG or WebP up to 2 MB); replaces the old photo → MyAvatarDTO with the new url
+  changeMyAvatar(config) {
+    return apiCaller.post('api/auth/me/avatar', config)
+  },
+
+  removeMyAvatar(config) {
+    return apiCaller.post('api/auth/me/avatar/delete', config)
+  },
 })
