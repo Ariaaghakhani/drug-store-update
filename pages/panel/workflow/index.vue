@@ -21,12 +21,13 @@
 import PanelEmptyState from '@/components/panel/PanelEmptyState.vue'
 
 // Landing route of the «گردش کار» menu entry: replaces itself with the first section the user can read. The list below is in the
-// order of the plan; C21/C22 add their pages at the marked places. A section that is not built yet must not be listed (a
-// redirect there would end in a 404), so a user who holds only a later module sees the unavailable state until it lands.
+// order of the plan; C22a adds the definitions page at the marked place. A section that is not built yet must not be listed (a
+// redirect there would end in a 404). A user holding only WORKFLOW_DESIGN lands on the bindings page, only WORKFLOW_CALENDAR on the calendar.
 const SECTIONS = [
   { to: '/panel/workflow/instances', module: 'WORKFLOW_MONITOR' },
   // C22a: { to: '/panel/workflow/definitions', module: 'WORKFLOW_DESIGN' }
-  // C21b: { to: '/panel/workflow/calendar', module: 'WORKFLOW_CALENDAR' }
+  { to: '/panel/workflow/bindings', module: 'WORKFLOW_DESIGN' },
+  { to: '/panel/workflow/calendar', module: 'WORKFLOW_CALENDAR' },
 ]
 
 const { canRead } = useModuleAccess()
