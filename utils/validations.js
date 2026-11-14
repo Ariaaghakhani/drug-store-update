@@ -109,6 +109,13 @@ export function normalizeIranianMobile(value) {
   return digits.replace(/^(\+98|0098|98)/, '0')
 }
 
+// "۰۹۱۲•••۶۷۸۹" for showing a mobile (= the username) without printing it whole; '' when it isn't a mobile
+export function maskMobile(value) {
+  const phone = normalizeIranianMobile(value)
+  if (!/^09\d{9}$/.test(phone)) return ''
+  return `${phone.slice(0, 4)}•••${phone.slice(-4)}`.replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d])
+}
+
 // Mirrors BACK's ContactMessageCreateDTO: name/subject/message required, email or phone required, length caps.
 // Returns { isValid, errors } where errors only has keys for broken fields.
 export function validateContactForm(form) {

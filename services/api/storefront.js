@@ -19,7 +19,10 @@ export default (apiCaller) => ({
   // CategoryDTO[] roots with nested `children` {id, name, parentId, level, code, sortOrder, children}.
   // NOT public on BACK yet (401 for a guest) — see BACKEND_REQUESTS.md; callers must treat 401/403 as "no categories".
   getCategoryTree(config) {
-    return apiCaller.get('api/categories/tree', { params: { scope: 'PRODUCT' }, ...config })
+    return apiCaller.get('api/categories/tree', {
+      params: { scope: 'PRODUCT' },
+      ...config,
+    })
   },
 
   // config.params {withGoodsOnly=true, limit?} → StorefrontBrandDTO {id, name, logoUrl, goodsCount}[]
@@ -69,6 +72,11 @@ export default (apiCaller) => ({
 
   getTermsByType(type) {
     return apiCaller.get(`api/terms/${encodeURIComponent(type)}`)
+  },
+
+  // Public: the platform (SYSTEM) agreement a store admin accepts at panel login → TermsAndConditionsDTO[]
+  getPlatformTerms() {
+    return apiCaller.get('api/terms/platform')
   },
 
   getReturnPolicy() {

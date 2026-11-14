@@ -61,7 +61,7 @@ const showEmailModal = ref(false)
 const emailVerified = ref(false)
 const emailAddress = ref('')
 const smsNotifications = ref(true)
-const maskedPhone = '0912•••6789'
+const maskedPhone = computed(() => maskMobile(userStore.currentUser?.username))
 // The user's own counts, for customers only: staff don't buy, and the store's numbers live on the dashboard.
 // A count stays null while loading; the prescriptions box drops out when the store has no medical section (403).
 const { getUserRole, getRoleLabel } = useUserPanelTabs()
