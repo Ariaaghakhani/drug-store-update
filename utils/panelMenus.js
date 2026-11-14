@@ -15,7 +15,7 @@ export const PANEL_MENUS = [
   { key: 'wishlist', label: 'علاقه‌مندی‌ها', icon: 'i-heroicons-heart', to: '/panel/wishlist', flag: 'wishlistEnabled' },
   { key: 'wallet', label: 'کیف پول', icon: 'i-heroicons-wallet', to: '/panel/wallet', flag: 'walletEnabled' },
   { key: 'addresses', label: 'آدرس‌ها', icon: 'i-heroicons-map-pin', to: '/panel/address' },
-  { key: 'security', label: 'امنیت', icon: 'i-heroicons-shield-check', to: '/panel/security', always: true },
+  { key: 'security', label: 'رمز عبور و امنیت', icon: 'i-heroicons-shield-check', to: '/panel/security', always: true },
   { key: 'notifications', label: 'اعلان‌ها', icon: 'i-heroicons-bell', to: '/panel/notifications', always: true },
   { key: 'profile', label: 'اطلاعات شخصی', icon: 'i-heroicons-user', to: '/panel/profile', always: true },
 ]
@@ -43,6 +43,7 @@ export const FALLBACK_MENUS_BY_ROLE = {
     { key: 'tickets' },
     { key: 'notifications' },
     { key: 'profile' },
+    { key: 'security' },
   ],
   owner: [
     { key: 'dashboard', label: 'داشبورد مدیریت', icon: 'i-heroicons-home' },
@@ -53,5 +54,6 @@ export const FALLBACK_MENUS_BY_ROLE = {
     { key: 'tickets' },
     { key: 'notifications' },
     { key: 'profile' },
+    { key: 'security' },
   ],
 }

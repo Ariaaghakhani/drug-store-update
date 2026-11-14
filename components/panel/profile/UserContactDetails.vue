@@ -42,7 +42,7 @@
             <UIcon name="i-heroicons-device-phone-mobile" class="w-5 h-5 text-brand-500" />
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-gray-900 dark:text-white">شماره موبایل</p>
+            <p class="text-sm font-medium text-gray-900 dark:text-white">شماره موبایل (نام کاربری)</p>
             <p dir="ltr" class="text-xs text-gray-400 dark:text-gray-500 mt-0.5 text-right">{{ phone }}</p>
           </div>
           <UButton variant="soft" color="neutral" size="lg" icon="i-heroicons-pencil-square" class="flex-shrink-0" @click="emit('change-phone')">
