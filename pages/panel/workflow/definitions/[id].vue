@@ -212,7 +212,6 @@
 
             <ol v-if="steps.length" class="space-y-3 p-4 sm:p-6">
               <li v-for="(step, i) in steps" :key="`${i}:${step.key}`">
-                <!-- C22d: pass `edit-enabled` (and `approver-names`) here once the step editor exists -->
                 <StepCard
                   :step="step"
                   :index="i"
@@ -220,7 +219,8 @@
                   :errors="stepErrors.get(step.key) ?? []"
                   :readonly="readOnly"
                   :disabled="locked"
-                  :edit-enabled="false"
+                  edit-enabled
+                  :approver-names="approvers.names"
                   @move-up="moveStep(i, -1)"
                   @move-down="moveStep(i, 1)"
                   @edit="openStepEditor(i)"
@@ -240,6 +240,17 @@
     </div>
 
     <DefinitionVersionsModal v-model:open="versionsOpen" :definition="definition" />
+
+    <!-- edit one step (C22d–C22f): the modal works on a copy and hands the whole step back with `done` -->
+    <StepEditorModal
+      v-model:open="editorOpen"
+      :step="editingStep"
+      :index="editingIndex ?? 0"
+      :steps="steps"
+      :subject="subject"
+      :approvers="approvers"
+      @done="onStepDone"
+    />
 
     <!-- remove a step -->
     <PanelConfirmDialog
@@ -296,11 +307,13 @@ import StatusBadge from '@/components/panel/StatusBadge.vue'
 import WorkflowTabs from '@/components/panel/workflow/WorkflowTabs.vue'
 import StepCard from '@/components/panel/workflow/StepCard.vue'
 import DefinitionVersionsModal from '@/components/panel/workflow/DefinitionVersionsModal.vue'
+import StepEditorModal from '@/components/panel/workflow/StepEditorModal.vue'
 import { apiErrorMessage, errorStatus } from '~/utils/apiError.js'
 import { metaOf } from '~/utils/enumMeta.js'
 import { formatJalali } from '~/utils/jalali.js'
 import { DEFINITION_STATUS_META } from '~/utils/workflowMeta.js'
 import { MAX_DEFINITION_TITLE, MAX_STEPS, cloneJson, newStep, stepsJumpingTo } from '~/utils/workflowDefinition.js'
+import { replaceStep } from '~/utils/workflowStep.js'
 
 // Workflow definition editor shell (C22c, module WORKFLOW_DESIGN). Route name `panel-workflow-definitions-id`.
 //
@@ -308,14 +321,16 @@ import { MAX_DEFINITION_TITLE, MAX_STEPS, cloneJson, newStep, stepsJumpingTo } f
 //   1. LOAD        `definition` = the last server copy without its steps, `version` = the optimistic lock.
 //   2. WORKING COPY `title` and `steps` (array of BACK's WorkflowStepDTO objects, kept WHOLE) + `dirty` (compared with the saved snapshot).
 //   3. STEP LIST   add / move / remove. These never rebuild a step: a step object is only moved, spliced out, or created whole.
-//   4. STEP EDITOR HOOK (C22d)  where a StepEditorModal edits one step and hands the new object back.
+//   4. STEP EDITOR  (C22d–C22f) a StepEditorModal edits one step on a copy and hands the whole new object back.
 //   5. SAVE / VALIDATE / PUBLISH  the request logic (save → validate → publish, stopping at the first failure).
 //   6. CONFLICT (409) and DIRTY GUARD.
 const app = useNuxtApp()
 const route = useRoute()
 const toast = useAppToast()
 const { download } = useFileDownload()
-const { load: loadSubjects, subjectTitle, actionTitle } = useWorkflowSubjects()
+const { subjects, load: loadSubjects, subjectTitle, actionTitle } = useWorkflowSubjects()
+// Roles, staff and system actions for the step editor; the page owns the one instance (fetched once) and StepCard names the approvers from it
+const approvers = reactive(useApproverOptions())
 
 // ===== 1. LOAD =====
 const definitionId = computed(() => Number(route.params.id))
@@ -375,7 +390,8 @@ async function load() {
 
 onMounted(() => {
   load()
-  loadSubjects() // titles only; a failure falls back to the codes
+  loadSubjects() // titles and the subject's fields and events; a failure falls back to the codes
+  approvers.load() // a failure shows ids instead of names, and the step editor offers a retry
 })
 
 // One request at a time: 'save' | 'validate' | 'publish' | 'reload'. Edits are locked while one runs, so the answer of a save can never
@@ -422,16 +438,33 @@ function confirmRemove() {
   steps.value.splice(index, 1)
 }
 
-// ===== 4. STEP EDITOR HOOK (C22d) =====
-// StepCard's «ویرایش» is disabled until the step editor exists (`:edit-enabled="false"` above). C22d: open a StepEditorModal here with a
-// deep copy of `steps.value[index]` (`cloneJson`), and on its `done(step)` replace the WHOLE object in place:
-//   steps.value.splice(index, 1, cloneJson(step))
-// The editor must start from the existing object and change only the fields it owns, so every other field survives. Context for the
-// editor: the subject's `fields` / `events` are in `useWorkflowSubjects().subjects` (find by `definition.value.subject`), the earlier
-// steps are `steps.value.slice(0, index)`, the later keys `steps.value.slice(index + 1)`.
+// ===== 4. STEP EDITOR (C22d–C22f) =====
+// «ویرایش» opens the StepEditorModal with a deep copy of the step; Cancel changes nothing. On `done(step)` the WHOLE step object is
+// replaced (`replaceStep`): the modal starts from the existing object and changes only the fields it owns, so every other field
+// survives. If the step key was renamed, `replaceStep` also updates the other steps that referred to the old key (`goTo`, condition
+// fields `step.<key>.…`, action inputs), in the same edit. Replacing the object makes the page dirty by itself (`dirty` compares JSON).
+// Context the modal gets: the subject's catalog entry (`fields`, `events`), the whole list (earlier steps give action outputs, later keys
+// are goTo targets) and the approver options.
+const editorOpen = ref(false)
 const editingIndex = ref(null)
+const editingStep = ref(null)
+const subject = computed(() => subjects.value.find((item) => item.code === definition.value?.subject) ?? null)
+
 const openStepEditor = (index) => {
+  if (locked.value || index < 0 || index >= steps.value.length) return
   editingIndex.value = index
+  editingStep.value = cloneJson(steps.value[index])
+  editorOpen.value = true
+}
+
+function onStepDone(step) {
+  const index = editingIndex.value
+  if (index === null || locked.value || index >= steps.value.length) return
+  const result = replaceStep(steps.value, index, step)
+  steps.value = result.steps
+  if (result.updatedSteps) {
+    toast.info(`ارجاع ${result.updatedSteps.toLocaleString('fa-IR')} مرحله‌ی دیگر به کلید تازه به‌روز شد`)
+  }
 }
 
 // ===== 5. SAVE / VALIDATE / PUBLISH =====

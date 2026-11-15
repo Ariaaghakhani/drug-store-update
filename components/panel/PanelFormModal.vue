@@ -48,6 +48,7 @@ const WIDTH_CLASSES = {
   md: 'sm:max-w-md',
   lg: 'sm:max-w-lg',
   '2xl': 'sm:max-w-2xl',
+  '4xl': 'sm:max-w-4xl',
 }
 
 const props = defineProps({
@@ -66,7 +67,7 @@ const props = defineProps({
   width: {
     type: String,
     default: 'md',
-    validator: (value) => ['md', 'lg', '2xl'].includes(value),
+    validator: (value) => ['md', 'lg', '2xl', '4xl'].includes(value),
   },
 })
 

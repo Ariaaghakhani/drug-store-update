@@ -5,7 +5,7 @@
  * missing) on any call means "workflow unavailable for this store" (see `isWorkflowUnavailable` in utils/workflowMeta.js).
  * Payload = `res.data.data` (no RAW endpoints here). `taskId` is a string, so it is always `encodeURIComponent`-ed;
  * instance and definition ids are numbers. Sections: task inbox (C19), run reads (C19), run monitoring (C20), bindings,
- * calendar and custom events (C21), designer (C22a–C22c; C22d appends `getApproverOptions`).
+ * calendar and custom events (C21), designer (C22a–C22d).
  */
 const TASKS = 'api/admin/workflow/tasks'
 const INSTANCES = 'api/admin/workflow/instances'
@@ -215,7 +215,7 @@ export default (apiCaller) => ({
     return apiCaller.delete(`${CUSTOM_EVENTS}/${id}`)
   },
 
-  // ========== DESIGNER (C22a–C22c, module WORKFLOW_DESIGN) ==========
+  // ========== DESIGNER (C22a–C22d, module WORKFLOW_DESIGN) ==========
   // Verified against WorkflowDefinitionController / WorkflowDefinitionServiceImpl / WorkflowStepDTO (backend copy, 2026-11-14).
   // `listDefinitions` (above, C21a) is the list. A step (WorkflowStepDTO) carries 13 fields: key, title, approvers[{type ROLE|USER|STARTER|
   // PREVIOUS_ACTOR, roleId, userId}], completion ANY|ALL|EACH, condition, deadline{amount, unit, onOverdue, escalateToRoleId, repeatEvery,
@@ -284,5 +284,14 @@ export default (apiCaller) => ({
   // normal JSON envelope (BACK answers ApiResponse<String>): NOT a blob, no responseType. 404 `workflow.definition.version.not.found`
   getDefinitionBpmn(id, config) {
     return apiCaller.get(`${DEFINITIONS}/${id}/bpmn`, config)
+  },
+
+  // GET config.params {q? (part of a staff member's name or mobile; it only filters `users`)} → {roles[{id, name, description, title}] (every
+  // staff role of the store, no customer role; show `title || name`), users[{id, username, fullName}] (ACTIVE staff, at most 100, filtered
+  // by q), systemActions[{code, title, params[{key, title, type TEXT|NUMBER|BOOLEAN|CHOICE|ROLE|USER, required, choices {code: title},
+  // maxLength}], outputs[{key, title, type NUMBER|TEXT|BOOLEAN|ID}]}]} (every registered action; a later step reads an output as
+  // `step.<stepKey>.<outputKey>`). The path is not under `/definitions`. 403 without WORKFLOW_DESIGN. Checked against BACK 2026-11-15
+  getApproverOptions(config) {
+    return apiCaller.get('api/admin/workflow/approver-options', config)
   },
 })

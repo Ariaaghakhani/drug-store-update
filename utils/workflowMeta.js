@@ -1,7 +1,7 @@
 // Labels, colors and helpers for BACK's workflow enums. The Persian labels are copied from BACK's `WorkflowPageLabels.java`
 // (verified 2026-11-12). `*_META` maps are `{label, color}` with a Nuxt UI color token, `*_LABELS` maps are plain strings;
 // read both through `metaOf` / `labelOf` (utils/enumMeta.js) so an unknown BACK value never breaks a screen.
-// Sections: runs and decisions (C19), definitions and calendar (C20–C22), designer labels (C21), helpers (C19, C20).
+// Sections: runs and decisions (C19), definitions and calendar (C20–C22), designer labels (C21), helpers (C19, C20, C22e).
 
 // ---------- runs and decisions (C19) ----------
 export const INSTANCE_STATUS_META = {
@@ -95,6 +95,16 @@ export const WAIT_TIMEOUT_LABELS = {
 }
 
 // ---------- helpers ----------
+
+// The condition operators BACK allows per field type (`WorkflowFieldTypeRules.operators`, checked 2026-11-15), in the order the select
+// shows them. An unknown type (a field the catalog does not list) gets the two operators every type has, so a select never comes up empty.
+const OPERATORS_BY_TYPE = {
+  NUMBER: ['EQ', 'NE', 'GT', 'GTE', 'LT', 'LTE', 'IN'],
+  TEXT: ['EQ', 'NE', 'IN'],
+  ID: ['EQ', 'NE', 'IN'],
+  BOOLEAN: ['EQ', 'NE'],
+}
+export const operatorsFor = (type) => [...(OPERATORS_BY_TYPE[type] ?? ['EQ', 'NE'])]
 
 // Panel page of the record a run is about; null for a subject without a detail page (e.g. an `API_<MODULE>` panel action)
 export const entityLink = (subject, id) => {
