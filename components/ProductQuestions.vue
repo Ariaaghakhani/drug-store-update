@@ -4,6 +4,48 @@
       پرسش و <span class="text-brand-500">پاسخ</span>
     </h2>
 
+    <!-- Ask form (customer). Gated by the store flag; guests get a login link. Questions show here only after a store answer -->
+    <template v-if="goodsQuestionsEnabled">
+      <UCard v-if="isLoggedIn" :ui="{ body: 'p-4 sm:p-6' }">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4">
+          پرسش <span class="text-brand-500 dark:text-brand-400">شما</span>
+        </h3>
+
+        <form class="space-y-4" dir="rtl" @submit.prevent="submitQuestion">
+          <UFormField label="پرسش خود را بنویسید" :error="draftError">
+            <UTextarea v-model="draft" :rows="3" :maxlength="1000" class="w-full" />
+          </UFormField>
+
+          <label class="flex items-center justify-between gap-4 cursor-pointer">
+            <span class="min-w-0">
+              <span class="block text-sm font-medium text-gray-900 dark:text-white">نمایش به‌صورت ناشناس</span>
+              <span class="block text-xs text-gray-500 dark:text-gray-400">نام شما کنار پرسش نمایش داده نمی‌شود</span>
+            </span>
+            <USwitch v-model="draftAnonymous" size="lg" :ui="switchUi" />
+          </label>
+
+          <label class="flex items-center justify-between gap-4 cursor-pointer">
+            <span class="min-w-0">
+              <span class="block text-sm font-medium text-gray-900 dark:text-white">فقط برای خودم</span>
+              <span class="block text-xs text-gray-500 dark:text-gray-400">فقط شما پرسش و پاسخ را می‌بینید و در سایت نمایش داده نمی‌شود</span>
+            </span>
+            <USwitch v-model="draftPrivate" size="lg" :ui="switchUi" />
+          </label>
+
+          <div class="flex justify-end">
+            <UButton type="submit" color="neutral" variant="solid" :loading="saving">ثبت پرسش</UButton>
+          </div>
+        </form>
+      </UCard>
+
+      <UCard v-else :ui="{ body: 'p-4 sm:p-6' }">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <p class="text-sm text-gray-500 dark:text-gray-400">برای پرسیدن ابتدا وارد حساب کاربری خود شوید</p>
+          <UButton color="neutral" variant="soft" :to="loginLink">ورود به حساب کاربری</UButton>
+        </div>
+      </UCard>
+    </template>
+
     <div class="relative">
       <Transition name="sk">
         <div v-if="loading" key="sk" class="space-y-4">
@@ -73,7 +115,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, unref, watch } from 'vue'
 
 const PAGE_SIZE = 10
 
@@ -81,7 +123,55 @@ const props = defineProps({
   goodsId: { type: [Number, String], required: true },
 })
 
-const { $api } = useNuxtApp()
+const { $api, $auth } = useNuxtApp()
+const route = useRoute()
+const toast = useAppToast()
+const { goodsQuestionsEnabled } = useStoreProfile()
+
+// `$auth.loggedIn` is a readonly ref on the client and a plain false on the server
+const isLoggedIn = computed(() => Boolean(unref($auth.loggedIn)))
+const loginLink = computed(() => ({ path: '/login', query: { redirect: route.fullPath } }))
+
+// Same toggle override as the panel switches (DESIGN_SYSTEM "USwitch"): brand when on, visible gray track when off
+const switchUi = {
+  base: 'data-[state=checked]:bg-brand-500 dark:data-[state=checked]:bg-brand-400 data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-gray-600',
+}
+
+// ---------- ask (customer) ----------
+const draft = ref('')
+const draftAnonymous = ref(false)
+const draftPrivate = ref(false)
+const draftError = ref('')
+const saving = ref(false)
+
+const submitQuestion = async () => {
+  if (!draft.value.trim()) {
+    draftError.value = 'متن پرسش را بنویسید'
+    return
+  }
+  draftError.value = ''
+  saving.value = true
+  try {
+    // Customer asks answer 200 with MyGoodsQuestionDTO (PENDING); the 202 pending rule only covers staff writes
+    await $api.storefront.askQuestion({
+      data: {
+        goodsId: Number(props.goodsId),
+        question: draft.value.trim(),
+        anonymous: draftAnonymous.value,
+        privateQuestion: draftPrivate.value,
+      },
+    })
+    draft.value = ''
+    draftAnonymous.value = false
+    draftPrivate.value = false
+    toast.success('پرسش ثبت شد؛ پس از پاسخ فروشگاه نمایش داده می‌شود')
+  } catch (error) {
+    // 409 goods.question.disabled when the store switched Q&A off after this page loaded: show the store's message
+    toast.error('ثبت پرسش ناموفق بود', error?.response?.data?.message)
+  } finally {
+    saving.value = false
+  }
+}
 
 const questions = ref([])
 const page = ref(0)

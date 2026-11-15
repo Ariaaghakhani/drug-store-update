@@ -18,13 +18,12 @@ export const useCartStore = defineStore('cart', {
       )
     },
 
+    // Items total only: shipping and discounts are priced by the checkout quote, not here
     total: (state) => {
-      const subtotal = state.items.reduce(
+      return state.items.reduce(
         (total, item) => total + item.price * item.quantity,
         0
       )
-      const shipping = subtotal > 50 ? 0 : 5.99
-      return subtotal + shipping
     },
 
     hasItems: (state) => state.items.length > 0,

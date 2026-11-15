@@ -24,33 +24,29 @@ export default (apiCaller) => ({
     return apiCaller.post('api/organizations/delete', config)
   },
 
-  // ========== SUPPLIERS ==========
+  // ========== SUPPLIERS (verified 2026-11-11 against BACK SupplierController) ==========
+  // GET api/suppliers → SupplierDTO[] (unpaged).
   listSuppliers(config) {
-    return apiCaller.post('api/suppliers/list', config)
+    return apiCaller.get('api/suppliers', config)
   },
 
+  // POST api/suppliers/get-by-id {id} → SupplierDTO.
   getSupplier(config) {
-    return apiCaller.post('api/suppliers/get', config)
+    return apiCaller.post('api/suppliers/get-by-id', config)
   },
 
+  // POST api/suppliers {name (required), contactName?, phone?, email?, …} → 201 SupplierDTO.
   createSupplier(config) {
-    return apiCaller.post('api/suppliers/create', config)
+    return apiCaller.post('api/suppliers', config)
   },
 
+  // POST api/suppliers/update {id, supplierDTO: {…}} (nested, not flat) → SupplierDTO.
   updateSupplier(config) {
     return apiCaller.post('api/suppliers/update', config)
   },
 
+  // POST api/suppliers/delete {id}; 204.
   deleteSupplier(config) {
     return apiCaller.post('api/suppliers/delete', config)
-  },
-
-  // ========== SUPPLIER RATINGS ==========
-  rateSupplier(config) {
-    return apiCaller.post('api/suppliers/rate', config)
-  },
-
-  getSupplierRating(config) {
-    return apiCaller.post('api/suppliers/rating', config)
   },
 })

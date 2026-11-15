@@ -1,58 +1,15 @@
 /**
- * Audit Service
- * Audit logs and activity tracking
+ * Audit Service. Verified against BACK's `AuditController` (`/api/admin/audit`, module AUDIT) on the reference copy of
+ * `main` 2026-11-14. It has a single route; the earlier `api/audit/logs*`, `entity-logs`, `export`, `config`,
+ * `retention-policy` and `archive` wrappers were guesses and do not exist.
  */
 export default (apiCaller) => ({
-  // ========== AUDIT LOGS ==========
-  listAuditLogs(config) {
-    return apiCaller.post('api/audit/logs', config)
-  },
-
-  getAuditLog(config) {
-    return apiCaller.post('api/audit/logs/get', config)
-  },
-
-  filterAuditLogs(config) {
-    return apiCaller.post('api/audit/logs/filter', config)
-  },
-
-  searchAuditLogs(config) {
-    return apiCaller.post('api/audit/logs/search', config)
-  },
-
-  // ========== AUDIT BY ENTITY ==========
-  getEntityAuditLogs(config) {
-    return apiCaller.post('api/audit/entity-logs', config)
-  },
-
-  getEntityHistory(config) {
-    return apiCaller.post('api/audit/entity-history', config)
-  },
-
-  // ========== AUDIT EXPORT ==========
-  exportAuditLogs(config) {
-    return apiCaller.post('api/audit/export', config)
-  },
-
-  // ========== AUDIT CONFIGURATION ==========
-  getAuditConfig(config) {
-    return apiCaller.post('api/audit/config', config)
-  },
-
-  updateAuditConfig(config) {
-    return apiCaller.post('api/audit/config/update', config)
-  },
-
-  // ========== RETENTION POLICY ==========
-  getRetentionPolicy(config) {
-    return apiCaller.post('api/audit/retention-policy', config)
-  },
-
-  updateRetentionPolicy(config) {
-    return apiCaller.post('api/audit/retention-policy/update', config)
-  },
-
-  archiveAuditLogs(config) {
-    return apiCaller.post('api/audit/archive', config)
+  // POST config.data {entityName?, entityId?, action?, outcome? SUCCESS|FAILED, userId?, performedBy?, from?, to? (both inclusive,
+  // 'YYYY-MM-DDTHH:mm:ss'), page (1-BASED, default 1), size (1..100, default 20)}. Every filter is an exact match (no LIKE),
+  // newest first. → ApiResponse<PageResponse<{id, entityName, entityId (text, e.g. 'GOODS:15' for a bulk delete), action,
+  // outcome (null on old rows), errorMessage, oldValue, newValue (JSON text, secrets already '***'), performedBy, userId,
+  // performedAt, ipAddress, userAgent, tenantId, createdAt, updatedAt}>>. `tenantId` in the body is platform-only and ignored
+  searchAudit(config) {
+    return apiCaller.post('api/admin/audit/search', config)
   },
 })

@@ -8,6 +8,9 @@
       <NuxtLayout>
         <NuxtPage />
       </NuxtLayout>
+      <ClientOnly>
+        <TermsPendingDialog />
+      </ClientOnly>
     </UApp>
   </div>
 </template>

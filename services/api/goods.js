@@ -29,11 +29,6 @@ export default (apiCaller) => ({
     return apiCaller.post('api/goods/filter', config)
   },
 
-  // ========== BULK OPERATIONS ==========
-  importGoods(config) {
-    return apiCaller.post('api/goods/import', config)
-  },
-
   // ========== TAGS ==========
   getTags(config) {
     return apiCaller.get('api/tags', config)

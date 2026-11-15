@@ -257,7 +257,8 @@ const app = useNuxtApp()
 const cartStore = useCartStore()
 const toast = useAppToast()
 const { formatPrice, formatCount } = useFormat()
-const { wishlistEnabled, stockAlertsEnabled, goodsQuestionsEnabled } = useStoreProfile()
+const { profile: storeProfile, wishlistEnabled, stockAlertsEnabled, goodsQuestionsEnabled, variantsEnabled } =
+  useStoreProfile()
 
 const product = ref({})
 const pending = ref(true)
@@ -276,7 +277,12 @@ const activeImage = computed(() => images.value[activeImageIndex.value] ?? null)
 
 // ---------- variants ----------
 // A product with variants (isModel) isn't sold itself: the shopper picks a variant, which has its own price and stock.
-const variants = computed(() => (product.value?.variants ?? []).filter((variant) => variant.isActive !== false))
+// Hidden only when the store profile has loaded and says variants are off (a failed profile call must not block buying)
+const variants = computed(() =>
+  storeProfile.value && !variantsEnabled.value
+    ? []
+    : (product.value?.variants ?? []).filter((variant) => variant.isActive !== false)
+)
 const selectedVariantId = ref(null)
 const selectedVariant = computed(() => variants.value.find((variant) => variant.id === selectedVariantId.value) ?? null)
 const needsVariant = computed(() => variants.value.length > 0 && !selectedVariant.value)

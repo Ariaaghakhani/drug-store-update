@@ -16,7 +16,7 @@
 
     <div class="relative">
       <Transition name="sk">
-        <div v-if="isLoading" key="skeleton" class="space-y-3">
+        <div v-if="loading" key="skeleton" class="space-y-3">
           <div
             v-for="i in 3"
             :key="i"
@@ -31,7 +31,27 @@
           </div>
         </div>
 
-        <div v-else-if="filteredOrders.length > 0" key="content" class="space-y-3">
+        <PanelEmptyState
+          v-else-if="forbidden"
+          key="forbidden"
+          variant="forbidden"
+          title="دسترسی به سفارش‌ها ندارید"
+        />
+
+        <PanelEmptyState
+          v-else-if="error"
+          key="error"
+          variant="error"
+          title="دریافت سفارش‌ها ناموفق بود"
+        >
+          <template #action>
+            <UButton color="neutral" variant="soft" icon="i-heroicons-arrow-path" @click="reload">
+              تلاش دوباره
+            </UButton>
+          </template>
+        </PanelEmptyState>
+
+        <div v-else-if="items.length" key="content" class="space-y-3">
           <div
             v-for="order in filteredOrders"
             :key="order.id"
@@ -75,6 +95,17 @@
               </NuxtLink>
             </div>
           </div>
+
+          <p
+            v-if="!filteredOrders.length"
+            class="text-center text-sm text-gray-500 dark:text-gray-400 py-6"
+          >
+            در این صفحه سفارشی با این وضعیت نیست
+          </p>
+
+          <div v-if="totalPages > 1" class="flex justify-center pt-2">
+            <UPagination v-model:page="page" :total="total" :items-per-page="PAGE_SIZE" />
+          </div>
         </div>
 
         <div v-else key="empty" class="text-center py-16">
@@ -103,6 +134,8 @@
 
 <script setup>
 // ORDER_STATUS_META / orderStatusMeta(order) come from utils/orderStatus.js (keyed by OrderDTO.statusCode)
+import PanelEmptyState from '@/components/panel/PanelEmptyState.vue'
+
 const FULFILLMENT_META = {
   SHIPPED: { label: 'ارسال شده', color: 'info' },
   READY_FOR_PICKUP: { label: 'آماده تحویل', color: 'info' },
@@ -111,11 +144,17 @@ const FULFILLMENT_META = {
 
 const FULFILLMENT_PREPARING = { label: 'در حال آماده‌سازی', color: 'neutral' }
 
-const app = useNuxtApp()
-const userStore = useUserStore()
+const PAGE_SIZE = 20
 
-const isLoading = ref(true)
-const orders = ref([])
+const app = useNuxtApp()
+
+// Paging, loading, error and 403 state come from the shared composable (0-based BACK paging behind a 1-based UPagination).
+// The backend is token-scoped (GET api/orders/my), so no personId is sent.
+const { items, total, totalPages, page, loading, error, forbidden, reload } = usePagedList(
+  (params) => app.$api.orders.listMyOrders({ params }),
+  { size: PAGE_SIZE }
+)
+
 const statusFilter = ref('all')
 
 const statusOptions = [
@@ -135,29 +174,12 @@ const formatDate = (value) => {
   return date.toLocaleDateString('fa-IR')
 }
 
+// The status filter is client-side: /api/orders/my has no status parameter, so it narrows the current page only
 const filteredOrders = computed(() =>
   statusFilter.value === 'all'
-    ? orders.value
-    : orders.value.filter((order) => order.statusCode === statusFilter.value)
+    ? items.value
+    : items.value.filter((order) => order.statusCode === statusFilter.value)
 )
-
-async function fetchOrders() {
-  isLoading.value = true
-  try {
-    const personId = userStore.currentUser?.person?.id
-    const response = await app.$api.orders.byPerson({
-      data: { personId },
-    })
-    orders.value = response.data.data?.content ?? []
-  } catch (error) {
-    console.log(error)
-    orders.value = []
-  } finally {
-    isLoading.value = false
-  }
-}
-
-onMounted(fetchOrders)
 </script>
 
 <style scoped>

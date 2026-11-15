@@ -119,6 +119,11 @@
             <p class="text-sm font-bold text-gray-900 dark:text-white">{{ comment.authorName }}</p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ formatDate(comment.createdAt) }}</p>
             <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">{{ comment.content }}</p>
+            <div v-if="isMine(comment.id)" class="mt-3">
+              <UButton size="sm" color="error" variant="soft" icon="i-heroicons-trash" @click="askDelete(comment)">
+                حذف
+              </UButton>
+            </div>
             <div
               v-if="comment.replies?.length"
               class="mt-4 space-y-3 border-s-2 border-gray-100 dark:border-gray-800 ps-4"
@@ -130,6 +135,17 @@
                 </p>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ formatDate(reply.createdAt) }}</p>
                 <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">{{ reply.content }}</p>
+                <UButton
+                  v-if="isMine(reply.id)"
+                  size="sm"
+                  color="error"
+                  variant="soft"
+                  icon="i-heroicons-trash"
+                  class="mt-2"
+                  @click="askDelete(reply)"
+                >
+                  حذف
+                </UButton>
               </div>
             </div>
           </UCard>
@@ -141,12 +157,22 @@
           </div>
         </div>
       </section>
+
+      <DeleteConfirmDialog
+        v-model:open="deleteOpen"
+        title="حذف دیدگاه"
+        :message="deleteMessage"
+        :item-name="deleteTarget?.content ?? ''"
+        confirm-label="حذف دیدگاه"
+        @confirm="confirmDelete"
+      />
     </div>
   </UContainer>
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import DeleteConfirmDialog from '@/components/panel/DeleteConfirmDialog.vue'
 
 const COMMENTS_PAGE_SIZE = 10
 
@@ -219,12 +245,17 @@ const loadComments = async (reset) => {
 const commentText = ref('')
 const sending = ref(false)
 
+// comments this browser posted (BACK does not flag them as the caller's own): only these get «حذف»
+const { isMine, remember, forget, refresh: refreshMine } = useMyBlogComments()
+onMounted(refreshMine)
+
 const submitComment = async () => {
   const content = commentText.value.trim()
   if (!content || sending.value) return
   sending.value = true
   try {
-    await $api.blog.addComment(route.params.slug, { data: { content } })
+    const created = (await $api.blog.addComment(route.params.slug, { data: { content } })).data.data
+    remember(created?.id)
     commentText.value = ''
     toast.success('دیدگاه شما ثبت شد', 'پس از تأیید فروشگاه نمایش داده می‌شود')
   } catch (error) {
@@ -235,6 +266,57 @@ const submitComment = async () => {
     }
   } finally {
     sending.value = false
+  }
+}
+
+// ---------- delete my comment (B7) ----------
+const deleteTarget = ref(null)
+const deleteOpen = ref(false)
+const deleting = ref(false)
+
+const deleteMessage = computed(() =>
+  deleteTarget.value?.replies?.length
+    ? 'آیا از حذف این دیدگاه مطمئن هستید؟ پاسخ‌های آن هم حذف می‌شوند. این عملیات قابل بازگشت نیست.'
+    : 'آیا از حذف این دیدگاه مطمئن هستید؟ این عملیات قابل بازگشت نیست.'
+)
+
+const askDelete = (comment) => {
+  deleteTarget.value = comment
+  deleteOpen.value = true
+}
+
+// drop a deleted comment (or reply) from the loaded list without refetching
+const removeLocally = (id) => {
+  comments.value = comments.value
+    .filter((comment) => comment.id !== id)
+    .map((comment) =>
+      comment.replies?.some((reply) => reply.id === id)
+        ? { ...comment, replies: comment.replies.filter((reply) => reply.id !== id) }
+        : comment
+    )
+}
+
+const confirmDelete = async () => {
+  const target = deleteTarget.value
+  if (!target || deleting.value) return
+  deleting.value = true
+  try {
+    await $api.blog.deleteComment(target.id)
+    forget(target.id)
+    removeLocally(target.id)
+    deleteOpen.value = false
+    toast.success('دیدگاه حذف شد')
+  } catch (error) {
+    if (error?.response?.status === 404) {
+      // already gone: forget the id and show what the server has now
+      forget(target.id)
+      deleteOpen.value = false
+      await loadComments(true)
+    } else {
+      toast.error('حذف دیدگاه ناموفق بود', 'لطفاً دوباره تلاش کنید')
+    }
+  } finally {
+    deleting.value = false
   }
 }
 

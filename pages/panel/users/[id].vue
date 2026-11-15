@@ -80,6 +80,7 @@
             :loading="historyLoading"
             :history="history"
           />
+          <TermsAcceptancesCard v-if="canReadTerms" :user-id="userId" />
         </div>
 
         <div v-else key="empty" class="text-center py-16">
@@ -106,6 +107,7 @@
 import ActiveSessionsCard from '@/components/panel/security/ActiveSessionsCard.vue'
 import LoginHistoryCard from '@/components/panel/security/LoginHistoryCard.vue'
 import UserRolesModal from '@/components/panel/users/UserRolesModal.vue'
+import TermsAcceptancesCard from '@/components/panel/users/TermsAcceptancesCard.vue'
 
 useHead({ title: 'جزئیات کاربر | پنل مدیریت' })
 
@@ -116,6 +118,10 @@ const { staffRoleItems, staffRoleIdsOf, loadRoles, mapUser, setActive, setLocked
   useManagedUsers()
 
 const userId = Number(route.params.id)
+
+// The terms acceptance history is shown only to staff who can read the TERMS module
+const { canRead } = useModuleAccess()
+const canReadTerms = computed(() => canRead('TERMS'))
 
 const loading = ref(true)
 const user = ref(null)

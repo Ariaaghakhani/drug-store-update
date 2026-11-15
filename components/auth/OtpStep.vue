@@ -32,6 +32,15 @@
       </p>
     </div>
 
+    <!-- Resend-only captcha: hidden for verify, opened by login.vue when a resend needs one -->
+    <CaptchaField
+      v-if="captchaOpen"
+      ref="captchaField"
+      v-model="localCaptcha"
+      :subject="phoneNumber"
+      :error="captchaError"
+    />
+
     <button
       type="submit"
       :disabled="loading || !isValid"
@@ -105,11 +114,25 @@ const props = defineProps({
     default: 'login', // 'login' | 'register'
     validator: (value) => ['login', 'register'].includes(value),
   },
+  phoneNumber: {
+    type: String,
+    default: '',
+  },
+  // {captchaId, captchaAnswer}, owned by pages/login.vue
+  captcha: {
+    type: Object,
+    default: () => ({ captchaId: null, captchaAnswer: null }),
+  },
+  captchaError: {
+    type: String,
+    default: '',
+  },
 })
 
 const emit = defineEmits([
   'update:digits',
   'update:error',
+  'update:captcha',
   'submit',
   'resend',
   'switchToPassword',
@@ -207,8 +230,29 @@ onMounted(() => {
   inputRefs.value[0]?.focus()
 })
 
-// Expose focus method for parent component
+const captchaField = ref(null)
+const captchaOpen = ref(false)
+const localCaptcha = computed({
+  get: () => props.captcha,
+  set: (value) => emit('update:captcha', value),
+})
+
+// Called by login.vue when a resend returns captcha.* (the field is mounted only from then on)
+const openCaptcha = async () => {
+  captchaOpen.value = true
+  await nextTick()
+}
+
+// Called by login.vue after a successful resend: the field is no longer needed on the verify screen
+const closeCaptcha = () => {
+  captchaOpen.value = false
+}
+
+// Expose focus method and the captcha hooks for parent component
 defineExpose({
   focusFirst: () => inputRefs.value[0]?.focus(),
+  captcha: captchaField,
+  openCaptcha,
+  closeCaptcha,
 })
 </script>

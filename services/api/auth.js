@@ -99,6 +99,32 @@ export default (apiCaller) => ({
     return apiCaller.post('api/auth/me/permissions', config)
   },
 
+  // ========== TERMS PENDING ACCEPTANCE (verified: BACK MyTermsController, ApiResponse<TermsAndConditionsDTO[]>, payload = res.data.data; accept returns the accepted list) ==========
+  getPendingTerms(config) {
+    return apiCaller.get('api/auth/me/terms/pending', config)
+  },
+
+  acceptPendingTerms() {
+    return apiCaller.post('api/auth/me/terms/accept')
+  },
+
+  // ========== PASSWORD POLICY (public, store-scoped via X-Tenant; verified: BACK PasswordPolicyPublicController, ApiResponse<PasswordPolicyDTO>, payload = res.data.data) ==========
+  // Payload: {minLength, maxLength, requireUppercase, requireLowercase, requireDigit, requireSpecialChar}. Admin side is user.getPasswordPolicy.
+  getPasswordRules() {
+    return apiCaller.get('api/auth/password-policy')
+  },
+
+  // ========== CAPTCHA (public; verified: BACK CaptchaController, ApiResponse body, payload = res.data.data) ==========
+  // config.params {audience?, subject?} → CaptchaStatusDTO {audience, enabled, required, afterFailures}
+  getCaptchaStatus(config) {
+    return apiCaller.get('api/captcha/status', config)
+  },
+
+  // optional config.data {audience?} → CaptchaChallengeDTO {captchaId, image (data URI), audience, length, digitsOnly, expiresInSeconds}
+  createCaptcha(config) {
+    return apiCaller.post('api/captcha', config)
+  },
+
   // Own profile photo, any logged-in user (no role grant). → MyAvatarDTO {avatarUrl}, null = no photo; the url is public.
   getMyAvatar(config) {
     return apiCaller.get('api/auth/me/avatar', config)

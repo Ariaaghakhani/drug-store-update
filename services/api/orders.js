@@ -1,10 +1,4 @@
 export default (apiCaller) => ({
-  // The logged-in user's own orders, any logged-in user (OrderCustomerController); params {page (0-based), size 1..100, status?}
-  // → PageResponse<OrderDTO>
-  listMyOrders(config) {
-    return apiCaller.get('api/orders/my', config)
-  },
-
   listOrders(config) {
     return apiCaller.post('api/orders/list', config)
   },
@@ -23,6 +17,12 @@ export default (apiCaller) => ({
 
   byPerson(config) {
     return apiCaller.post('api/orders/by-person', config)
+  },
+
+  // GET api/orders/my (verified 2026-11-10, OrderCustomerController): the caller's own orders from the token,
+  // 0-based page/size (max 100), newest first. List items carry no `items`; use getOrder for lines.
+  listMyOrders(config) {
+    return apiCaller.get('api/orders/my', config)
   },
 
   byUser(config) {
@@ -91,6 +91,28 @@ export default (apiCaller) => ({
     return apiCaller.get(`api/admin/orders/${id}/fulfillment-history`)
   },
 
+  // ========== REFUNDS (staff-only; BACK OrderRefundController, module ORDER_REFUND) ==========
+
+  // POST, body in config.data {note≤500, refundAmount? ≥0 (empty = full paid amount, 0 = none), restock (null/true = back to stock)}; only PAID and not shipped/delivered, else 409 → OrderDTO
+  cancelPaidOrder(orderId, config) {
+    return apiCaller.post(`api/admin/orders/${orderId}/cancel`, config)
+  },
+
+  // GET → OrderRefundDTO[] {id, orderId, amount, reason, status PENDING|PAID, note, reference, paidAt, toWallet, createdAt, createdBy, workflow}, newest first
+  listOrderRefunds(orderId) {
+    return apiCaller.get(`api/admin/orders/${orderId}/refunds`)
+  },
+
+  // POST (201), body in config.data {amount ≥1 (required), reason (required, not RETURN from this form), note≤500}; total refunds ≤ paid amount, else 409
+  createOrderRefund(orderId, config) {
+    return apiCaller.post(`api/admin/orders/${orderId}/refunds`, config)
+  },
+
+  // POST, body in config.data {reference≤100, note≤500, toWallet}; body optional. Workflow-bindable: a pending approval answers 202 (plugin flags `pending`)
+  markOrderRefundPaid(refundId, config) {
+    return apiCaller.post(`api/admin/order-refunds/${refundId}/paid`, config)
+  },
+
   // ========== CASH ON DELIVERY (staff-only) ==========
 
   listCodOrders(config) {
@@ -151,43 +173,56 @@ export default (apiCaller) => ({
     return apiCaller.post('api/invoices/delete', config)
   },
 
+  // POST api/invoices/pdf {id} (verified 2026-11-10, InvoiceController): application/pdf bytes. Customers get only
+  // their own invoices (default customer policy + OwnershipGuard). Blob response: the file is res.data, see
+  // composables/useFileDownload.js.
+  downloadInvoicePdf(id) {
+    return apiCaller.post('api/invoices/pdf', { data: { id }, responseType: 'blob' })
+  },
+
+  // ========== PURCHASE ORDERS (module PURCHASE_ORDER; verified 2026-11-11 against BACK PurchaseOrderController) ==========
+  // POST api/purchase-orders/list {supplierId?, status?, page (1-based), size ≤100} → PageResponse<PurchaseOrderDTO>, page 1-based.
   listPurchaseOrders(config) {
     return apiCaller.post('api/purchase-orders/list', config)
   },
 
+  // POST api/purchase-orders/get {id} → PurchaseOrderDTO with items.
   getPurchaseOrder(config) {
     return apiCaller.post('api/purchase-orders/get', config)
   },
 
+  // POST api/purchase-orders {supplierId, dateExpected?, note?, items:[{goodsId, quantityOrdered, unitCost}]} → 201 PurchaseOrderDTO (DRAFT).
   createPurchaseOrder(config) {
-    return apiCaller.post('api/purchase-orders/create', config)
+    return apiCaller.post('api/purchase-orders', config)
   },
 
+  // PUT api/purchase-orders {id, supplierId, dateExpected?, note?, items} → PurchaseOrderDTO. DRAFT only; items are replaced.
   updatePurchaseOrder(config) {
-    return apiCaller.post('api/purchase-orders/update', config)
+    return apiCaller.put('api/purchase-orders', config)
   },
 
+  // POST api/purchase-orders/submit {id}: DRAFT → ORDERED. Workflow-bindable (202 when pending).
+  submitPurchaseOrder(config) {
+    return apiCaller.post('api/purchase-orders/submit', config)
+  },
+
+  // POST api/purchase-orders/receive {purchaseOrderId, warehouseId, note?, lines:[{itemId, quantity, batchNumber?, manufactureDate?, expiryDate?}]}.
+  receivePurchaseOrder(config) {
+    return apiCaller.post('api/purchase-orders/receive', config)
+  },
+
+  // POST api/purchase-orders/close {id}: PARTIALLY_RECEIVED → CLOSED.
+  closePurchaseOrder(config) {
+    return apiCaller.post('api/purchase-orders/close', config)
+  },
+
+  // POST api/purchase-orders/cancel {id}: DRAFT | ORDERED → CANCELLED.
+  cancelPurchaseOrder(config) {
+    return apiCaller.post('api/purchase-orders/cancel', config)
+  },
+
+  // POST api/purchase-orders/delete {id}: DRAFT | CANCELLED only; 204.
   deletePurchaseOrder(config) {
     return apiCaller.post('api/purchase-orders/delete', config)
-  },
-
-  listPurchaseOrderItems(config) {
-    return apiCaller.post('api/purchase-order-items/list', config)
-  },
-
-  getPurchaseOrderItem(config) {
-    return apiCaller.post('api/purchase-order-items/get', config)
-  },
-
-  createPurchaseOrderItem(config) {
-    return apiCaller.post('api/purchase-order-items/create', config)
-  },
-
-  updatePurchaseOrderItem(config) {
-    return apiCaller.post('api/purchase-order-items/update', config)
-  },
-
-  deletePurchaseOrderItem(config) {
-    return apiCaller.post('api/purchase-order-items/delete', config)
   },
 })

@@ -40,6 +40,24 @@
             {{ localForm.errors.password }}
           </p>
         </div>
+        <ul aria-label="شرط‌های رمز عبور" class="mt-2 space-y-1">
+          <li
+            v-for="rule in ruleList"
+            :key="rule.text"
+            :class="[
+              'flex items-center gap-1.5 text-sm',
+              rule.met
+                ? 'text-success'
+                : 'text-error',
+            ]"
+          >
+            <UIcon
+              :name="rule.met ? 'i-heroicons-check-circle' : 'i-heroicons-x-circle'"
+              class="w-4 h-4 shrink-0"
+            />
+            {{ rule.text }}
+          </li>
+        </ul>
       </div>
 
       <!-- Password Confirmation -->
@@ -87,6 +105,13 @@
           </p>
         </div>
       </div>
+
+      <CaptchaField
+        ref="captchaField"
+        v-model="localCaptcha"
+        :subject="phoneNumber"
+        :error="captchaError"
+      />
     </div>
 
     <button
@@ -122,17 +147,43 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  phoneNumber: {
+    type: String,
+    default: '',
+  },
+  // {captchaId, captchaAnswer}, owned by pages/login.vue
+  captcha: {
+    type: Object,
+    default: () => ({ captchaId: null, captchaAnswer: null }),
+  },
+  captchaError: {
+    type: String,
+    default: '',
+  },
 })
 
-const emit = defineEmits(['update:form', 'submit', 'goBack'])
+const emit = defineEmits(['update:form', 'update:captcha', 'submit', 'goBack'])
 
 const localForm = computed({
   get: () => props.form,
   set: (value) => emit('update:form', value),
 })
 
+const captchaField = ref(null)
+const localCaptcha = computed({
+  get: () => props.captcha,
+  set: (value) => emit('update:captcha', value),
+})
+
+// login.vue calls captcha.force() / captcha.reset() after a captcha.* error or any failed attempt
+defineExpose({ captcha: captchaField })
+
 const showPassword = ref(false)
 const showPasswordConfirm = ref(false)
+
+const { ruleList, validate: validatePassword } = usePasswordRules(
+  computed(() => localForm.value.password)
+)
 
 const validateForm = () => {
   const errors = {
@@ -151,6 +202,11 @@ const validateForm = () => {
   } else if (localForm.value.password !== localForm.value.passwordConfirm) {
     errors.passwordConfirm = 'رمز عبور و تکرار آن یکسان نیستند'
   }
+
+  const policyError = localForm.value.password
+    ? validatePassword(localForm.value.password)
+    : ''
+  if (policyError) errors.password = policyError
 
   localForm.value.errors = errors
   return !errors.password && !errors.passwordConfirm
