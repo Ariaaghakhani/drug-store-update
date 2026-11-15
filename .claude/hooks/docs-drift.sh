@@ -24,8 +24,9 @@ module_doc() {
   esac
 }
 
-declare -A touched_docs
-declare -A code_by_doc
+# Plain newline-separated lists instead of associative arrays: macOS ships bash 3.2, which has no `declare -A`.
+touched_docs=""   # one doc path per line
+code_pairs=""     # "doc<TAB>file" per line
 
 while IFS= read -r f; do
   [ -z "$f" ] && continue
@@ -35,23 +36,25 @@ while IFS= read -r f; do
   doc=$(module_doc "$f")
   [ -z "$doc" ] && continue
   if [ "$f" = "$doc" ]; then
-    touched_docs["$doc"]=1
+    touched_docs="${touched_docs}${doc}"$'\n'
     continue
   fi
-  code_by_doc["$doc"]="${code_by_doc[$doc]:-}${code_by_doc[$doc]:+, }$f"
+  code_pairs="${code_pairs}${doc}"$'\t'"${f}"$'\n'
 done <<< "$changed"
 
-missing=()
-for doc in "${!code_by_doc[@]}"; do
+missing=""
+while IFS= read -r doc; do
+  [ -z "$doc" ] && continue
+  files=$(printf '%s' "$code_pairs" | awk -F'\t' -v d="$doc" '$1 == d { printf "%s%s", sep, $2; sep = ", " }')
   if [ ! -f "$doc" ]; then
-    missing+=("$doc missing - new/undocumented module touched by: ${code_by_doc[$doc]}")
-  elif [ -z "${touched_docs[$doc]:-}" ]; then
-    missing+=("$doc not updated - module code changed: ${code_by_doc[$doc]}")
+    missing="${missing}${doc} missing - new/undocumented module touched by: ${files}"$'\n'
+  elif ! printf '%s' "$touched_docs" | grep -Fxq "$doc"; then
+    missing="${missing}${doc} not updated - module code changed: ${files}"$'\n'
   fi
-done
+done <<< "$(printf '%s' "$code_pairs" | cut -f1 | sort -u)"
 
-if [ ${#missing[@]} -gt 0 ]; then
-  printf '%s\n' "${missing[@]}" >&2
+if [ -n "$missing" ]; then
+  printf '%s' "$missing" >&2
   exit 2
 fi
 
