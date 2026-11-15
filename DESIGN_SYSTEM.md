@@ -403,6 +403,8 @@ Wrapped in `UCard :ui="{ body: 'p-0' }"` with `overflow-x-auto`. `<thead>` uses 
 
 **Ranked list (C15b):** unpaged top-N lists (`pages/panel/insights/index.vue`) use the admin table with a `w-16` rank column (muted `font-black`, `fa-IR` digits) as the first column, then the product link (or search text) and the counts. Zero stock shows a `StatusBadge` «ناموجود» (`error`). Each tab keeps its own skeleton / 403 / error / empty state, and a feature switched off in the store profile shows a note in its tab instead of rows.
 
+**Reorderable step-card list (workflow designer, C22c):** `components/panel/workflow/StepCard.vue` inside an `ol.space-y-3` in a `UCard :ui="{ body: 'p-0' }"` body with `p-4 sm:p-6`. Each card is `rounded-xl border bg-white dark:bg-gray-800 px-4 py-3` (`border-gray-200 dark:border-gray-700`, `border-error` when the step has validation errors): a `w-8 h-8 rounded-full` index circle (`fa-IR` digits), the title (`text-sm font-semibold`) with a type `UBadge` and an ltr mono key chip, a muted `text-xs` summary list, and at the end `neutral ghost square xs` up/down buttons (disabled at the ends and while a save runs; no drag and drop, so it works on touch and with a keyboard), a `neutral outline xs` «ویرایش» and an `error ghost square xs` trash button. Step errors sit under the card as `text-xs text-error` lines with an `i-heroicons-exclamation-circle` icon. Reordering swaps whole step objects, never edits their fields.
+
 ### Metric card grid (admin)
 `grid grid-cols-2 lg:grid-cols-4 gap-4`. Each `UCard :ui="{ body: 'p-4' }"` holds `flex items-center gap-3`: icon container (`w-10 h-10 rounded-xl`) + div with `text-xs text-gray-500` label above `text-xl font-black` value formatted with `.toLocaleString('fa-IR')`.
 

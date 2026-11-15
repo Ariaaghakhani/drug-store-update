@@ -5,7 +5,7 @@
  * missing) on any call means "workflow unavailable for this store" (see `isWorkflowUnavailable` in utils/workflowMeta.js).
  * Payload = `res.data.data` (no RAW endpoints here). `taskId` is a string, so it is always `encodeURIComponent`-ed;
  * instance and definition ids are numbers. Sections: task inbox (C19), run reads (C19), run monitoring (C20), bindings,
- * calendar and custom events (C21); C22 (designer) appends its own section below.
+ * calendar and custom events (C21), designer (C22a–C22c; C22d appends `getApproverOptions`).
  */
 const TASKS = 'api/admin/workflow/tasks'
 const INSTANCES = 'api/admin/workflow/instances'
@@ -213,5 +213,76 @@ export default (apiCaller) => ({
   // deadline passes
   deleteCustomEvent(id) {
     return apiCaller.delete(`${CUSTOM_EVENTS}/${id}`)
+  },
+
+  // ========== DESIGNER (C22a–C22c, module WORKFLOW_DESIGN) ==========
+  // Verified against WorkflowDefinitionController / WorkflowDefinitionServiceImpl / WorkflowStepDTO (backend copy, 2026-11-14).
+  // `listDefinitions` (above, C21a) is the list. A step (WorkflowStepDTO) carries 13 fields: key, title, approvers[{type ROLE|USER|STARTER|
+  // PREVIOUS_ACTOR, roleId, userId}], completion ANY|ALL|EACH, condition, deadline{amount, unit, onOverdue, escalateToRoleId, repeatEvery,
+  // escalateAgainToRoleId}, starterMayDecide, type APPROVAL|ACTION|WAIT|AUTO (null = APPROVAL), systemAction{code, params}, waitEvent{code,
+  // onTimeout CONTINUE|REJECT}, autoDecision APPROVE|REJECT|GOTO, goTo, attachments NONE|OPTIONAL|REQUIRED. BACK answers every field
+  // (null when unset); a save must send the whole step back, so callers never rebuild a step field by field.
+
+  // GET → WorkflowDefinitionDTO {id, key, title, subject, subjectTitle, action, status DRAFT|PUBLISHED|RETIRED, publishedVersion, publishedAt,
+  // draftChanged, steps[], version (Long, the optimistic lock: send it back on save), createdAt, updatedAt}. 404 `workflow.definition.not.found`
+  getDefinition(id) {
+    return apiCaller.get(`${DEFINITIONS}/${id}`)
+  },
+
+  // POST body {title (required, <=200), subject (required, <=50), action (required, <=50), steps (required, may be [], <=20, may be
+  // incomplete)}. Answers 201 with the draft (steps included). 400 `workflow.subject.unknown` / `workflow.action.unknown`. The same body is
+  // what exportDefinition answers, so an import is this call. subject and action never change afterwards
+  createDefinition(config) {
+    return apiCaller.post(DEFINITIONS, config)
+  },
+
+  // PUT body {title (required, <=200), steps (required, <=20), version (required, the value read with the definition)}. Answers the saved
+  // definition with its NEW `version`. 409 `workflow.definition.conflict` (someone saved in between: reload) or `workflow.definition.retired`;
+  // the 409 body's `errorCode` tells them apart (`e.response.data.errorCode`). Saving a PUBLISHED definition sets `draftChanged` even
+  // when nothing changed. A JPA lock failure under a real race has no handler in BACK's code, so it may surface as a plain 500
+  updateDefinition(id, config) {
+    return apiCaller.put(`${DEFINITIONS}/${id}`, config)
+  },
+
+  // POST, no body. Checks the SAVED draft, not what the page holds (save first). → {valid, errors[{stepKey (null = the whole definition),
+  // message}]}. An empty step list is itself an error (`workflow.steps.count`)
+  validateDefinition(id) {
+    return apiCaller.post(`${DEFINITIONS}/${id}/validate`)
+  },
+
+  // POST, no body. Publishes the saved draft as a NEW version → the definition (status PUBLISHED, `publishedVersion` = the new number).
+  // 400 `workflow.definition.invalid` (message carries the error count; details through validate), 409 `workflow.definition.retired`.
+  // A PUBLISHED definition whose draft did not change answers 200 with the same definition and creates NO version (silent no-op)
+  publishDefinition(id) {
+    return apiCaller.post(`${DEFINITIONS}/${id}/publish`)
+  },
+
+  // POST, no body. PUBLISHED only (409 `workflow.definition.not.published`); 409 `workflow.definition.in.use` while an action is bound to it
+  // (unbind first). New runs stop, runs in flight carry on. Not reversible. Answers the definition (status RETIRED)
+  retireDefinition(id) {
+    return apiCaller.post(`${DEFINITIONS}/${id}/retire`)
+  },
+
+  // DELETE. Only a definition that was never published (status DRAFT; 409 `workflow.definition.not.draft` otherwise: retire it instead).
+  // Answers 200 with `data: null`
+  deleteDefinition(id) {
+    return apiCaller.delete(`${DEFINITIONS}/${id}`)
+  },
+
+  // GET → {title, subject, action, steps}: exactly the createDefinition body (BACK's WorkflowDefinitionRequest). Role and user ids inside
+  // the steps belong to this store: they must be chosen again after an import elsewhere
+  exportDefinition(id) {
+    return apiCaller.get(`${DEFINITIONS}/${id}/export`)
+  },
+
+  // GET → [{version (Integer), publishedAt, publishedBy (string), deploymentId}], newest first, published versions only
+  listDefinitionVersions(id) {
+    return apiCaller.get(`${DEFINITIONS}/${id}/versions`)
+  },
+
+  // GET config.params {version? (Integer; empty = the latest published one)} → the payload `res.data.data` is the BPMN 2.0 XML STRING inside the
+  // normal JSON envelope (BACK answers ApiResponse<String>): NOT a blob, no responseType. 404 `workflow.definition.version.not.found`
+  getDefinitionBpmn(id, config) {
+    return apiCaller.get(`${DEFINITIONS}/${id}/bpmn`, config)
   },
 })
